@@ -1,0 +1,13 @@
+html,
+body {
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: rgb(var(--v-theme-background));
+}
+
+.font-display {
+  font-family: 'Hanken Grotesk', 'Inter', sans-serif;
+}
