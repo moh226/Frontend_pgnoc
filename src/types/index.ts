@@ -27,3 +27,100 @@ export interface PayloadInscription {
   password: string
   password_confirmation: string
 }
+
+export interface ResultatPagines<T> {
+  count: number
+  next: string | null
+  previous: string | null
+  results: T[]
+}
+
+export type StatutDossier = 'BROUILLON' | 'SOUMIS' | 'EN_INSTRUCTION' | 'VALIDE' | 'REJETE'
+
+export interface DossierListeItem {
+  id: string
+  reference: string
+  investisseur_email: string
+  sgi: string
+  statut: StatutDossier
+  progression_pct: number
+  date_creation: string
+  date_soumission: string | null
+}
+
+export interface ValeurChamp {
+  id: string
+  champ: string
+  valeur: string | null
+  fichier: string | null
+  commentaire_agent: string | null
+  est_corrige: boolean
+  date_maj: string
+}
+
+export interface DossierDetail extends DossierListeItem {
+  etape_courante: string | null
+  agent: string | null
+  agent_email: string | null
+  version: number
+  motif_rejet: string
+  convention_acceptee: boolean
+  type_signature: string
+  date_signature: string | null
+  date_instruction: string | null
+  date_decision: string | null
+  valeurs_champs: ValeurChamp[]
+}
+
+export interface ChampKyc {
+  id: string
+  code: string
+  nom: string
+  type: string
+  obligatoire: boolean
+  ordre: number
+  justification: string
+  options_choix: string | null
+  champ_parent: string | null
+  valeur_declencheur: string
+  formats_acceptes: string
+  taille_max_mo: number | null
+}
+
+export interface EtapeKyc {
+  id: string
+  nom: string
+  ordre: number
+  champs: ChampKyc[]
+}
+
+export interface SgiPublique {
+  id: string
+  nom: string
+  code_sgi: string
+  logo: string | null
+}
+
+export interface ConventionInfo {
+  titre: string
+  signe_requis: boolean
+}
+
+export interface FicheSgi extends SgiPublique {
+  presentation: string
+  convention: ConventionInfo
+}
+
+export interface NotificationItem {
+  id: string
+  titre: string
+  message: string
+  lue: boolean
+  type_notif: string
+  type_libelle: string
+  date_creation: string
+}
+
+export interface CompteNonLues {
+  compte: number
+}

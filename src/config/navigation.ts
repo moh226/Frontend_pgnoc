@@ -27,6 +27,8 @@ export function redirectionPourRole(role: RoleCode | null): string {
 export const NAVIGATION_PAR_ROLE: Record<RoleCode, ItemNavigation[]> = {
   INVESTISSEUR: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/espace-investisseur' },
+    { titre: 'Mes dossiers', icone: 'mdi-folder-multiple-outline', vers: '/espace-investisseur/dossiers' },
+    { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/espace-investisseur/notifications' },
   ],
   AGENT_SGI: [{ titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/espace-agent' }],
   ADMIN_SGI: [{ titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/admin-sgi' }],

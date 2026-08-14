@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { LIBELLES_ROLE, NAVIGATION_PAR_ROLE } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const router = useRouter()
 const auth = useAuthStore()
+const notifications = useNotificationsStore()
 
 const navigation = NAVIGATION_PAR_ROLE[auth.role ?? 'INVESTISSEUR'] ?? []
 
@@ -13,6 +16,12 @@ function deconnecter() {
   auth.deconnecter()
   router.push({ name: 'login' })
 }
+
+onMounted(() => {
+  if (auth.estConnecte) {
+    void notifications.chargerCompte()
+  }
+})
 </script>
 
 <template>
@@ -25,7 +34,16 @@ function deconnecter() {
         :prepend-icon="item.icone"
         :title="item.titre"
         exact
-      />
+      >
+        <template v-if="item.vers === '/espace-investisseur/notifications'" #append>
+          <v-badge
+            v-if="notifications.compteNonLues"
+            :content="notifications.compteNonLues"
+            color="error"
+            inline
+          />
+        </template>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 

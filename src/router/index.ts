@@ -44,6 +44,21 @@ const router = createRouter({
           name: 'investisseur-tableau-de-bord',
           component: () => import('@/views/investisseur/TableauDeBordInvestisseurView.vue'),
         },
+        {
+          path: 'dossiers',
+          name: 'investisseur-dossiers',
+          component: () => import('@/views/investisseur/DossiersListView.vue'),
+        },
+        {
+          path: 'dossiers/:id',
+          name: 'investisseur-dossier-detail',
+          component: () => import('@/views/investisseur/DossierDetailView.vue'),
+        },
+        {
+          path: 'notifications',
+          name: 'investisseur-notifications',
+          component: () => import('@/views/investisseur/NotificationsView.vue'),
+        },
       ],
     },
     {
