@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 
-import { detailDossier, listeDossiers } from '@/api/dossiers'
+import {
+  commenterValeur,
+  detailDossier,
+  listeDossiers,
+  prendreEnCharge,
+  rejeterDossier,
+  validerDossier,
+} from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import type { DossierDetail, DossierListeItem, StatutDossier } from '@/types'
 
@@ -58,6 +65,45 @@ export const useDossiersStore = defineStore('dossiers', {
         this.erreur = extraireMessageErreur(cause)
       } finally {
         this.detailChargement = false
+      }
+    },
+
+    async prendreEnCharge(id: string) {
+      this.erreur = ''
+      try {
+        this.detail = await prendreEnCharge(id)
+        await this.chargerListe()
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+        throw cause
+      }
+    },
+
+    async commenterValeur(dossierId: string, valeurId: string, commentaire: string) {
+      this.erreur = ''
+      try {
+        const resultat = await commenterValeur(dossierId, valeurId, commentaire)
+        if (this.detail) {
+          const valeur = this.detail.valeurs_champs.find((v) => v.id === valeurId)
+          if (valeur) {
+            valeur.commentaire_agent = resultat.commentaire_agent
+            valeur.est_corrige = false
+          }
+        }
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+        throw cause
+      }
+    },
+
+    async deciderDossier(id: string, decision: 'valider' | 'rejeter', motif = '') {
+      this.erreur = ''
+      try {
+        this.detail = decision === 'valider' ? await validerDossier(id) : await rejeterDossier(id, motif)
+        await this.chargerListe()
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+        throw cause
       }
     },
   },

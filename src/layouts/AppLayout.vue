@@ -35,7 +35,7 @@ onMounted(() => {
         :title="item.titre"
         exact
       >
-        <template v-if="item.vers === '/espace-investisseur/notifications'" #append>
+        <template v-if="item.vers.endsWith('/notifications')" #append>
           <v-badge
             v-if="notifications.compteNonLues"
             :content="notifications.compteNonLues"

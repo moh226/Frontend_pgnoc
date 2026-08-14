@@ -71,6 +71,21 @@ const router = createRouter({
           name: 'agent-tableau-de-bord',
           component: () => import('@/views/agent/TableauDeBordAgentView.vue'),
         },
+        {
+          path: 'dossiers',
+          name: 'agent-dossiers',
+          component: () => import('@/views/agent/DossiersAgentListView.vue'),
+        },
+        {
+          path: 'dossiers/:id',
+          name: 'agent-dossier-detail',
+          component: () => import('@/views/agent/DossierDetailAgentView.vue'),
+        },
+        {
+          path: 'notifications',
+          name: 'agent-notifications',
+          component: () => import('@/views/investisseur/NotificationsView.vue'),
+        },
       ],
     },
     {
@@ -83,6 +98,42 @@ const router = createRouter({
           name: 'admin-sgi-tableau-de-bord',
           component: () => import('@/views/admin-sgi/TableauDeBordAdminSgiView.vue'),
         },
+        {
+          path: 'dossiers',
+          name: 'admin-sgi-dossiers',
+          component: () => import('@/views/agent/DossiersAgentListView.vue'),
+          props: { routeDetail: 'admin-sgi-dossier-detail' },
+        },
+        {
+          path: 'dossiers/:id',
+          name: 'admin-sgi-dossier-detail',
+          component: () => import('@/views/agent/DossierDetailAgentView.vue'),
+        },
+        {
+          path: 'agents',
+          name: 'admin-sgi-agents',
+          component: () => import('@/views/admin-sgi/AgentsView.vue'),
+        },
+        {
+          path: 'convention',
+          name: 'admin-sgi-convention',
+          component: () => import('@/views/admin-sgi/ConventionView.vue'),
+        },
+        {
+          path: 'presentation',
+          name: 'admin-sgi-presentation',
+          component: () => import('@/views/admin-sgi/PresentationView.vue'),
+        },
+        {
+          path: 'kyc',
+          name: 'admin-sgi-kyc',
+          component: () => import('@/views/admin-sgi/KycView.vue'),
+        },
+        {
+          path: 'notifications',
+          name: 'admin-sgi-notifications',
+          component: () => import('@/views/investisseur/NotificationsView.vue'),
+        },
       ],
     },
     {
@@ -94,6 +145,26 @@ const router = createRouter({
           path: '',
           name: 'admin-general-tableau-de-bord',
           component: () => import('@/views/admin-general/TableauDeBordAdminGeneralView.vue'),
+        },
+        {
+          path: 'sgi',
+          name: 'admin-general-sgi',
+          component: () => import('@/views/admin-general/SgisView.vue'),
+        },
+        {
+          path: 'utilisateurs',
+          name: 'admin-general-utilisateurs',
+          component: () => import('@/views/admin-general/UtilisateursView.vue'),
+        },
+        {
+          path: 'journal',
+          name: 'admin-general-journal',
+          component: () => import('@/views/admin-general/JournalAuditView.vue'),
+        },
+        {
+          path: 'notifications',
+          name: 'admin-general-notifications',
+          component: () => import('@/views/investisseur/NotificationsView.vue'),
         },
       ],
     },

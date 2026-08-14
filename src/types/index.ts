@@ -124,3 +124,126 @@ export interface NotificationItem {
 export interface CompteNonLues {
   compte: number
 }
+
+export type TypeChampKyc =
+  | 'TEXTE_COURT'
+  | 'TEXTE_LONG'
+  | 'NOMBRE'
+  | 'DATE'
+  | 'BOOLEEN'
+  | 'CHOIX_UNIQUE'
+  | 'CHOIX_MULTIPLE'
+  | 'FICHIER'
+
+export interface AgentSgi {
+  id: string
+  email: string
+  prenom: string
+  nom: string
+  matricule: string
+  is_active: boolean
+  date_joined: string
+  mot_de_passe_initial?: string
+}
+
+export interface EtapeKycAdmin {
+  id: string
+  nom: string
+  ordre: number
+  actif: boolean
+  date_creation: string
+}
+
+export interface ChampKycAdmin {
+  id: string
+  etape: string
+  code: string
+  nom: string
+  type: TypeChampKyc
+  obligatoire: boolean
+  ordre: number
+  justification: string
+  options_choix: string[] | null
+  champ_parent: string | null
+  valeur_declencheur: string
+  formats_acceptes: string
+  taille_max_mo: number | null
+  actif: boolean
+}
+
+export interface ConventionSgi {
+  titre: string
+  fichier: string
+  url_signee: string
+  date_publication: string | null
+  date_modification: string | null
+}
+
+export interface PresentationSgi {
+  contenu: string
+  date_publication: string | null
+}
+
+export interface TraceActivite {
+  date: string
+  email: string | null
+  action: string
+  entite_concernee: string | null
+  entite_id: string | null
+}
+
+export interface DashboardAdmin {
+  dossiers: {
+    total: number
+    soumis_aujourd_hui: number
+    par_statut: Record<StatutDossier, number>
+  }
+  sgi: {
+    total: number
+    actives: number
+    sans_convention_publiee: number
+  }
+  utilisateurs: {
+    total: number
+    actifs: number
+    par_role: Partial<Record<RoleCode, number>>
+  }
+  activite_recente: TraceActivite[]
+}
+
+export interface SgiAdmin {
+  id: string
+  nom: string
+  code_sgi: string
+  logo: string | null
+  est_active: boolean
+  date_creation: string
+  nb_utilisateurs: number
+  nb_dossiers: number
+}
+
+export interface UtilisateurAdmin {
+  id: string
+  email: string
+  prenom: string
+  nom: string
+  role: string
+  sgi: string | null
+  is_active: boolean
+  date_joined: string
+}
+
+export interface EntreeJournalAudit {
+  id: string
+  date_action: string
+  utilisateur: string | null
+  utilisateur_email: string | null
+  action: string
+  action_libelle: string
+  entite_concernee: string | null
+  entite_id: string | null
+  avant: Record<string, unknown> | null
+  apres: Record<string, unknown> | null
+  ip_address: string | null
+  user_agent: string
+}

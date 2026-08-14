@@ -38,6 +38,40 @@ export async function etapesKyc(sgi: string): Promise<ResultatPagines<EtapeKyc>>
   return data
 }
 
+export async function prendreEnCharge(id: string): Promise<DossierDetail> {
+  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/prendre-en-charge/`)
+  return data
+}
+
+export interface CommentaireValeur {
+  id: string
+  commentaire_agent: string
+}
+
+export async function commenterValeur(
+  dossierId: string,
+  valeurId: string,
+  commentaire: string,
+): Promise<CommentaireValeur> {
+  const { data } = await api.post<CommentaireValeur>(
+    `/dossiers/dossiers/${dossierId}/commenter/`,
+    { valeur: valeurId, commentaire },
+  )
+  return data
+}
+
+export async function validerDossier(id: string): Promise<DossierDetail> {
+  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/valider/`)
+  return data
+}
+
+export async function rejeterDossier(id: string, motif: string): Promise<DossierDetail> {
+  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/rejeter/`, {
+    motif_rejet: motif,
+  })
+  return data
+}
+
 export function urlFichierValeur(dossierId: string, valeurId: string): string {
   return `${api.defaults.baseURL}/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`
 }
