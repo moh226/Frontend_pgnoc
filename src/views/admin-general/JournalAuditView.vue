@@ -26,6 +26,7 @@ async function charger() {
       action: filtreAction.value || undefined,
       email: filtreEmail.value || undefined,
       page: page.value,
+      page_size: parPage,
     })
     entrees.value = reponse.results
     pages.value = Math.max(1, Math.ceil(reponse.count / parPage))

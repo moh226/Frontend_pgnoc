@@ -21,7 +21,6 @@ export function enregistrerGestionJwt(gestion: GestionJwt): void {
 export const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
   headers: {
-    'Content-Type': 'application/json',
     Accept: 'application/json',
   },
 })

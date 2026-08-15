@@ -31,7 +31,11 @@ async function charger() {
   chargement.value = true
   erreur.value = ''
   try {
-    const reponse = await listeDossiers({ statut: filtresStatut.value, page: page.value })
+    const reponse = await listeDossiers({
+      statut: filtresStatut.value,
+      page: page.value,
+      page_size: parPage,
+    })
     liste.value = reponse.results
     total.value = reponse.count
     pages.value = Math.max(1, Math.ceil(reponse.count / parPage))

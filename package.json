@@ -12,6 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@lucide/vue": "^1.31.0",
     "@mdi/font": "^7.4.47",
     "axios": "^1.19.0",
     "pinia": "^4.0.3",

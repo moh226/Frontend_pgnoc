@@ -77,6 +77,16 @@ onMounted(() => void notifications.charger())
           </template>
         </v-list-item>
       </v-list>
+      <div v-if="notifications.aPlus" class="text-center pa-4">
+        <v-btn
+          color="primary"
+          variant="tonal"
+          :loading="notifications.chargementPlus"
+          @click="notifications.chargerPlus()"
+        >
+          <v-icon icon="mdi-chevron-down" class="mr-1" /> Charger plus
+        </v-btn>
+      </div>
     </v-card>
   </v-container>
 </template>

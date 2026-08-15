@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from '@lucide/vue'
 
 import { extraireMessageErreur } from '@/api/client'
 import { redirectionPourRole } from '@/config/navigation'
@@ -58,9 +59,6 @@ function continuerAvecGoogle() {
 
 <template>
   <v-container fluid class="auth-page pa-0">
-    <div ref="orbeUn" class="orb orbe-un" />
-    <div ref="orbeDeux" class="orb orbe-deux" />
-
     <v-row class="auth-split ma-0" no-gutters>
       <v-col cols="12" md="6" class="auth-visuel d-none d-md-flex align-center justify-center">
         <div class="contenu-visuel">
@@ -73,11 +71,11 @@ function continuerAvecGoogle() {
             Protégez vos actifs avec une technologie de pointe et une gestion de patrimoine
             exclusive.
           </p>
-          <div class="carte-verre">
-            <v-icon icon="mdi-verified-user" color="primary" size="24" />
+          <div class="carte-pro glass-panel mt-8">
+            <ShieldCheck class="text-primary mr-4" :size="32" />
             <div>
-              <p class="carte-titre">Conformité KYC Temps Réel</p>
-              <p class="carte-sous-titre">Actif • Session Sécurisée</p>
+              <p class="carte-titre">Conformité KYC</p>
+              <p class="carte-sous-titre">Session 256-bit Sécurisée</p>
             </div>
           </div>
         </div>
@@ -88,16 +86,16 @@ function continuerAvecGoogle() {
           <header class="entete-forme">
             <div class="logo-bar">
               <span class="logo-icone">
-                <v-icon icon="mdi-lock" color="primary" size="26" />
+                <Lock class="text-primary" :size="24" />
               </span>
               <span class="logo-texte font-display">PGNOC-TI</span>
             </div>
-            <a class="lien-aide" href="#">Aide</a>
+            <a class="lien-aide" href="#">Support VIP</a>
           </header>
 
           <div class="titre-forme">
-            <h2>Bienvenue</h2>
-            <p>Veuillez entrer vos identifiants pour accéder à votre coffre-fort numérique.</p>
+            <h2 class="font-display">Accès Espace Sécurisé</h2>
+            <p>Authentifiez-vous pour accéder à vos portefeuilles et demandes.</p>
           </div>
 
           <v-alert
@@ -127,7 +125,7 @@ function continuerAvecGoogle() {
                   hide-details
                   required
                 />
-                <v-icon icon="mdi-email-outline" class="icone-champ" size="16" />
+                <Mail class="icone-champ" :size="20" />
               </div>
             </div>
 
@@ -153,10 +151,8 @@ function continuerAvecGoogle() {
                   "
                   @click="afficherMotDePasse = !afficherMotDePasse"
                 >
-                  <v-icon
-                    :icon="afficherMotDePasse ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-                    size="16"
-                  />
+                  <EyeOff v-if="afficherMotDePasse" :size="20" />
+                  <Eye v-else :size="20" />
                 </button>
               </div>
               <div class="ligne-oubli">
@@ -164,9 +160,9 @@ function continuerAvecGoogle() {
               </div>
             </div>
 
-            <v-btn color="primary" class="btn-principal" type="submit" :loading="enCours" block>
+            <v-btn color="primary" class="btn-principal hover-lift" type="submit" :loading="enCours" block>
               Se connecter
-              <v-icon icon="mdi-arrow-right" size="16" class="ml-2" />
+              <ArrowRight :size="18" class="ml-2" />
             </v-btn>
 
             <div class="separateur">
@@ -211,42 +207,6 @@ function continuerAvecGoogle() {
   position: relative;
 }
 
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  opacity: 0.15;
-  animation: flottement 20s ease-in-out infinite alternate;
-  transition: transform 0.2s ease-out;
-}
-
-.orbe-un {
-  width: 400px;
-  height: 400px;
-  top: -80px;
-  left: -80px;
-  background-color: rgb(var(--v-theme-primary));
-}
-
-.orbe-deux {
-  width: 300px;
-  height: 300px;
-  bottom: 40px;
-  right: 40px;
-  background-color: rgb(var(--v-theme-secondary));
-  animation-delay: -5s;
-}
-
-@keyframes flottement {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(100px, 50px) scale(1.2);
-  }
-}
-
 .auth-split {
   position: relative;
   z-index: 1;
@@ -254,7 +214,8 @@ function continuerAvecGoogle() {
 }
 
 .auth-visuel {
-  border-right: 1px solid rgba(var(--v-theme-outline), 0.15);
+  background-color: rgb(var(--v-theme-surface-variant));
+  border-right: 1px solid rgb(var(--v-theme-outline-variant));
 }
 
 .contenu-visuel {
@@ -292,38 +253,19 @@ function continuerAvecGoogle() {
   margin-top: 16px;
 }
 
-.carte-verre {
-  position: fixed;
-  right: 40px;
-  bottom: 48px;
+.carte-pro {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: rgba(var(--v-theme-surface), 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-primary), 0.15);
   border-radius: 12px;
   padding: 16px;
   max-width: 280px;
-  animation: pulsation 2.5s ease-in-out infinite;
 }
 
-@keyframes pulsation {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.75;
-  }
-}
-
-.carte-verre .v-icon {
+.carte-pro .v-icon {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(var(--v-theme-primary), 0.15);
+  background: rgba(var(--v-theme-primary), 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,7 +287,7 @@ function continuerAvecGoogle() {
 }
 
 .auth-forme {
-  background-color: rgba(var(--v-theme-background), 0.6);
+  background-color: rgb(var(--v-theme-surface));
   padding: 40px 32px 24px;
 }
 
@@ -422,15 +364,17 @@ function continuerAvecGoogle() {
 .champ-doux {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.3);
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
+  background-color: rgb(var(--v-theme-surface-variant));
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 6px;
+  padding: 0 8px;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
 .champ-doux:focus-within {
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.15);
-  border-bottom: 1px solid rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-surface));
 }
 
 .champ-doux :deep(.v-text-field) {
@@ -439,7 +383,9 @@ function continuerAvecGoogle() {
 }
 
 .champ-doux :deep(.v-field) {
-  background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .champ-doux :deep(.v-field__field input) {
@@ -532,15 +478,13 @@ function continuerAvecGoogle() {
   border-radius: 8px;
   color: rgb(var(--v-theme-on-surface));
   border: 1px solid rgba(var(--v-theme-outline), 0.3);
-  background: rgba(var(--v-theme-surface), 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgb(var(--v-theme-surface-variant));
   text-transform: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-google:hover {
-  background: rgba(var(--v-theme-on-surface), 0.08);
+  background: rgb(var(--v-theme-outline));
 }
 
 .btn-google:active {

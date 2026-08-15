@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useTheme } from 'vuetify'
+import { Moon, Sun } from '@lucide/vue'
 
 import { LIBELLES_ROLE, NAVIGATION_PAR_ROLE } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth'
@@ -9,8 +11,13 @@ import { useNotificationsStore } from '@/stores/notifications'
 const router = useRouter()
 const auth = useAuthStore()
 const notifications = useNotificationsStore()
+const theme = useTheme()
 
 const navigation = NAVIGATION_PAR_ROLE[auth.role ?? 'INVESTISSEUR'] ?? []
+
+function toggleTheme() {
+  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+}
 
 function deconnecter() {
   auth.deconnecter()
@@ -25,7 +32,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-navigation-drawer permanent>
+  <v-navigation-drawer permanent class="nav-institutionnelle" color="surface">
+    <div class="px-4 py-6 d-flex align-center">
+      <!-- Un espace pour le logo plus tard, pour l'instant PGNOC-TI text -->
+      <h2 class="font-display font-weight-black text-primary mx-auto">PGNOC-TI</h2>
+    </div>
     <v-list nav>
       <v-list-item
         v-for="item in navigation"
@@ -34,6 +45,8 @@ onMounted(() => {
         :prepend-icon="item.icone"
         :title="item.titre"
         exact
+        color="primary"
+        class="mb-1 rounded-lg"
       >
         <template v-if="item.vers.endsWith('/notifications')" #append>
           <v-badge
@@ -47,15 +60,20 @@ onMounted(() => {
     </v-list>
   </v-navigation-drawer>
 
-  <v-app-bar flat>
-    <v-app-bar-title>PGNOC-TI</v-app-bar-title>
+  <v-app-bar flat color="background" class="border-b">
     <v-spacer />
+    
+    <v-btn icon @click="toggleTheme" class="mr-2" variant="text" color="on-background">
+      <Sun v-if="theme.global.current.value.dark" :size="20" />
+      <Moon v-else :size="20" />
+    </v-btn>
+
     <v-chip v-if="auth.role" variant="tonal" color="primary" class="mr-2">
       {{ LIBELLES_ROLE[auth.role] }}
     </v-chip>
     <v-menu location="bottom end">
       <template #activator="{ props }">
-        <v-btn variant="text" v-bind="props" prepend-icon="mdi-account-circle">
+        <v-btn variant="text" v-bind="props" prepend-icon="mdi-account-circle" color="on-background">
           {{ auth.nomComplet || auth.utilisateur?.email }}
         </v-btn>
       </template>
@@ -65,7 +83,17 @@ onMounted(() => {
     </v-menu>
   </v-app-bar>
 
-  <v-main>
+  <v-main class="bg-background">
     <router-view />
   </v-main>
 </template>
+
+<style scoped>
+/* Les styles sombres forcés sont retirés, on s'appuie sur le système de thème de Vuetify */
+.nav-institutionnelle {
+  border-right: 1px solid rgb(var(--v-theme-outline-variant)) !important;
+}
+.border-b {
+  border-bottom: 1px solid rgb(var(--v-theme-outline-variant)) !important;
+}
+</style>

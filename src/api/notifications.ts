@@ -3,9 +3,15 @@ import type { CompteNonLues, NotificationItem, ResultatPagines } from '@/types'
 
 export async function listeNotifications(
   seulementNonLues = false,
+  page = 1,
+  page_size = 20,
 ): Promise<ResultatPagines<NotificationItem>> {
   const { data } = await api.get<ResultatPagines<NotificationItem>>('/notifications/', {
-    params: seulementNonLues ? { non_lues: 'true' } : undefined,
+    params: {
+      page,
+      page_size,
+      ...(seulementNonLues ? { non_lues: 'true' } : {}),
+    },
   })
   return data
 }

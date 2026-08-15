@@ -9,6 +9,9 @@ export const useNotificationsStore = defineStore('notifications', {
     notifications: [] as NotificationItem[],
     compteNonLues: 0,
     chargement: false,
+    chargementPlus: false,
+    pageCourante: 0,
+    aPlus: false,
     erreur: '',
   }),
 
@@ -17,12 +20,31 @@ export const useNotificationsStore = defineStore('notifications', {
       this.chargement = true
       this.erreur = ''
       try {
-        const reponse = await listeNotifications()
+        const reponse = await listeNotifications(false, 1)
         this.notifications = reponse.results
+        this.pageCourante = 1
+        this.aPlus = Boolean(reponse.next)
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
       } finally {
         this.chargement = false
+      }
+    },
+
+    async chargerPlus() {
+      if (this.chargementPlus || !this.aPlus) return
+      this.chargementPlus = true
+      this.erreur = ''
+      try {
+        const reponse = await listeNotifications(false, this.pageCourante + 1)
+        const dejaPresentes = new Set(this.notifications.map((n) => n.id))
+        this.notifications.push(...reponse.results.filter((n) => !dejaPresentes.has(n.id)))
+        this.pageCourante += 1
+        this.aPlus = Boolean(reponse.next)
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+      } finally {
+        this.chargementPlus = false
       }
     },
 

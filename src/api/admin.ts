@@ -81,6 +81,7 @@ export interface ParametresJournal {
   date_debut?: string
   date_fin?: string
   page?: number
+  page_size?: number
 }
 
 export async function journalAudit(

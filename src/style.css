@@ -6,8 +6,55 @@ body {
     -apple-system,
     sans-serif;
   background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-on-surface));
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.font-display {
-  font-family: 'Hanken Grotesk', 'Inter', sans-serif;
+.font-display, 
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6, 
+.v-card-title, .v-toolbar-title {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+}
+
+/* Animations de transition pour Vuetify */
+.v-application {
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+}
+.v-card, .v-sheet, .v-app-bar, .v-navigation-drawer {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* -------------------------------------
+   UTILITIES PROFESSIONNELS & INSTITUTIONNELS
+   ------------------------------------- */
+
+.glass-panel {
+  /* On garde le nom de classe pour ne pas tout casser, mais on retire l'effet "verre" */
+  background: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgb(var(--v-theme-outline)) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 8px;
+}
+
+.glass-input :deep(.v-field) {
+  /* Idem : on garde la classe mais avec un style input moderne plat */
+  background: rgb(var(--v-theme-surface-variant)) !important;
+  border: 1px solid rgb(var(--v-theme-outline)) !important;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.glass-input :deep(.v-field--focused) {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary)) !important;
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+/* Micro-animations douces pour un rendu pro */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
 }

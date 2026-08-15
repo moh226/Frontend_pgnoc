@@ -5,7 +5,7 @@ export interface UtilisateurPublic {
   email: string
   prenom: string
   nom: string
-  role: string
+  role: RoleCode
   date_joined: string
 }
 
@@ -104,6 +104,7 @@ export interface SgiPublique {
 export interface ConventionInfo {
   titre: string
   signe_requis: boolean
+  fichier_url: string | null
 }
 
 export interface FicheSgi extends SgiPublique {

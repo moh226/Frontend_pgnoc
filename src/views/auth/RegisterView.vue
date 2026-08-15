@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ArrowRight, Eye, EyeOff, Mail, UserPlus } from '@lucide/vue'
 
 import { extraireMessageErreur } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
@@ -50,15 +51,12 @@ async function sInscrire() {
 
 <template>
   <v-container fluid class="auth-page pa-0">
-    <div class="orb orbe-un" />
-    <div class="orb orbe-deux" />
-
     <div class="auth-zone">
-      <v-card class="carte-forme" flat>
+      <v-card class="carte-forme" flat border>
         <header class="entete-forme">
           <div class="logo-bar">
             <span class="logo-icone">
-              <v-icon icon="mdi-account-plus" color="primary" size="26" />
+              <UserPlus class="text-primary" :size="24" />
             </span>
             <span class="logo-texte font-display">PGNOC-TI</span>
           </div>
@@ -66,7 +64,7 @@ async function sInscrire() {
         </header>
 
         <div class="titre-forme">
-          <h2>Créer un compte investisseur</h2>
+          <h2 class="font-display">Créer un compte investisseur</h2>
           <p>L'inscription est ouverte aux investisseurs uniquement.</p>
         </div>
 
@@ -90,7 +88,7 @@ async function sInscrire() {
                 :error-messages="erreurs.email"
                 required
               />
-              <v-icon icon="mdi-email-outline" class="icone-champ" size="16" />
+              <Mail class="icone-champ" :size="20" />
             </div>
           </div>
 
@@ -152,10 +150,8 @@ async function sInscrire() {
                 "
                 @click="afficherMotDePasse = !afficherMotDePasse"
               >
-                <v-icon
-                  :icon="afficherMotDePasse ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-                  size="16"
-                />
+                <EyeOff v-if="afficherMotDePasse" :size="20" />
+                <Eye v-else :size="20" />
               </button>
             </div>
           </div>
@@ -180,9 +176,9 @@ async function sInscrire() {
             </div>
           </div>
 
-          <v-btn color="primary" class="btn-principal" type="submit" :loading="enCours" block>
+          <v-btn color="primary" class="btn-principal hover-lift" type="submit" :loading="enCours" block>
             S'inscrire
-            <v-icon icon="mdi-arrow-right" size="16" class="ml-2" />
+            <ArrowRight :size="18" class="ml-2" />
           </v-btn>
         </v-form>
       </v-card>
@@ -202,41 +198,6 @@ async function sInscrire() {
   justify-content: center;
 }
 
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  z-index: 0;
-  opacity: 0.12;
-  animation: flottement 20s ease-in-out infinite alternate;
-}
-
-.orbe-un {
-  width: 380px;
-  height: 380px;
-  top: -100px;
-  left: -100px;
-  background-color: rgb(var(--v-theme-primary));
-}
-
-.orbe-deux {
-  width: 320px;
-  height: 320px;
-  bottom: -80px;
-  right: -80px;
-  background-color: rgb(var(--v-theme-secondary));
-  animation-delay: -5s;
-}
-
-@keyframes flottement {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(100px, 50px) scale(1.2);
-  }
-}
-
 .auth-zone {
   position: relative;
   z-index: 1;
@@ -246,12 +207,9 @@ async function sInscrire() {
 }
 
 .carte-forme {
-  background: rgba(var(--v-theme-surface), 0.4);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-theme-outline), 0.2);
   border-radius: 16px;
   padding: 32px;
+  background-color: rgb(var(--v-theme-surface));
 }
 
 .entete-forme {
@@ -322,15 +280,17 @@ async function sInscrire() {
 .champ-doux {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.3);
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
+  background-color: rgb(var(--v-theme-surface-variant));
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 6px;
+  padding: 0 8px;
+  transition: box-shadow 0.2s, border-color 0.2s;
 }
 
 .champ-doux:focus-within {
-  box-shadow: 0 0 15px rgba(var(--v-theme-primary), 0.15);
-  border-bottom: 1px solid rgb(var(--v-theme-primary));
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-surface));
 }
 
 .champ-doux :deep(.v-text-field) {
@@ -339,7 +299,9 @@ async function sInscrire() {
 }
 
 .champ-doux :deep(.v-field) {
-  background: transparent;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .champ-doux :deep(.v-field__field input) {

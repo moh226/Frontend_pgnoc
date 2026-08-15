@@ -14,7 +14,7 @@ export const LIBELLES_ROLE: Record<RoleCode, string> = {
 }
 
 export const ROUTES_PAR_ROLE: Record<RoleCode, string> = {
-  INVESTISSEUR: '/espace-investisseur',
+  INVESTISSEUR: '/onboarding-sgi',
   AGENT_SGI: '/espace-agent',
   ADMIN_SGI: '/admin-sgi',
   ADMIN_GENERAL: '/admin-general',

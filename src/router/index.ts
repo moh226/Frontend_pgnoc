@@ -35,6 +35,12 @@ const router = createRouter({
       component: () => import('@/views/AccesRefuseView.vue'),
     },
     {
+      path: '/onboarding-sgi',
+      name: 'onboarding-sgi',
+      component: () => import('@/views/investisseur/ChoixSgiView.vue'),
+      meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
+    },
+    {
       path: '/espace-investisseur',
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
@@ -54,6 +60,7 @@ const router = createRouter({
           name: 'investisseur-dossier-detail',
           component: () => import('@/views/investisseur/DossierDetailView.vue'),
         },
+
         {
           path: 'notifications',
           name: 'investisseur-notifications',
@@ -167,6 +174,12 @@ const router = createRouter({
           component: () => import('@/views/investisseur/NotificationsView.vue'),
         },
       ],
+    },
+    {
+      path: '/dossier-edition/:id',
+      name: 'investisseur-dossier-edition',
+      component: () => import('@/views/investisseur/DossierEditionView.vue'),
+      meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
     },
     {
       path: '/',

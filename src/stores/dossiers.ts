@@ -6,6 +6,7 @@ import {
   listeDossiers,
   prendreEnCharge,
   rejeterDossier,
+  soumettreDossier,
   validerDossier,
 } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
@@ -46,8 +47,18 @@ export const useDossiersStore = defineStore('dossiers', {
       this.chargement = true
       this.erreur = ''
       try {
-        const reponse = await listeDossiers()
-        this.liste = reponse.results
+        // Les tableaux de bord comptent par statut sur la liste entière :
+        // on charge toutes les pages (page_size max, bornée à 5000 items).
+        const elements: DossierListeItem[] = []
+        let page = 1
+        let reponse = await listeDossiers({ page, page_size: 100 })
+        elements.push(...reponse.results)
+        while (reponse.next && page < 50) {
+          page += 1
+          reponse = await listeDossiers({ page, page_size: 100 })
+          elements.push(...reponse.results)
+        }
+        this.liste = elements
         this.total = reponse.count
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
@@ -100,6 +111,17 @@ export const useDossiersStore = defineStore('dossiers', {
       this.erreur = ''
       try {
         this.detail = decision === 'valider' ? await validerDossier(id) : await rejeterDossier(id, motif)
+        await this.chargerListe()
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+        throw cause
+      }
+    },
+
+    async soumettre(id: string) {
+      this.erreur = ''
+      try {
+        this.detail = await soumettreDossier(id)
         await this.chargerListe()
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
