@@ -1,11 +1,30 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
-import { Building2, History, Eye, Plus, CloudUpload, BadgeCheck, Target, Layers, Users, MapPin, Trophy, Phone } from '@lucide/vue'
+import {
+  Building2,
+  History,
+  Eye,
+  Plus,
+  CloudUpload,
+  BadgeCheck,
+  Target,
+  Layers,
+  Users,
+  MapPin,
+  Trophy,
+  Phone,
+} from '@lucide/vue'
 
 import { presentationSgi, publierPresentation } from '@/api/sgiAdmin'
 import { extraireMessageErreur } from '@/api/client'
 import SgiPresentationRenderer from '@/components/SgiPresentationRenderer.vue'
-import type { PresentationActivite, PresentationMembre, PresentationReference, PresentationSgi, PresentationStructuree } from '@/types'
+import type {
+  PresentationActivite,
+  PresentationMembre,
+  PresentationReference,
+  PresentationSgi,
+  PresentationStructuree,
+} from '@/types'
 import { formaterDate } from '@/utils/format'
 
 const presentation = ref<PresentationSgi | null>(null)
@@ -14,9 +33,19 @@ const erreur = ref('')
 const succes = ref('')
 const envoiEnCours = ref(false)
 
-interface LigneActivite { titre: string; description: string }
-interface LigneMembre { nom: string; fonction: string }
-interface LigneReference { titre: string; annee: string; description: string }
+interface LigneActivite {
+  titre: string
+  description: string
+}
+interface LigneMembre {
+  nom: string
+  fonction: string
+}
+interface LigneReference {
+  titre: string
+  annee: string
+  description: string
+}
 
 const formulaire = reactive({
   forme_sociale: '',
@@ -62,10 +91,21 @@ const apercu = computed<PresentationStructuree>(() => ({
 const rienRenseigne = computed(() => {
   const f = formulaire
   return !(
-    f.forme_sociale || f.date_creation_societe || f.capital_social ||
-    f.numero_agrement || f.date_agrement || f.mission || f.vision ||
-    f.ancrage_regional || f.adresse || f.telephone || f.email_contact || f.site_web ||
-    f.activites.length || f.membres.length || f.references.length
+    f.forme_sociale ||
+    f.date_creation_societe ||
+    f.capital_social ||
+    f.numero_agrement ||
+    f.date_agrement ||
+    f.mission ||
+    f.vision ||
+    f.ancrage_regional ||
+    f.adresse ||
+    f.telephone ||
+    f.email_contact ||
+    f.site_web ||
+    f.activites.length ||
+    f.membres.length ||
+    f.references.length
   )
 })
 
@@ -90,7 +130,11 @@ async function charger() {
     formulaire.site_web = p.site_web
     formulaire.activites = p.activites.map(({ titre, description }) => ({ titre, description }))
     formulaire.membres = p.membres.map(({ nom, fonction }) => ({ nom, fonction }))
-    formulaire.references = p.references.map(({ titre, annee, description }) => ({ titre, annee, description }))
+    formulaire.references = p.references.map(({ titre, annee, description }) => ({
+      titre,
+      annee,
+      description,
+    }))
   } catch (cause) {
     erreur.value = extraireMessageErreur(cause)
   } finally {
@@ -133,7 +177,7 @@ onMounted(() => void charger())
         Présentation SGI
       </h1>
       <p class="text-body-1 text-medium-emphasis mb-0">
-        Personnalisez la page « À propos » affichée aux investisseurs lors du choix de votre SGI.
+        Personnalisez la page de presentation affichée aux investisseurs lors du choix de votre SGI.
       </p>
     </div>
 
@@ -149,149 +193,329 @@ onMounted(() => void charger())
     <template v-else>
       <v-row no-gutters>
         <v-col cols="12" lg="7">
-      <v-card class="rounded-xl elevation-2 overflow-hidden mb-6 mb-lg-0">
-        <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
-          <span class="font-weight-bold">Page « À propos » de votre SGI</span>
-          <v-spacer />
-          <div v-if="presentation?.date_publication" class="text-caption text-medium-emphasis d-flex align-center mr-4">
-            <History :size="14" class="mr-1" />
-            Mise à jour : {{ formaterDate(presentation.date_publication) }}
-          </div>
-          <v-btn size="small" variant="tonal" color="info" class="d-lg-none" @click="apercuOuvert = true">
-            <Eye :size="15" class="mr-1" /> Aperçu
-          </v-btn>
-        </v-card-title>
+          <v-card class="rounded-xl elevation-2 overflow-hidden mb-6 mb-lg-0">
+            <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
+              <span class="font-weight-bold">Présentation de votre SGI</span>
+              <v-spacer />
+              <div
+                v-if="presentation?.date_publication"
+                class="text-caption text-medium-emphasis d-flex align-center mr-4"
+              >
+                <History :size="14" class="mr-1" />
+                Mise à jour : {{ formaterDate(presentation.date_publication) }}
+              </div>
+              <v-btn
+                size="small"
+                variant="tonal"
+                color="info"
+                class="d-lg-none"
+                @click="apercuOuvert = true"
+              >
+                <Eye :size="15" class="mr-1" /> Aperçu
+              </v-btn>
+            </v-card-title>
 
-        <v-card-text class="pa-6">
-          <!-- Identité juridique -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Building2 :size="17" class="mr-2" /> Identité juridique
-          </h2>
-          <v-row class="mb-6">
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.forme_sociale" label="Forme sociale (ex : SA)" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.date_creation_societe" label="Date de création" variant="outlined" type="date" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.capital_social" label="Capital social" variant="outlined" density="comfortable" placeholder="500 000 000 FCFA" hide-details="auto" />
-            </v-col>
-          </v-row>
+            <v-card-text class="pa-6">
+              <!-- Identité juridique -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Building2 :size="17" class="mr-2" /> Identité juridique
+              </h2>
+              <v-row class="mb-6">
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.forme_sociale"
+                    label="Forme sociale (ex : SA)"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.date_creation_societe"
+                    label="Date de création"
+                    variant="outlined"
+                    type="date"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.capital_social"
+                    label="Capital social"
+                    variant="outlined"
+                    density="comfortable"
+                    placeholder="500 000 000 FCFA"
+                    hide-details="auto"
+                  />
+                </v-col>
+              </v-row>
 
-          <!-- Agrément réglementaire -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <BadgeCheck :size="17" class="mr-2" /> Agrément réglementaire
-          </h2>
-          <v-row class="mb-6">
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.numero_agrement" label="Numéro d'agrément" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.date_agrement" label="Date d'agrément" variant="outlined" type="date" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-text-field v-model="formulaire.autorite_agrement" label="Autorité d'agrément" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-          </v-row>
+              <!-- Agrément réglementaire -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <BadgeCheck :size="17" class="mr-2" /> Agrément réglementaire
+              </h2>
+              <v-row class="mb-6">
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.numero_agrement"
+                    label="Numéro d'agrément"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.date_agrement"
+                    label="Date d'agrément"
+                    variant="outlined"
+                    type="date"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="formulaire.autorite_agrement"
+                    label="Autorité d'agrément"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+              </v-row>
 
-          <!-- Mission / Vision -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Target :size="17" class="mr-2" /> Mission &amp; vision
-          </h2>
-          <v-row class="mb-6">
-            <v-col cols="12" md="6">
-              <v-textarea v-model="formulaire.mission" label="Mission" variant="outlined" rows="3" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-textarea v-model="formulaire.vision" label="Vision" variant="outlined" rows="3" hide-details="auto" />
-            </v-col>
-          </v-row>
+              <!-- Mission / Vision -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Target :size="17" class="mr-2" /> Mission &amp; vision
+              </h2>
+              <v-row class="mb-6">
+                <v-col cols="12" md="6">
+                  <v-textarea
+                    v-model="formulaire.mission"
+                    label="Mission"
+                    variant="outlined"
+                    rows="3"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-textarea
+                    v-model="formulaire.vision"
+                    label="Vision"
+                    variant="outlined"
+                    rows="3"
+                    hide-details="auto"
+                  />
+                </v-col>
+              </v-row>
 
-          <!-- Domaines d'activité -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Layers :size="17" class="mr-2" /> Domaines d'activité
-          </h2>
-          <div v-for="(activite, i) in formulaire.activites" :key="i" class="d-flex align-start mb-3 gap-2">
-            <v-text-field v-model="activite.titre" label="Pôle (ex : Intermédiation / Investissement)" variant="outlined" density="comfortable" class="flex-grow-1" hide-details="auto" />
-            <v-text-field v-model="activite.description" label="Description" variant="outlined" density="comfortable" class="flex-grow-1" hide-details="auto" />
-            <v-btn variant="text" color="error" icon="mdi-delete-outline" @click="retirerLigne(formulaire.activites, i)" />
-          </div>
-          <v-btn variant="tonal" color="primary" size="small" class="mb-6" @click="ajouterLigne(formulaire.activites)">
-            <Plus :size="15" class="mr-1" /> Ajouter un pôle
-          </v-btn>
+              <!-- Domaines d'activité -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Layers :size="17" class="mr-2" /> Domaines d'activité
+              </h2>
+              <div
+                v-for="(activite, i) in formulaire.activites"
+                :key="i"
+                class="d-flex align-start mb-3 gap-2"
+              >
+                <v-text-field
+                  v-model="activite.titre"
+                  label="Pôle (ex : Intermédiation / Investissement)"
+                  variant="outlined"
+                  density="comfortable"
+                  class="flex-grow-1"
+                  hide-details="auto"
+                />
+                <v-text-field
+                  v-model="activite.description"
+                  label="Description"
+                  variant="outlined"
+                  density="comfortable"
+                  class="flex-grow-1"
+                  hide-details="auto"
+                />
+                <v-btn
+                  variant="text"
+                  color="error"
+                  icon="mdi-delete-outline"
+                  @click="retirerLigne(formulaire.activites, i)"
+                />
+              </div>
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="mb-6"
+                @click="ajouterLigne(formulaire.activites)"
+              >
+                <Plus :size="15" class="mr-1" /> Ajouter un pôle
+              </v-btn>
 
-          <!-- Gouvernance et équipe -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Users :size="17" class="mr-2" /> Gouvernance et équipe
-          </h2>
-          <div v-for="(membre, i) in formulaire.membres" :key="i" class="d-flex align-start mb-3 gap-2">
-            <v-text-field v-model="membre.nom" label="Nom" variant="outlined" density="comfortable" class="flex-grow-1" hide-details="auto" />
-            <v-text-field v-model="membre.fonction" label="Fonction" variant="outlined" density="comfortable" class="flex-grow-1" hide-details="auto" />
-            <v-btn variant="text" color="error" icon="mdi-delete-outline" @click="retirerLigne(formulaire.membres, i)" />
-          </div>
-          <v-btn variant="tonal" color="primary" size="small" class="mb-6" @click="ajouterLigne(formulaire.membres)">
-            <Plus :size="15" class="mr-1" /> Ajouter un dirigeant
-          </v-btn>
+              <!-- Gouvernance et équipe -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Users :size="17" class="mr-2" /> Gouvernance et équipe
+              </h2>
+              <div
+                v-for="(membre, i) in formulaire.membres"
+                :key="i"
+                class="d-flex align-start mb-3 gap-2"
+              >
+                <v-text-field
+                  v-model="membre.nom"
+                  label="Nom"
+                  variant="outlined"
+                  density="comfortable"
+                  class="flex-grow-1"
+                  hide-details="auto"
+                />
+                <v-text-field
+                  v-model="membre.fonction"
+                  label="Fonction"
+                  variant="outlined"
+                  density="comfortable"
+                  class="flex-grow-1"
+                  hide-details="auto"
+                />
+                <v-btn
+                  variant="text"
+                  color="error"
+                  icon="mdi-delete-outline"
+                  @click="retirerLigne(formulaire.membres, i)"
+                />
+              </div>
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="mb-6"
+                @click="ajouterLigne(formulaire.membres)"
+              >
+                <Plus :size="15" class="mr-1" /> Ajouter un dirigeant
+              </v-btn>
 
-          <!-- Ancrage régional -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <MapPin :size="17" class="mr-2" /> Ancrage régional
-          </h2>
-          <v-textarea v-model="formulaire.ancrage_regional" label="Rattachement UEMOA / BRVM, présence pays membres…" variant="outlined" rows="2" class="mb-6" hide-details="auto" />
+              <!-- Ancrage régional -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <MapPin :size="17" class="mr-2" /> Ancrage régional
+              </h2>
+              <v-textarea
+                v-model="formulaire.ancrage_regional"
+                label="Rattachement UEMOA / BRVM, présence pays membres…"
+                variant="outlined"
+                rows="2"
+                class="mb-6"
+                hide-details="auto"
+              />
 
-          <!-- Références -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Trophy :size="17" class="mr-2" /> Références et réalisations
-          </h2>
-          <div v-for="(reference, i) in formulaire.references" :key="i" class="d-flex align-start mb-3 gap-2">
-            <v-text-field v-model="reference.titre" label="Réalisation / distinction" variant="outlined" density="comfortable" class="flex-grow-1" hide-details="auto" />
-            <v-text-field v-model="reference.annee" label="Année" variant="outlined" density="comfortable" style="max-width: 130px;" hide-details="auto" />
-            <v-btn variant="text" color="error" icon="mdi-delete-outline" @click="retirerLigne(formulaire.references, i)" />
-          </div>
-          <v-btn variant="tonal" color="primary" size="small" class="mb-6" @click="ajouterLigne(formulaire.references)">
-            <Plus :size="15" class="mr-1" /> Ajouter une référence
-          </v-btn>
+              <!-- Références -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Trophy :size="17" class="mr-2" /> Références et réalisations
+              </h2>
+              <div
+                v-for="(reference, i) in formulaire.references"
+                :key="i"
+                class="d-flex align-start mb-3 gap-2"
+              >
+                <v-text-field
+                  v-model="reference.titre"
+                  label="Réalisation / distinction"
+                  variant="outlined"
+                  density="comfortable"
+                  class="flex-grow-1"
+                  hide-details="auto"
+                />
+                <v-text-field
+                  v-model="reference.annee"
+                  label="Année"
+                  variant="outlined"
+                  density="comfortable"
+                  style="max-width: 130px"
+                  hide-details="auto"
+                />
+                <v-btn
+                  variant="text"
+                  color="error"
+                  icon="mdi-delete-outline"
+                  @click="retirerLigne(formulaire.references, i)"
+                />
+              </div>
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="mb-6"
+                @click="ajouterLigne(formulaire.references)"
+              >
+                <Plus :size="15" class="mr-1" /> Ajouter une référence
+              </v-btn>
 
-          <!-- Contact -->
-          <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
-            <Phone :size="17" class="mr-2" /> Contact et accès
-          </h2>
-          <v-row class="mb-6">
-            <v-col cols="12" md="6">
-              <v-text-field v-model="formulaire.adresse" label="Adresse" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="formulaire.telephone" label="Téléphone" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="formulaire.email_contact" label="Email de contact" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field v-model="formulaire.site_web" label="Site web" variant="outlined" density="comfortable" hide-details="auto" />
-            </v-col>
-          </v-row>
+              <!-- Contact -->
+              <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
+                <Phone :size="17" class="mr-2" /> Contact et accès
+              </h2>
+              <v-row class="mb-6">
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formulaire.adresse"
+                    label="Adresse"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formulaire.telephone"
+                    label="Téléphone"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formulaire.email_contact"
+                    label="Email de contact"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formulaire.site_web"
+                    label="Site web"
+                    variant="outlined"
+                    density="comfortable"
+                    hide-details="auto"
+                  />
+                </v-col>
+              </v-row>
 
-          <v-divider class="my-4" />
+              <v-divider class="my-4" />
 
-          <div class="d-flex justify-end">
-            <v-btn
-              color="primary"
-              variant="flat"
-              size="large"
-              class="font-weight-bold px-8 hover-lift"
-              :loading="envoiEnCours"
-              :disabled="rienRenseigne"
-              @click="publier"
-            >
-              <CloudUpload :size="18" class="mr-2" /> Publier la présentation
-            </v-btn>
-          </div>
+              <div class="d-flex justify-end">
+                <v-btn
+                  color="primary"
+                  variant="flat"
+                  size="large"
+                  class="font-weight-bold px-8 hover-lift"
+                  :loading="envoiEnCours"
+                  :disabled="rienRenseigne"
+                  @click="publier"
+                >
+                  <CloudUpload :size="18" class="mr-2" /> Publier la présentation
+                </v-btn>
+              </div>
+              <!--
           <p class="text-caption text-medium-emphasis text-right mt-2">
             La sauvegarde rend immédiatement la page visible par les investisseurs.
           </p>
-        </v-card-text>
-      </v-card>
+          -->
+            </v-card-text>
+          </v-card>
         </v-col>
 
         <v-col cols="12" lg="5" class="d-none d-lg-block pl-lg-5">
@@ -334,7 +558,9 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="pa-5">
           <v-spacer />
-          <v-btn color="primary" variant="flat" @click="apercuOuvert = false">Fermer l'aperçu</v-btn>
+          <v-btn color="primary" variant="flat" @click="apercuOuvert = false"
+            >Fermer l'aperçu</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -360,7 +586,9 @@ onMounted(() => void charger())
 }
 
 .hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 .hover-lift:hover {
   transform: translateY(-2px);
@@ -383,7 +611,12 @@ onMounted(() => void charger())
 }
 
 @keyframes pulsation {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 </style>

@@ -9,7 +9,9 @@ function decoderPayload(access: string): PayloadJwt | null {
   try {
     const segment = access.split('.')[1]
     if (!segment) return null
-    return JSON.parse(atob(segment)) as PayloadJwt
+    const standard = segment.replace(/-/g, '+').replace(/_/g, '/')
+    const rembourrage = (4 - (standard.length % 4)) % 4
+    return JSON.parse(atob(standard + '='.repeat(rembourrage))) as PayloadJwt
   } catch {
     return null
   }

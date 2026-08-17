@@ -215,17 +215,17 @@ const contact = computed(() => {
         <h3 class="text-h6 font-display font-weight-bold mb-0">Contact et accès</h3>
       </div>
       <div class="d-flex flex-column gap-2">
-        <div v-if="contact.adresse" class="d-flex align-center text-body-2">
-          <MapPin :size="15" class="mr-2 text-medium-emphasis" /> {{ contact.adresse }}
+        <div v-if="contact.adresse" class="d-flex align-center text-body-2 lien-contact">
+          <MapPin :size="15" class="mr-2 text-medium-emphasis flex-shrink-0" /> {{ contact.adresse }}
         </div>
-        <a v-if="contact.telephone" :href="`tel:${contact.telephone.replace(/\s/g, '')}`" class="d-flex align-center text-body-2 text-decoration-none text-on-surface">
-          <Phone :size="15" class="mr-2 text-medium-emphasis" /> {{ contact.telephone }}
+        <a v-if="contact.telephone" :href="`tel:${contact.telephone.replace(/\s/g, '')}`" class="d-flex align-center text-body-2 text-decoration-none text-on-surface lien-contact">
+          <Phone :size="15" class="mr-2 text-medium-emphasis flex-shrink-0" /> {{ contact.telephone }}
         </a>
-        <a v-if="contact.email" :href="`mailto:${contact.email}`" class="d-flex align-center text-body-2 text-decoration-none text-on-surface">
-          <Mail :size="15" class="mr-2 text-medium-emphasis" /> {{ contact.email }}
+        <a v-if="contact.email" :href="`mailto:${contact.email}`" class="d-flex align-center text-body-2 text-decoration-none text-on-surface lien-contact">
+          <Mail :size="15" class="mr-2 text-medium-emphasis flex-shrink-0" /> {{ contact.email }}
         </a>
-        <a v-if="contact.site_web" :href="contact.site_web" target="_blank" rel="noopener" class="d-flex align-center text-body-2 text-decoration-none text-on-surface">
-          <Globe :size="15" class="mr-2 text-medium-emphasis" /> {{ contact.site_web }}
+        <a v-if="contact.site_web" :href="contact.site_web" target="_blank" rel="noopener" class="d-flex align-center text-body-2 text-decoration-none text-on-surface lien-contact">
+          <Globe :size="15" class="mr-2 text-medium-emphasis flex-shrink-0" /> {{ contact.site_web }}
         </a>
       </div>
     </section>
@@ -244,8 +244,39 @@ const contact = computed(() => {
   background-color: rgb(var(--v-theme-primary-lighten-5));
 }
 
+/* Pastilles « faits » (identité / agrément) : toujours dans la carte,
+   jamais de débordement — les valeurs longues passent à la ligne. */
 .fact-chip {
-  min-width: 140px;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Cartes d'activité : texte intégralement visible même très long. */
+.activite-card {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Cartes membres : nom et fonction toujours entiers. */
+.membre-card {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Références : les libellés de v-list-item passent à la ligne. */
+.presentation-renderer :deep(.v-list-item-title),
+.presentation-renderer :deep(.v-list-item-subtitle) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+/* Liens de contact : une URL longue ne déborde plus de la carte. */
+.lien-contact {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .gap-2 {

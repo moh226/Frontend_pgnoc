@@ -36,12 +36,7 @@ async function seConnecter() {
   enCours.value = true
   try {
     await auth.seConnecter({ email: email.value.trim(), password: motDePasse.value })
-    const demandee = route.query.redirection
-    const destination =
-      typeof demandee === 'string' && demandee.startsWith('/')
-        ? demandee
-        : redirectionPourRole(auth.role)
-    router.push(destination)
+    router.push(destinationApresConnexion())
   } catch (cause) {
     erreur.value =
       (cause as { response?: { status?: number } })?.response?.status === 401
@@ -50,6 +45,21 @@ async function seConnecter() {
   } finally {
     enCours.value = false
   }
+}
+
+function destinationApresConnexion(): string {
+  const demandee = route.query.redirection
+  const role = auth.role
+  if (typeof demandee === 'string' && demandee.startsWith('/')) {
+    const cible = router.resolve(demandee)
+    const roles = cible.meta.roles
+    if (cible.matched.length && role && (!roles?.length || roles.includes(role))) {
+      console.debug('[connexion] redirection demandee:', demandee, 'role:', role)
+      return demandee
+    }
+  }
+  console.debug('[connexion] destination:', redirectionPourRole(role), 'role:', role)
+  return redirectionPourRole(role)
 }
 
 function continuerAvecGoogle() {
