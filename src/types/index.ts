@@ -53,6 +53,9 @@ export interface ValeurChamp {
   champ: string
   valeur: string | null
   fichier: string | null
+  empreinte_sha256: string | null
+  signature_serveur: string | null
+  date_capture: string | null
   commentaire_agent: string | null
   est_corrige: boolean
   date_maj: string
@@ -107,8 +110,47 @@ export interface ConventionInfo {
   fichier_url: string | null
 }
 
+export interface PresentationActivite {
+  titre: string
+  description: string
+  ordre: number
+}
+
+export interface PresentationMembre {
+  nom: string
+  fonction: string
+  ordre: number
+}
+
+export interface PresentationReference {
+  titre: string
+  annee: string
+  description: string
+  ordre: number
+}
+
+export interface PresentationStructuree {
+  forme_sociale: string
+  date_creation_societe: string | null
+  capital_social: string
+  numero_agrement: string
+  date_agrement: string | null
+  autorite_agrement: string
+  est_regule: boolean
+  mission: string
+  vision: string
+  ancrage_regional: string
+  adresse: string
+  telephone: string
+  email_contact: string
+  site_web: string
+  activites: PresentationActivite[]
+  membres: PresentationMembre[]
+  references: PresentationReference[]
+}
+
 export interface FicheSgi extends SgiPublique {
-  presentation: string
+  presentation: PresentationStructuree
   convention: ConventionInfo
 }
 
@@ -135,6 +177,7 @@ export type TypeChampKyc =
   | 'CHOIX_UNIQUE'
   | 'CHOIX_MULTIPLE'
   | 'FICHIER'
+  | 'SELFIE'
 
 export interface AgentSgi {
   id: string
@@ -180,8 +223,7 @@ export interface ConventionSgi {
   date_modification: string | null
 }
 
-export interface PresentationSgi {
-  contenu: string
+export type PresentationSgi = PresentationStructuree & {
   date_publication: string | null
 }
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, ArrowRight, Check, FileSignature, FileText, KeyRound, Send, ShieldCheck, DownloadCloud } from '@lucide/vue'
+import { ArrowLeft, ArrowRight, Check, CheckCircle, FileSignature, FileText, KeyRound, Send, ShieldCheck, DownloadCloud } from '@lucide/vue'
+
+import CaptureSelfieField from '@/components/CaptureSelfieField.vue'
 
 import {
   accepterConvention,
@@ -12,11 +14,12 @@ import {
   signerDossier,
   soumettreDossier,
   televerserFichier,
-  urlFichierValeur,
+  ouvrirFichierValeur,
 } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import { ficheSgi } from '@/api/sgi'
 import type { ChampKyc, EtapeKyc, FicheSgi, ValeurChamp } from '@/types'
+import { formaterDate } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,6 +82,10 @@ function estVisible(champ: ChampKyc): boolean {
   return parent?.valeur === champ.valeur_declencheur
 }
 
+function champVerrouille(champ: ChampKyc): boolean {
+  return detail.value?.statut === 'REJETE' && !valeurs.value[champ.id]?.commentaire_agent
+}
+
 function choixMultiples(champ: ChampKyc): string[] {
   const brute = valeurBrute(champ)
   if (!brute) return []
@@ -102,6 +109,8 @@ function optionsChoix(champ: ChampKyc): string[] {
 }
 
 function inscrireSauvegarde(champId: string) {
+  const champ = tousChamps.value.find((c) => c.id === champId)
+  if (champ && champVerrouille(champ)) return
   etatsSauvegarde.value[champId] = 'attente'
   const precedent = debounces.get(champId)
   if (precedent !== undefined) window.clearTimeout(precedent)
@@ -155,6 +164,7 @@ async function viderSauvegardes() {
 const tousChamps = computed(() => etapes.value.flatMap((e) => e.champs))
 
 async function surFichierSelectionne(champ: ChampKyc, fichier: File | null) {
+  if (champVerrouille(champ)) return
   fichiers.value[champ.id] = fichier
   if (!fichier) return
   etatsSauvegarde.value[champ.id] = 'en_cours'
@@ -167,6 +177,9 @@ async function surFichierSelectionne(champ: ChampKyc, fichier: File | null) {
         champ: champ.id,
         valeur: null,
         fichier: reponse.url_signee,
+        empreinte_sha256: reponse.empreinte_sha256 ?? null,
+        signature_serveur: null,
+        date_capture: reponse.date_capture ?? null,
         commentaire_agent: null,
         est_corrige: false,
         date_maj: new Date().toISOString(),
@@ -359,7 +372,7 @@ function etapePrecedente() {
 
 // Fonction utilitaire pour le layout des champs
 function getColSpan(type: string): number {
-  if (['TEXTE_LONG', 'FICHIER', 'CHOIX_MULTIPLE'].includes(type)) return 12
+  if (['TEXTE_LONG', 'FICHIER', 'SELFIE', 'CHOIX_MULTIPLE'].includes(type)) return 12
   return 6 // TEXTE_COURT, NOMBRE, DATE, BOOLEEN, CHOIX_UNIQUE prennent 50% de la largeur
 }
 </script>
@@ -472,6 +485,10 @@ function getColSpan(type: string): number {
           <v-alert v-if="detail.statut === 'REJETE' && detail.motif_rejet" type="error" variant="tonal" class="mb-0 mt-4 border-l-4">
             <div class="font-weight-bold mb-1">Dossier rejeté — corrections demandées</div>
             {{ detail.motif_rejet }}
+            <div class="text-caption mt-2">
+              Seuls les champs accompagnés d'un retour de l'agent sont modifiables ;
+              les autres sont verrouillés.
+            </div>
           </v-alert>
         </div>
 
@@ -505,6 +522,7 @@ function getColSpan(type: string): number {
                   <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis mb-2 d-flex align-center">
                     {{ champ.nom }}
                     <span v-if="champ.obligatoire" class="text-error ml-1">*</span>
+                    <v-icon v-if="champVerrouille(champ)" icon="mdi-lock-outline" size="small" class="ml-1 text-medium-emphasis" />
                   </div>
 
                   <!-- Champs Textes Courts -->
@@ -517,6 +535,7 @@ function getColSpan(type: string): number {
                     density="comfortable"
                     class="premium-input"
                     placeholder="Saisissez votre réponse"
+                    :readonly="champVerrouille(champ)"
                     @update:model-value="(v: string) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -530,6 +549,7 @@ function getColSpan(type: string): number {
                     density="comfortable"
                     type="number"
                     class="premium-input"
+                    :readonly="champVerrouille(champ)"
                     @update:model-value="(v: string) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -543,6 +563,7 @@ function getColSpan(type: string): number {
                     density="comfortable"
                     type="date"
                     class="premium-input"
+                    :readonly="champVerrouille(champ)"
                     @update:model-value="(v: string) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -555,6 +576,7 @@ function getColSpan(type: string): number {
                     variant="outlined"
                     rows="4"
                     class="premium-input"
+                    :readonly="champVerrouille(champ)"
                     @update:model-value="(v: string) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -568,6 +590,7 @@ function getColSpan(type: string): number {
                     variant="outlined"
                     density="comfortable"
                     class="premium-input"
+                    :readonly="champVerrouille(champ)"
                     @update:model-value="(v: string | null) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v ?? '' }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -579,6 +602,7 @@ function getColSpan(type: string): number {
                     color="primary"
                     inset
                     class="mt-0 premium-switch"
+                    :disabled="champVerrouille(champ)"
                     @update:model-value="(v: boolean | null) => { valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: v ? 'oui' : 'non' }; inscrireSauvegarde(champ.id) }"
                   />
 
@@ -594,12 +618,46 @@ function getColSpan(type: string): number {
                       density="compact"
                       hide-details
                       class="mb-2"
+                      :disabled="champVerrouille(champ)"
                       @update:model-value="(c: boolean | null) => {
                         const actuelles = choixMultiples(champ)
                         const nouvelles = c ? [...actuelles, option] : actuelles.filter((o) => o !== option)
                         valeurs[champ.id] = { ...valeurs[champ.id], champ: champ.id, valeur: JSON.stringify(nouvelles) }
                         inscrireSauvegarde(champ.id)
                       }"
+                    />
+                  </div>
+
+                  <!-- Selfie de preuve de vie (capture caméra contrainte) -->
+                  <div v-else-if="champ.type === 'SELFIE'">
+                    <p v-if="champ.justification" class="text-caption text-medium-emphasis mb-3">{{ champ.justification }}</p>
+
+                    <!-- Selfie déjà enregistré -->
+                    <div v-if="valeurs[champ.id]?.fichier" class="uploaded-file-card d-flex align-center pa-4 rounded-lg mb-3 bg-surface border">
+                      <img
+                        :src="valeurs[champ.id].fichier ?? undefined"
+                        alt="Votre selfie de vérification"
+                        class="selfie-thumb mr-4"
+                        @click="ouvrirFichierValeur(id, valeurs[champ.id].id)"
+                      />
+                      <div class="flex-grow-1">
+                        <div class="text-body-2 font-weight-bold d-flex align-center">
+                          <CheckCircle :size="16" class="mr-2 text-success" /> Selfie de vérification enregistré
+                        </div>
+                        <div class="text-caption text-medium-emphasis mt-1">
+                          Capturé le {{ formaterDate(valeurs[champ.id].date_capture) }} · horodaté et signé côté serveur
+                        </div>
+                      </div>
+                      <v-btn v-if="!champVerrouille(champ)" size="small" variant="text" color="primary" @click="valeurs[champ.id].fichier = null">
+                        Reprendre
+                      </v-btn>
+                    </div>
+
+                    <!-- Capture caméra (aucun upload de fichier existant) -->
+                    <CaptureSelfieField
+                      v-else
+                      :verrouille="champVerrouille(champ)"
+                      @capturee="(page: File) => surFichierSelectionne(champ, page)"
                     />
                   </div>
 
@@ -614,11 +672,15 @@ function getColSpan(type: string): number {
                       </div>
                       <div class="flex-grow-1">
                         <div class="text-body-2 font-weight-bold">Document enregistré</div>
-                        <a :href="urlFichierValeur(id, valeurs[champ.id].id)" target="_blank" class="text-caption text-primary text-decoration-none hover-underline">
+                        <a
+                          href="#"
+                          @click.prevent="ouvrirFichierValeur(id, valeurs[champ.id].id)"
+                          class="text-caption text-primary text-decoration-none hover-underline"
+                        >
                           Voir le document actuel
                         </a>
                       </div>
-                      <v-btn size="small" variant="text" color="primary" @click="fichiers[champ.id] = null">
+                      <v-btn v-if="!champVerrouille(champ)" size="small" variant="text" color="primary" @click="valeurs[champ.id].fichier = null">
                         Remplacer
                       </v-btn>
                     </div>
@@ -631,6 +693,7 @@ function getColSpan(type: string): number {
                       variant="outlined"
                       class="premium-file-input"
                       prepend-icon=""
+                      :disabled="champVerrouille(champ)"
                       @update:model-value="(f: File | File[]) => surFichierSelectionne(champ, Array.isArray(f) ? f[0] ?? null : f)"
                     >
                       <template v-slot:prepend-inner>
@@ -658,6 +721,15 @@ function getColSpan(type: string): number {
                     <div class="text-caption font-weight-bold text-uppercase tracking-wider mb-1">Retour de l'agent</div>
                     {{ valeurs[champ.id].commentaire_agent }}
                   </v-alert>
+
+                  <!-- Champ verrouillé (rejet : non signalé par l'agent) -->
+                  <div
+                    v-if="champVerrouille(champ)"
+                    class="text-caption text-medium-emphasis mt-1 d-flex align-center"
+                  >
+                    <v-icon icon="mdi-lock-outline" size="small" class="mr-1" />
+                    Verrouillé — seuls les champs signalés par l'agent sont corrigeables après rejet.
+                  </div>
                 </v-col>
               </template>
             </v-row>
@@ -779,33 +851,36 @@ function getColSpan(type: string): number {
             <CheckCircle :size="18" class="mr-2 d-inline" /> Signature validée avec succès.
           </v-alert>
           
-          <template v-if="codeOtpGenere && !signaturePosee">
-            <p class="text-body-2 text-medium-emphasis mb-6">
-              Veuillez saisir le code confidentiel à 8 chiffres généré pour vous ci-dessous.
+          <v-progress-circular v-if="otpEnCours && !codeOtpGenere" indeterminate color="warning" size="48" width="4" class="my-8" />
+          <template v-else-if="!signaturePosee">
+            <p v-if="codeOtpGenere" class="text-body-2 text-medium-emphasis mb-6">
+              Veuillez saisir le code confidentiel à 6 chiffres généré pour vous ci-dessous.
             </p>
-            <div class="bg-surface-variant pa-4 rounded-lg mb-6 code-box border-dashed">
+            <p v-else class="text-body-2 text-medium-emphasis mb-6">
+              Un code confidentiel à 6 chiffres vous a été adressé par SMS/email : saisissez-le ci-dessous.
+            </p>
+            <div v-if="codeOtpGenere" class="bg-surface-variant pa-4 rounded-lg mb-6 code-box border-dashed">
               <span class="font-weight-black text-warning text-h3 font-display tracking-widest letter-spacing-large">{{ codeOtpGenere }}</span>
             </div>
-            
+
             <v-text-field
               v-model="saisieOtp"
               label="Saisissez le code ici"
               variant="outlined"
-              maxlength="8"
+              maxlength="6"
               class="text-center font-display premium-input"
               :disabled="otpEnCours"
               @keyup.enter="validerSignature"
             />
-            
+
             <p v-if="expirationOtp" class="text-caption text-error font-weight-medium mt-2">
               Expire bientôt. Validez rapidement.
             </p>
           </template>
-          <v-progress-circular v-else-if="otpEnCours && !signaturePosee" indeterminate color="warning" size="48" width="4" class="my-8" />
         </v-card-text>
         <v-card-actions class="px-8 pb-8 pt-4 d-flex justify-center flex-column gap-3">
           <v-btn
-            v-if="codeOtpGenere && !signaturePosee"
+            v-if="!signaturePosee"
             color="warning"
             variant="flat"
             class="btn-principal w-100 mb-2"
@@ -996,6 +1071,15 @@ function getColSpan(type: string): number {
 .upload-icon-wrapper {
   width: 56px;
   height: 56px;
+}
+
+.selfie-thumb {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: zoom-in;
+  border: 1px solid rgb(var(--v-theme-outline));
 }
 
 /* PDF Viewer */

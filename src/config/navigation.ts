@@ -14,7 +14,10 @@ export const LIBELLES_ROLE: Record<RoleCode, string> = {
 }
 
 export const ROUTES_PAR_ROLE: Record<RoleCode, string> = {
-  INVESTISSEUR: '/onboarding-sgi',
+  // L'investisseur arrive sur son tableau de bord (création possible via
+  // le dialog) ; `/onboarding-sgi` reste accessible manuellement pour le
+  // parcours de découverte premium d'une SGI.
+  INVESTISSEUR: '/espace-investisseur',
   AGENT_SGI: '/espace-agent',
   ADMIN_SGI: '/admin-sgi',
   ADMIN_GENERAL: '/admin-general',

@@ -80,6 +80,8 @@ export interface ReponseFichier {
   id: string
   champ: string
   url_signee: string
+  empreinte_sha256: string | null
+  date_capture: string | null
 }
 
 export async function televerserFichier(
@@ -150,6 +152,31 @@ export async function rejeterDossier(id: string, motif: string): Promise<Dossier
   return data
 }
 
-export function urlFichierValeur(dossierId: string, valeurId: string): string {
-  return `${api.defaults.baseURL}/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`
+export async function ouvrirFichierValeur(dossierId: string, valeurId: string): Promise<void> {
+  // L'endpoint exige l'authentification : on passe par axios (Bearer)
+  // pour obtenir l'URL presignée, puis on l'ouvre dans un onglet.
+  // Un `href` direct vers l'endpoint échouerait en 401 (onglet sans
+  // en-tête Authorization).
+  const { data } = await api.get<{ url_signee: string }>(
+    `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`,
+  )
+  window.open(data.url_signee, '_blank', 'noopener')
+}
+
+export interface VerificationPreuveVie {
+  date_capture: string | null
+  empreinte_sha256: string | null
+  concordante: boolean
+  signature_valide: boolean
+  detail?: string
+}
+
+export async function verifierAuthenticiteSelfie(
+  dossierId: string,
+  valeurId: string,
+): Promise<VerificationPreuveVie> {
+  const { data } = await api.get<VerificationPreuveVie>(
+    `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/authenticite/`,
+  )
+  return data
 }

@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { ConventionSgi, PresentationSgi } from '@/types'
+import type { ConventionSgi, PresentationSgi, PresentationStructuree } from '@/types'
 
 export async function conventionSgi(): Promise<ConventionSgi> {
   const { data } = await api.get<ConventionSgi>('/sgi/admin/convention/')
@@ -22,7 +22,7 @@ export async function presentationSgi(): Promise<PresentationSgi> {
   return data
 }
 
-export async function publierPresentation(contenu: string): Promise<PresentationSgi> {
-  const { data } = await api.put<PresentationSgi>('/sgi/admin/presentation/', { contenu })
+export async function publierPresentation(presentation: PresentationStructuree): Promise<PresentationSgi> {
+  const { data } = await api.put<PresentationSgi>('/sgi/admin/presentation/', presentation)
   return data
 }

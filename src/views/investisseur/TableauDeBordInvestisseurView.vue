@@ -52,6 +52,16 @@ async function creer() {
   }
 }
 
+function demarrerDossier() {
+  // Premier dossier : parcours de découverte (page onboarding).
+  // Investisseur déjà actif : dialog de création direct.
+  if (dossiers.liste.length === 0) {
+    router.push({ name: 'onboarding-sgi' })
+    return
+  }
+  void ouvrirCreation()
+}
+
 onMounted(async () => {
   await Promise.all([dossiers.chargerListe(), notifications.chargerCompte()])
 })
@@ -128,6 +138,9 @@ onMounted(async () => {
           <v-card-text class="px-6 pb-6">
             <v-alert v-if="!dossiers.chargement && !dossiers.liste.length" type="info" variant="tonal" class="mt-4">
               Aucun dossier pour le moment. Commencez votre première souscription.
+              <v-btn variant="text" color="primary" size="small" class="mt-1" @click="demarrerDossier">
+                Découvrir les SGI <ChevronRight :size="14" class="ml-1" />
+              </v-btn>
             </v-alert>
             <div v-else-if="dossiers.liste.length" class="mt-4">
               <v-card
@@ -184,7 +197,7 @@ onMounted(async () => {
             <p class="text-body-2 text-muted mb-6">
               Ouvrez un nouveau dossier de cession de titres auprès d'une de nos Sociétés de Gestion partenaires.
             </p>
-            <v-btn color="primary" variant="flat" block class="btn-principal hover-lift" @click="ouvrirCreation">
+            <v-btn color="primary" variant="flat" block class="btn-principal hover-lift" @click="demarrerDossier">
               Démarrer un Dossier <ChevronRight :size="16" class="ml-2" />
             </v-btn>
           </v-card-text>

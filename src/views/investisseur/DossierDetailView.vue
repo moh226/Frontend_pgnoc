@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AlertCircle, AlertTriangle, ArrowLeft, Building2, Clock, Download, Edit3, FileSignature, FileText } from '@lucide/vue'
+import { AlertCircle, AlertTriangle, ArrowLeft, BadgeCheck, Building2, Clock, Download, Edit3, FileSignature, FileText } from '@lucide/vue'
 
-import { etapesKyc, genererOtp, signerDossier, urlFichierValeur } from '@/api/dossiers'
+import { etapesKyc, genererOtp, ouvrirFichierValeur, signerDossier } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import { ficheSgi } from '@/api/sgi'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
@@ -210,9 +210,34 @@ onMounted(async () => {
               <v-skeleton-loader v-if="chargementFiche" type="paragraph" class="bg-transparent" />
               <template v-else>
                   Code SGI : <span class="font-weight-bold text-primary">{{ fiche?.code_sgi ?? '—' }}</span>
-                <p v-if="fiche?.presentation" class="text-body-2 mt-3 text-muted">
-                  {{ fiche.presentation }}
+                <p v-if="fiche?.presentation.mission" class="text-body-2 mt-3 text-muted">
+                  {{ fiche.presentation.mission }}
                 </p>
+                <div v-if="fiche?.presentation.activites.length" class="mt-3">
+                  <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis mb-2">
+                    Domaines d'activité
+                  </div>
+                  <div class="d-flex flex-wrap">
+                    <v-chip
+                      v-for="activite in fiche.presentation.activites"
+                      :key="activite.titre"
+                      size="small"
+                      variant="tonal"
+                      color="primary"
+                      class="mr-2 mb-2"
+                    >
+                      {{ activite.titre }}
+                    </v-chip>
+                  </div>
+                </div>
+                <div v-if="fiche?.presentation.est_regule" class="mt-3">
+                  <v-chip size="small" variant="flat" color="success">
+                    <BadgeCheck :size="14" class="mr-1" /> Acteur régulé
+                  </v-chip>
+                  <div class="text-caption text-medium-emphasis mt-1">
+                    {{ fiche.presentation.autorite_agrement }} — n° {{ fiche.presentation.numero_agrement }}
+                  </div>
+                </div>
                 <div class="divider-glass my-4"></div>
                 <template v-if="fiche?.convention.titre">
                   <div class="d-flex align-center mb-3">
@@ -277,7 +302,8 @@ onMounted(async () => {
                           variant="text"
                           color="primary"
                           size="small"
-                          :href="urlFichierValeur(dossiers.detail.id, valeur.id)"
+                          @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
+                          href="#"
                           target="_blank"
                           class="btn-sm hover-lift"
                         >
@@ -312,8 +338,17 @@ onMounted(async () => {
           <v-alert v-if="signaturePosee" type="success" variant="tonal" class="mb-3">
             Signature posée avec succès.
           </v-alert>
-          <template v-if="codeOtpGenere">
-            <div class="pa-4 border-radius-8 text-center my-4 code-box">
+          <v-skeleton-loader v-if="otpEnCours && !codeOtpGenere" type="paragraph" />
+          <template v-else-if="!signaturePosee">
+            <p class="text-body-2 text-medium-emphasis mb-4">
+              <template v-if="codeOtpGenere">
+                Code confidentiel généré (développement) : saisissez-le ci-dessous.
+              </template>
+              <template v-else>
+                Un code confidentiel à 6 chiffres vous a été adressé par SMS/email : saisissez-le ci-dessous.
+              </template>
+            </p>
+            <div v-if="codeOtpGenere" class="pa-4 border-radius-8 text-center my-4 code-box">
               <span class="font-weight-black text-warning text-h4 font-display tracking-widest">{{ codeOtpGenere }}</span>
             </div>
             <p v-if="expirationOtp" class="text-caption text-error text-center mb-6 font-weight-medium">
@@ -324,20 +359,19 @@ onMounted(async () => {
                 v-model="saisieOtp"
                 label="Saisissez le code OTP"
                 variant="plain"
-                maxlength="8"
+                maxlength="6"
                 class="text-center font-display"
                 :disabled="signaturePosee || otpEnCours"
                 @keyup.enter="validerSignature"
               />
             </div>
           </template>
-          <v-skeleton-loader v-else-if="otpEnCours" type="paragraph" />
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-0">
           <v-spacer />
           <v-btn variant="text" color="grey-lighten-1" @click="dialogOtp = false">Fermer</v-btn>
           <v-btn
-            v-if="codeOtpGenere && !signaturePosee"
+            v-if="!signaturePosee"
             color="warning"
             variant="flat"
             class="btn-principal"

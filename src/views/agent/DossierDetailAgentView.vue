@@ -2,10 +2,12 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { urlFichierValeur } from '@/api/dossiers'
+import { etapesKyc, ouvrirFichierValeur, verifierAuthenticiteSelfie, type VerificationPreuveVie } from '@/api/dossiers'
+import { extraireMessageErreur } from '@/api/client'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { useAuthStore } from '@/stores/auth'
 import { useDossiersStore } from '@/stores/dossiers'
+import type { ChampKyc } from '@/types'
 import { formaterDate } from '@/utils/format'
 
 const route = useRoute()
@@ -72,7 +74,57 @@ async function valider() {
   }
 }
 
-onMounted(() => void dossiers.chargerDetail(id.value))
+const champsParId = ref(new Map<string, ChampKyc>())
+
+function nomDuChamp(idChamp: string): string {
+  return champsParId.value.get(idChamp)?.nom ?? idChamp.slice(0, 8)
+}
+
+function typeDuChamp(idChamp: string): string | undefined {
+  return champsParId.value.get(idChamp)?.type
+}
+
+// --- Vérification d'authenticité d'un selfie (preuve de vie) ---
+const dialogAuthenticite = ref(false)
+const verificationPreuve = ref<VerificationPreuveVie | null>(null)
+const verificationEnCours = ref(false)
+const erreurVerification = ref('')
+
+async function verifierPreuve(valeurId: string) {
+  verificationEnCours.value = true
+  erreurVerification.value = ''
+  verificationPreuve.value = null
+  dialogAuthenticite.value = true
+  try {
+    verificationPreuve.value = await verifierAuthenticiteSelfie(id.value, valeurId)
+  } catch (cause) {
+    erreurVerification.value = extraireMessageErreur(cause)
+  } finally {
+    verificationEnCours.value = false
+  }
+}
+
+function conforme(): boolean {
+  return Boolean(
+    verificationPreuve.value?.concordante && verificationPreuve.value?.signature_valide,
+  )
+}
+
+onMounted(async () => {
+  await dossiers.chargerDetail(id.value)
+  const detailActuel = dossiers.detail
+  if (!detailActuel) return
+  try {
+    const reponse = await etapesKyc(detailActuel.sgi)
+    const index = new Map<string, ChampKyc>()
+    for (const etape of reponse.results) {
+      for (const champ of etape.champs) index.set(champ.id, champ)
+    }
+    champsParId.value = index
+  } catch {
+    // Champs introuvables (désactivés/supprimés) : l'id tronqué sert de repli.
+  }
+})
 </script>
 
 <template>
@@ -185,7 +237,7 @@ onMounted(() => void dossiers.chargerDetail(id.value))
             <tbody>
               <tr v-for="valeur in dossiers.detail.valeurs_champs" :key="valeur.id">
                 <td>
-                  {{ valeur.champ }}
+                  {{ nomDuChamp(valeur.champ) }}
                   <v-tooltip v-if="valeur.est_corrige" text="Corrigé par l'investisseur après votre demande">
                     <template #activator="{ props }">
                       <v-icon
@@ -199,13 +251,44 @@ onMounted(() => void dossiers.chargerDetail(id.value))
                   </v-tooltip>
                 </td>
                 <td>
-                  <template v-if="valeur.fichier">
+                  <template v-if="valeur.fichier && typeDuChamp(valeur.champ) === 'SELFIE'">
+                    <div class="d-inline-flex flex-column align-start">
+                      <img
+                        :src="valeur.fichier"
+                        :alt="nomDuChamp(valeur.champ)"
+                        class="selfie-agent rounded-lg mb-1"
+                        @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
+                      />
+                      <div class="d-flex flex-wrap ga-1 mb-1">
+                        <v-chip size="x-small" variant="tonal">
+                          Capturé le {{ formaterDate(valeur.date_capture) }}
+                        </v-chip>
+                        <v-chip
+                          size="x-small"
+                          variant="tonal"
+                          :color="valeur.empreinte_sha256 ? 'success' : 'warning'"
+                        >
+                          Preuve signée
+                        </v-chip>
+                      </div>
+                      <v-btn
+                        size="x-small"
+                        variant="tonal"
+                        color="primary"
+                        @click="verifierPreuve(valeur.id)"
+                      >
+                        <v-icon icon="mdi-shield-check" size="14" class="mr-1" />
+                        Vérifier l'authenticité
+                      </v-btn>
+                    </div>
+                  </template>
+                  <template v-else-if="valeur.fichier">
                     <v-btn
                       variant="text"
                       color="primary"
                       size="small"
-                      :href="urlFichierValeur(dossiers.detail!.id, valeur.id)"
-                      target="_blank"
+                      href="#"
+                      @click.prevent="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
                     >
                       <v-icon icon="mdi-download" class="mr-1" /> Document
                     </v-btn>
@@ -236,6 +319,54 @@ onMounted(() => void dossiers.chargerDetail(id.value))
     </template>
 
     <v-progress-linear v-else-if="dossiers.detailChargement" indeterminate class="mt-4" />
+
+    <v-dialog v-model="dialogAuthenticite" max-width="560">
+      <v-card>
+        <v-card-title class="d-flex align-center">
+          <v-icon icon="mdi-shield-check" class="mr-2" :color="conforme() ? 'success' : 'error'" />
+          Vérification de la preuve de vie
+        </v-card-title>
+        <v-card-text>
+          <v-progress-circular v-if="verificationEnCours" indeterminate color="primary" size="32" width="4" class="my-8 d-block mx-auto" />
+          <v-alert v-else-if="erreurVerification" type="error" variant="tonal" class="mb-0">
+            {{ erreurVerification }}
+          </v-alert>
+          <template v-else-if="verificationPreuve">
+            <v-alert
+              :type="conforme() ? 'success' : 'error'"
+              variant="tonal"
+              class="mb-4 border-l-4"
+            >
+              {{ verificationPreuve.detail }}
+            </v-alert>
+            <div class="text-caption text-medium-emphasis mb-1">Empreinte SHA-256 (fichier stocké)</div>
+            <code class="d-block bg-surface-variant pa-2 rounded mb-3" style="word-break: break-all;">
+              {{ verificationPreuve.empreinte_sha256 || '—' }}
+            </code>
+            <v-row>
+              <v-col cols="6">
+                <div class="text-caption text-medium-emphasis mb-1">Capturé le</div>
+                <div class="text-body-2">{{ formaterDate(verificationPreuve.date_capture) }}</div>
+              </v-col>
+              <v-col cols="6">
+                <div class="text-caption text-medium-emphasis mb-1">Contenu conforme au hash</div>
+                <v-chip size="small" :color="verificationPreuve.concordante ? 'success' : 'error'">
+                  {{ verificationPreuve.concordante ? 'Conforme' : 'Altéré' }}
+                </v-chip>
+                <div class="text-caption text-medium-emphasis mb-1 mt-3">Signature serveur</div>
+                <v-chip size="small" :color="verificationPreuve.signature_valide ? 'success' : 'error'">
+                  {{ verificationPreuve.signature_valide ? 'Valide' : 'Invalide' }}
+                </v-chip>
+              </v-col>
+            </v-row>
+          </template>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="dialogAuthenticite = false">Fermer</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <v-dialog v-model="dialogCommentaire" max-width="560">
       <v-card>
@@ -327,3 +458,14 @@ onMounted(() => void dossiers.chargerDetail(id.value))
     </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+.selfie-agent {
+  width: 160px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: zoom-in;
+  border: 1px solid rgb(var(--v-theme-outline));
+}
+</style>

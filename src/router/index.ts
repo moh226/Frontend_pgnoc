@@ -41,6 +41,12 @@ const router = createRouter({
       meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
     },
     {
+      path: '/onboarding-sgi/:id',
+      name: 'onboarding-sgi-detail',
+      component: () => import('@/views/investisseur/SgiPresentationView.vue'),
+      meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
+    },
+    {
       path: '/espace-investisseur',
       component: () => import('@/layouts/AppLayout.vue'),
       meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
