@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
   ArrowLeft, 
@@ -14,132 +14,46 @@ import {
   AlertCircle,
   FileText,
   User,
-  Calendar,
-  ShieldBan
+  Calendar
 } from '@lucide/vue'
 
-import { etapesKyc, ouvrirFichierValeur, verifierAuthenticiteSelfie, type VerificationPreuveVie } from '@/api/dossiers'
-import { extraireMessageErreur } from '@/api/client'
+import { ouvrirFichierValeur } from '@/api/dossiers'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
-import { useAuthStore } from '@/stores/auth'
-import { useDossiersStore } from '@/stores/dossiers'
-import type { ChampKyc } from '@/types'
 import { formaterDate } from '@/utils/format'
+import { useDossierAgent } from '@/composables/useDossierAgent'
+import AgentDecisionDialogs from '@/components/agent/AgentDecisionDialogs.vue'
 
 const route = useRoute()
 const router = useRouter()
-const dossiers = useDossiersStore()
-const auth = useAuthStore()
-
 const id = computed(() => String(route.params.id))
 
-const dialogCommentaire = ref(false)
-const valeurCommentee = ref<string | null>(null)
-const texteCommentaire = ref('')
-const envoiEnCours = ref(false)
-
-const dialogRejet = ref(false)
-const motifRejet = ref('')
-
-const dialogValidation = ref(false)
-
-const estPriseEnChargeParMoi = computed(
-  () => dossiers.detail?.agent_email === auth.utilisateur?.email,
-)
-
-function ouvrirCommentaire(valeurId: string) {
-  valeurCommentee.value = valeurId
-  texteCommentaire.value = ''
-  dialogCommentaire.value = true
-}
-
-async function envoyerCommentaire() {
-  if (!valeurCommentee.value || !texteCommentaire.value.trim()) return
-  envoiEnCours.value = true
-  try {
-    await dossiers.commenterValeur(id.value, valeurCommentee.value, texteCommentaire.value)
-    dialogCommentaire.value = false
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-async function prendreEnCharge() {
-  await dossiers.prendreEnCharge(id.value)
-}
-
-async function rejeter() {
-  if (!motifRejet.value.trim()) return
-  envoiEnCours.value = true
-  try {
-    await dossiers.deciderDossier(id.value, 'rejeter', motifRejet.value)
-    dialogRejet.value = false
-    motifRejet.value = ''
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-async function valider() {
-  envoiEnCours.value = true
-  try {
-    await dossiers.deciderDossier(id.value, 'valider')
-    dialogValidation.value = false
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-const champsParId = ref(new Map<string, ChampKyc>())
-
-function nomDuChamp(idChamp: string): string {
-  return champsParId.value.get(idChamp)?.nom ?? idChamp.slice(0, 8)
-}
-
-function typeDuChamp(idChamp: string): string | undefined {
-  return champsParId.value.get(idChamp)?.type
-}
-
-// --- Vérification d'authenticité d'un selfie (preuve de vie) ---
-const dialogAuthenticite = ref(false)
-const verificationPreuve = ref<VerificationPreuveVie | null>(null)
-const verificationEnCours = ref(false)
-const erreurVerification = ref('')
-
-async function verifierPreuve(valeurId: string) {
-  verificationEnCours.value = true
-  erreurVerification.value = ''
-  verificationPreuve.value = null
-  dialogAuthenticite.value = true
-  try {
-    verificationPreuve.value = await verifierAuthenticiteSelfie(id.value, valeurId)
-  } catch (cause) {
-    erreurVerification.value = extraireMessageErreur(cause)
-  } finally {
-    verificationEnCours.value = false
-  }
-}
-
-function conforme(): boolean {
-  return Boolean(
-    verificationPreuve.value?.concordante && verificationPreuve.value?.signature_valide,
-  )
-}
+const {
+  dossiers,
+  dialogCommentaire,
+  texteCommentaire,
+  envoiEnCours,
+  dialogRejet,
+  motifRejet,
+  dialogValidation,
+  dialogAuthenticite,
+  verificationPreuve,
+  verificationEnCours,
+  erreurVerification,
+  estPriseEnChargeParMoi,
+  ouvrirCommentaire,
+  envoyerCommentaire,
+  prendreEnCharge,
+  rejeter,
+  valider,
+  nomDuChamp,
+  typeDuChamp,
+  verifierPreuve,
+  conforme,
+  chargerDossierEtChamps
+} = useDossierAgent(id.value)
 
 onMounted(async () => {
-  await dossiers.chargerDetail(id.value)
-  const detailActuel = dossiers.detail
-  if (!detailActuel) return
-  try {
-    const reponse = await etapesKyc(detailActuel.sgi)
-    const index = new Map<string, ChampKyc>()
-    for (const etape of reponse.results) {
-      for (const champ of etape.champs) index.set(champ.id, champ)
-    }
-    champsParId.value = index
-  } catch {
-    // Champs introuvables (désactivés/supprimés) : l'id tronqué sert de repli.
-  }
+  await chargerDossierEtChamps()
 })
 </script>
 
@@ -393,190 +307,23 @@ onMounted(async () => {
       <v-progress-circular indeterminate color="primary" size="64" width="4" />
     </div>
 
-    <!-- Modale Vérification Authenticité -->
-    <v-dialog v-model="dialogAuthenticite" max-width="600">
-      <v-card class="rounded-xl elevation-24">
-        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center border-b pb-4">
-          <ShieldCheck v-if="conforme()" :size="28" class="text-success mr-3" />
-          <ShieldBan v-else :size="28" class="text-error mr-3" />
-          Contrôle Cryptographique
-        </v-card-title>
-        
-        <v-card-text class="pa-6">
-          <div v-if="verificationEnCours" class="text-center py-8">
-            <v-progress-circular indeterminate color="primary" size="48" width="4" class="mb-4" />
-            <div class="text-body-1 text-medium-emphasis">Vérification de la signature en cours...</div>
-          </div>
-          
-          <v-alert v-else-if="erreurVerification" type="error" variant="tonal" class="mb-0 border-l-4">
-            {{ erreurVerification }}
-          </v-alert>
-          
-          <template v-else-if="verificationPreuve">
-            <v-alert
-              :type="conforme() ? 'success' : 'error'"
-              variant="flat"
-              class="mb-6 shadow-sm font-weight-medium"
-            >
-              {{ verificationPreuve.detail }}
-            </v-alert>
-            
-            <div class="bg-surface-variant rounded-lg pa-4 border mb-6">
-              <div class="text-caption text-uppercase font-weight-bold tracking-wider text-medium-emphasis mb-2">
-                Empreinte Numérique (SHA-256)
-              </div>
-              <code class="d-block text-body-2 bg-surface pa-3 rounded border text-primary" style="word-break: break-all;">
-                {{ verificationPreuve.empreinte_sha256 || 'Non disponible' }}
-              </code>
-            </div>
-            
-            <v-row>
-              <v-col cols="12" sm="4">
-                <div class="text-caption text-uppercase font-weight-bold tracking-wider text-medium-emphasis mb-2">Horodatage</div>
-                <div class="text-body-1 font-weight-medium">{{ formaterDate(verificationPreuve.date_capture) }}</div>
-              </v-col>
-              <v-col cols="12" sm="4">
-                <div class="text-caption text-uppercase font-weight-bold tracking-wider text-medium-emphasis mb-2">Intégrité</div>
-                <v-chip size="small" variant="flat" :color="verificationPreuve.concordante ? 'success' : 'error'" class="font-weight-bold px-3">
-                  <CheckCircle2 v-if="verificationPreuve.concordante" :size="14" class="mr-1" />
-                  <XCircle v-else :size="14" class="mr-1" />
-                  {{ verificationPreuve.concordante ? 'Fichier Intact' : 'Altération Détectée' }}
-                </v-chip>
-              </v-col>
-              <v-col cols="12" sm="4">
-                <div class="text-caption text-uppercase font-weight-bold tracking-wider text-medium-emphasis mb-2">Signature Serveur</div>
-                <v-chip size="small" variant="flat" :color="verificationPreuve.signature_valide ? 'success' : 'error'" class="font-weight-bold px-3">
-                  <CheckCircle2 v-if="verificationPreuve.signature_valide" :size="14" class="mr-1" />
-                  <XCircle v-else :size="14" class="mr-1" />
-                  {{ verificationPreuve.signature_valide ? 'Certifiée' : 'Invalide' }}
-                </v-chip>
-              </v-col>
-            </v-row>
-          </template>
-        </v-card-text>
-        
-        <v-card-actions class="px-6 pb-6 pt-0">
-          <v-spacer />
-          <v-btn color="primary" variant="tonal" class="font-weight-bold px-6" @click="dialogAuthenticite = false">Fermer</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Modale Commentaire -->
-    <v-dialog v-model="dialogCommentaire" max-width="500">
-      <v-card class="rounded-xl elevation-24">
-        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center border-b pb-4">
-          <MessageSquare :size="24" class="text-warning mr-3" />
-          Demander une correction
-        </v-card-title>
-        <v-card-text class="px-6 py-6">
-          <p class="text-body-2 text-medium-emphasis mb-4">
-            Ce message sera envoyé à l'investisseur. Le dossier ne pourra pas être validé tant que cette valeur ne sera pas corrigée.
-          </p>
-          <v-textarea
-            v-model="texteCommentaire"
-            label="Explication de la correction requise"
-            variant="outlined"
-            rows="4"
-            counter
-            class="premium-input"
-            hide-details="auto"
-            placeholder="Veuillez fournir un document plus lisible..."
-          />
-        </v-card-text>
-        <v-card-actions class="px-6 pb-6 pt-0 border-t mt-2">
-          <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogCommentaire = false">Annuler</v-btn>
-          <v-btn
-            color="warning"
-            variant="flat"
-            class="px-6 font-weight-bold shadow-sm"
-            :disabled="!texteCommentaire.trim() || envoiEnCours"
-            :loading="envoiEnCours"
-            @click="envoyerCommentaire"
-          >
-            Envoyer la demande
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Modale Rejet -->
-    <v-dialog v-model="dialogRejet" max-width="500">
-      <v-card class="rounded-xl elevation-24">
-        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center border-b pb-4 text-error">
-          <XCircle :size="24" class="mr-3" />
-          Rejeter le dossier
-        </v-card-title>
-        <v-card-text class="px-6 py-6">
-          <v-alert type="error" variant="tonal" class="mb-4 border-l-4">
-            <template #prepend>
-              <AlertCircle :size="20" class="mr-2" />
-            </template>
-            <span class="text-body-2 font-weight-medium">Le dossier entier sera renvoyé à l'investisseur.</span>
-          </v-alert>
-          <v-textarea
-            v-model="motifRejet"
-            label="Motif global du rejet (obligatoire)"
-            variant="outlined"
-            rows="4"
-            counter
-            class="premium-input"
-            hide-details="auto"
-            placeholder="Ex: Pièce d'identité non conforme et selfie flou."
-          />
-        </v-card-text>
-        <v-card-actions class="px-6 pb-6 pt-0 border-t mt-2">
-          <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogRejet = false">Annuler</v-btn>
-          <v-btn
-            color="error"
-            variant="flat"
-            class="px-6 font-weight-bold shadow-sm"
-            :disabled="!motifRejet.trim() || envoiEnCours"
-            :loading="envoiEnCours"
-            @click="rejeter"
-          >
-            Rejeter définitivement
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Modale Validation -->
-    <v-dialog v-model="dialogValidation" max-width="500">
-      <v-card class="rounded-xl elevation-24">
-        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center border-b pb-4 text-success">
-          <CheckCircle2 :size="24" class="mr-3" />
-          Validation Définitive
-        </v-card-title>
-        <v-card-text class="px-6 py-6">
-          <v-alert type="warning" variant="tonal" class="mb-0 border-l-4">
-            <template #prepend>
-              <ShieldAlert :size="20" class="mr-2" />
-            </template>
-            <div class="font-weight-bold mb-1">Action Irréversible</div>
-            <div class="text-body-2">
-              Assurez-vous que toutes les pièces ont été vérifiées. Le système bloquera automatiquement la validation si la convention n'est pas signée électroniquement (OTP) par le client.
-            </div>
-          </v-alert>
-        </v-card-text>
-        <v-card-actions class="px-6 pb-6 pt-0 border-t mt-2">
-          <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogValidation = false">Annuler</v-btn>
-          <v-btn
-            color="success"
-            variant="flat"
-            size="large"
-            class="px-8 font-weight-bold shadow-sm"
-            :loading="envoiEnCours"
-            @click="valider"
-          >
-            <CheckCircle2 :size="18" class="mr-2" /> Valider le dossier
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <!-- Modales -->
+    <AgentDecisionDialogs
+      v-model:dialog-commentaire="dialogCommentaire"
+      v-model:texte-commentaire="texteCommentaire"
+      v-model:dialog-rejet="dialogRejet"
+      v-model:motif-rejet="motifRejet"
+      v-model:dialog-validation="dialogValidation"
+      v-model:dialog-authenticite="dialogAuthenticite"
+      :envoi-en-cours="envoiEnCours"
+      :verification-en-cours="verificationEnCours"
+      :erreur-verification="erreurVerification"
+      :verification-preuve="verificationPreuve"
+      :conforme="conforme()"
+      @envoyer-commentaire="envoyerCommentaire"
+      @rejeter="rejeter"
+      @valider="valider"
+    />
   </v-container>
 </template>
 
@@ -588,10 +335,6 @@ onMounted(async () => {
 
 .border-b {
   border-bottom: 1px solid rgb(var(--v-theme-outline));
-}
-
-.border-t {
-  border-top: 1px solid rgb(var(--v-theme-outline));
 }
 
 .border-l-4 {
@@ -630,16 +373,6 @@ onMounted(async () => {
 .position-relative:hover .overlay-icon {
   opacity: 1;
   transform: translateY(0);
-}
-
-.premium-input :deep(.v-field) {
-  border-radius: 8px;
-  background-color: rgb(var(--v-theme-surface));
-  transition: all 0.2s ease;
-}
-
-.premium-input :deep(.v-field:hover) {
-  border-color: rgb(var(--v-theme-primary));
 }
 
 .premium-table {

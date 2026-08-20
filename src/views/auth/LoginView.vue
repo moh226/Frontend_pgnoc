@@ -54,11 +54,9 @@ function destinationApresConnexion(): string {
     const cible = router.resolve(demandee)
     const roles = cible.meta.roles
     if (cible.matched.length && role && (!roles?.length || roles.includes(role))) {
-      console.debug('[connexion] redirection demandee:', demandee, 'role:', role)
       return demandee
     }
   }
-  console.debug('[connexion] destination:', redirectionPourRole(role), 'role:', role)
   return redirectionPourRole(role)
 }
 

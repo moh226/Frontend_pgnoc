@@ -1,221 +1,56 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import {
   ArrowDown,
   ArrowUp,
   Check,
+  Eye,
   Globe,
   ImagePlus,
   PencilLine,
-  Plus,
   Send,
-  Trash2,
+  X,
 } from '@lucide/vue'
 
-import { listeBlocsAccueilAdmin, modifierBlocAccueil, ordonnerBlocsAccueil } from '@/api/accueil'
-import { extraireMessageErreur } from '@/api/client'
-import type { BlocAccueilAdmin, ContenuBlocAccueil, TypeBlocAccueil } from '@/types'
+import VitrineAccueil from '@/components/VitrineAccueil.vue'
+import AccueilBlocEditor from '@/components/accueil/AccueilBlocEditor.vue'
+import { useAccueilEditor, LIBELLES_TYPE } from '@/composables/useAccueilEditor'
 
-const LIBELLES_TYPE: Record<TypeBlocAccueil, string> = {
-  HERO: "Bannière d'accueil",
-  REASSURANCE: 'Mentions de réassurance',
-  CHIFFRES: 'Chiffres clés',
-  ETAPES: 'Comment ça marche',
-  SECURITE: 'Sécurité et conformité',
-  TEMOIGNAGES: 'Témoignages',
-  FAQ: 'Questions fréquentes',
-  APPEL_ACTION: "Appel à l'action",
-}
+const {
+  chargement,
+  erreur,
+  message,
+  enregistrement,
+  publication,
+  blocSelectionne,
+  brouillonTitre,
+  nouveauFichier,
+  nouvelleMention,
+  hero,
+  mentions,
+  chiffres,
+  etapes,
+  cartes,
+  temoignages,
+  questions,
+  appelAction,
+  blocsTries,
+  blocCourant,
+  nbPublies,
+  imageActuelle,
+  apercuMasques,
+  apercuBlocs,
+  charger,
+  selectionner,
+  ajouterMention,
+  enregistrerBloc,
+  deplacer,
+  basculerActif,
+  publierPage,
+  surFichierChoisi,
+} = useAccueilEditor()
 
-interface LigneChiffre {
-  valeur: string
-  libelle: string
-}
-
-interface LigneTitreDesc {
-  titre: string
-  description: string
-}
-
-interface LigneTemoignage {
-  nom: string
-  role: string
-  texte: string
-}
-
-interface LigneQuestion {
-  question: string
-  reponse: string
-}
-
-const blocs = ref<BlocAccueilAdmin[]>([])
-const chargement = ref(true)
-const erreur = ref('')
-const message = ref('')
-const enregistrement = ref(false)
-const publication = ref(false)
-
-const blocSelectionne = ref<TypeBlocAccueil | null>(null)
-const brouillonTitre = ref('')
-const nouveauFichier = ref<File | null>(null)
-const nouvelleMention = ref('')
-
-const hero = reactive({
-  cta_principal: '',
-  lien_principal: '',
-  cta_secondaire: '',
-  lien_secondaire: '',
-})
-const mentions = ref<string[]>([])
-const chiffres = ref<LigneChiffre[]>([])
-const etapes = ref<LigneTitreDesc[]>([])
-const cartes = ref<LigneTitreDesc[]>([])
-const temoignages = ref<LigneTemoignage[]>([])
-const questions = ref<LigneQuestion[]>([])
-const appelAction = reactive({ cta: '', lien: '', slogan: '' })
-
-const blocsTries = computed(() =>
-  [...blocs.value].sort((a, b) => a.ordre - b.ordre),
-)
-
-const blocCourant = computed(
-  () => blocs.value.find((b) => b.type === blocSelectionne.value) ?? null,
-)
-
-const nbPublies = computed(() => blocs.value.filter((b) => b.publie).length)
-
-const imageActuelle = computed(() =>
-  blocs.value.find((b) => b.type === blocSelectionne.value)?.image_url ?? undefined,
-)
-
-async function charger() {
-  chargement.value = true
-  erreur.value = ''
-  try {
-    blocs.value = await listeBlocsAccueilAdmin()
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    chargement.value = false
-  }
-}
-
-function selectionner(type: TypeBlocAccueil) {
-  blocSelectionne.value = type
-  const bloc = blocs.value.find((b) => b.type === type)
-  const contenu = bloc?.contenu ?? {}
-  brouillonTitre.value = bloc?.titre ?? ''
-  nouveauFichier.value = null
-  nouvelleMention.value = ''
-  hero.cta_principal = contenu.cta_principal ?? ''
-  hero.lien_principal = contenu.lien_principal ?? ''
-  hero.cta_secondaire = contenu.cta_secondaire ?? ''
-  hero.lien_secondaire = contenu.lien_secondaire ?? ''
-  mentions.value = [...(contenu.mentions ?? [])]
-  chiffres.value = JSON.parse(JSON.stringify(contenu.chiffres ?? [])) as LigneChiffre[]
-  etapes.value = JSON.parse(JSON.stringify(contenu.etapes ?? [])) as LigneTitreDesc[]
-  cartes.value = JSON.parse(JSON.stringify(contenu.cartes ?? [])) as LigneTitreDesc[]
-  temoignages.value = JSON.parse(JSON.stringify(contenu.temoignages ?? [])) as LigneTemoignage[]
-  questions.value = JSON.parse(JSON.stringify(contenu.questions ?? [])) as LigneQuestion[]
-  appelAction.cta = contenu.cta ?? ''
-  appelAction.lien = contenu.lien ?? ''
-  appelAction.slogan = contenu.slogan ?? ''
-}
-
-function contenuConstruit(): ContenuBlocAccueil {
-  switch (blocSelectionne.value) {
-    case 'HERO':
-      return {
-        cta_principal: hero.cta_principal,
-        lien_principal: hero.lien_principal,
-        cta_secondaire: hero.cta_secondaire,
-        lien_secondaire: hero.lien_secondaire,
-      }
-    case 'REASSURANCE':
-      return { mentions: mentions.value }
-    case 'CHIFFRES':
-      return { chiffres: chiffres.value }
-    case 'ETAPES':
-      return { etapes: etapes.value }
-    case 'SECURITE':
-      return { cartes: cartes.value }
-    case 'TEMOIGNAGES':
-      return { temoignages: temoignages.value }
-    case 'FAQ':
-      return { questions: questions.value }
-    case 'APPEL_ACTION':
-      return { cta: appelAction.cta, lien: appelAction.lien, slogan: appelAction.slogan }
-    default:
-      return {}
-  }
-}
-
-function ajouterMention() {
-  if (!nouvelleMention.value.trim()) return
-  mentions.value.push(nouvelleMention.value.trim())
-  nouvelleMention.value = ''
-}
-
-async function enregistrerBloc() {
-  if (!blocSelectionne.value) return
-  enregistrement.value = true
-  erreur.value = ''
-  message.value = ''
-  try {
-    await modifierBlocAccueil(blocSelectionne.value, {
-      titre: brouillonTitre.value,
-      contenu: contenuConstruit(),
-      image: nouveauFichier.value,
-    })
-    message.value = 'Bloc enregistré.'
-    await charger()
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    enregistrement.value = false
-  }
-}
-
-async function deplacer(index: number, direction: -1 | 1) {
-  const trie = blocsTries.value
-  const cible = index + direction
-  if (cible < 0 || cible >= trie.length) return
-  const source = trie[index]
-  const destination = trie[cible]
-  await Promise.all([
-    modifierBlocAccueil(source.type, { ordre: destination.ordre }),
-    modifierBlocAccueil(destination.type, { ordre: source.ordre }),
-  ])
-  await charger()
-}
-
-async function basculerActif(bloc: BlocAccueilAdmin) {
-  erreur.value = ''
-  try {
-    await modifierBlocAccueil(bloc.type, { actif: !bloc.actif })
-    await charger()
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  }
-}
-
-async function publierPage() {
-  publication.value = true
-  erreur.value = ''
-  message.value = ''
-  try {
-    await ordonnerBlocsAccueil({
-      blocs: blocsTries.value.map((b) => ({ type: b.type, actif: b.actif, ordre: b.ordre })),
-      publier: true,
-    })
-    message.value = 'Page publiée : les blocs actifs sont désormais visibles en page d\'accueil.'
-    await charger()
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    publication.value = false
-  }
-}
+const apercuOuvert = ref(false)
 
 onMounted(charger)
 </script>
@@ -234,10 +69,14 @@ onMounted(charger)
           Personnalisez les huit blocs de la vitrine publique puis publiez vos changements.
         </p>
       </div>
-      <div class="mt-4 mt-md-0 d-flex align-center gap-3">
+      <div class="actions-page">
         <v-chip :color="nbPublies === 8 ? 'success' : 'warning'" variant="flat" class="font-weight-bold">
           {{ nbPublies }}/8 blocs publiés
         </v-chip>
+        <div class="separateur-actions" />
+        <v-btn variant="outlined" size="large" class="font-weight-bold" @click="apercuOuvert = true">
+          <Eye :size="18" class="mr-2" /> Aperçu
+        </v-btn>
         <v-btn color="primary" variant="flat" size="large" class="font-weight-bold hover-lift" :loading="publication" @click="publierPage">
           <Send :size="18" class="mr-2" /> Publier la page
         </v-btn>
@@ -306,199 +145,33 @@ onMounted(charger)
           </v-card-title>
 
           <v-card-text>
-            <div class="d-flex align-center gap-3 mb-4">
-              <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">
+            <div class="ligne-champ mb-4">
+              <label class="etiquette-champ">
                 Titre de section
               </label>
               <v-text-field v-model="brouillonTitre" density="comfortable" variant="outlined" hide-details placeholder="Titre affiché au-dessus du bloc" />
             </div>
 
-            <!-- HERO -->
-            <template v-if="blocSelectionne === 'HERO'">
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Bouton principal</label>
-                <v-text-field v-model="hero.cta_principal" density="comfortable" variant="outlined" hide-details />
-              </div>
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Lien principal</label>
-                <v-text-field v-model="hero.lien_principal" density="comfortable" variant="outlined" hide-details placeholder="/inscription" />
-              </div>
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Bouton secondaire</label>
-                <v-text-field v-model="hero.cta_secondaire" density="comfortable" variant="outlined" hide-details />
-              </div>
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Lien secondaire</label>
-                <v-text-field v-model="hero.lien_secondaire" density="comfortable" variant="outlined" hide-details placeholder="/login" />
-              </div>
-            </template>
-
-            <!-- REASSURANCE -->
-            <template v-if="blocSelectionne === 'REASSURANCE'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">
-                Mentions affichées
-              </p>
-              <v-chip
-                v-for="(mention, i) in mentions"
-                :key="`${mention}-${i}`"
-                closable
-                class="mr-2 mb-2"
-                @click:close="mentions.splice(i, 1)"
-              >
-                {{ mention }}
-              </v-chip>
-              <div class="d-flex gap-2">
-                <v-text-field v-model="nouvelleMention" density="comfortable" variant="outlined" hide-details placeholder="Nouvelle mention (ex : Régulé par le CREPMF)" @keyup.enter="ajouterMention" />
-                <v-btn color="primary" variant="flat" @click="ajouterMention">
-                  <Plus :size="18" /> Ajouter
-                </v-btn>
-              </div>
-            </template>
-
-            <!-- CHIFFRES -->
-            <template v-if="blocSelectionne === 'CHIFFRES'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">Chiffres clés</p>
-              <v-card v-for="(chiffre, i) in chiffres" :key="i" variant="tonal" class="mb-3 pa-4 position-relative">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="chiffre.valeur" label="Valeur" density="comfortable" variant="outlined" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="chiffre.libelle" label="Libellé" density="comfortable" variant="outlined" />
-                  </v-col>
-                </v-row>
-                <v-btn icon size="small" variant="text" color="error" class="position-absolute" style="top: 4px; right: 4px" @click="chiffres.splice(i, 1)">
-                  <Trash2 :size="16" />
-                </v-btn>
-              </v-card>
-              <v-btn color="primary" variant="outlined" @click="chiffres.push({ valeur: '', libelle: '' })">
-                <Plus :size="18" class="mr-2" /> Ajouter un chiffre
-              </v-btn>
-            </template>
-
-            <!-- ETAPES -->
-            <template v-if="blocSelectionne === 'ETAPES'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">Étapes du parcours</p>
-              <v-card v-for="(etape, i) in etapes" :key="i" variant="tonal" class="mb-3 pa-4 position-relative">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="etape.titre" label="Titre" density="comfortable" variant="outlined" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="etape.description" label="Description" density="comfortable" variant="outlined" />
-                  </v-col>
-                </v-row>
-                <v-btn icon size="small" variant="text" color="error" class="position-absolute" style="top: 4px; right: 4px" @click="etapes.splice(i, 1)">
-                  <Trash2 :size="16" />
-                </v-btn>
-              </v-card>
-              <v-btn color="primary" variant="outlined" @click="etapes.push({ titre: '', description: '' })">
-                <Plus :size="18" class="mr-2" /> Ajouter une étape
-              </v-btn>
-            </template>
-
-            <!-- SÉCURITÉ -->
-            <template v-if="blocSelectionne === 'SECURITE'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">Cartes sécurité</p>
-              <v-card v-for="(carte, i) in cartes" :key="i" variant="tonal" class="mb-3 pa-4 position-relative">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="carte.titre" label="Titre" density="comfortable" variant="outlined" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="carte.description" label="Description" density="comfortable" variant="outlined" />
-                  </v-col>
-                </v-row>
-                <v-btn icon size="small" variant="text" color="error" class="position-absolute" style="top: 4px; right: 4px" @click="cartes.splice(i, 1)">
-                  <Trash2 :size="16" />
-                </v-btn>
-              </v-card>
-              <v-btn color="primary" variant="outlined" @click="cartes.push({ titre: '', description: '' })">
-                <Plus :size="18" class="mr-2" /> Ajouter une carte
-              </v-btn>
-            </template>
-
-            <!-- TÉMOIGNAGES -->
-            <template v-if="blocSelectionne === 'TEMOIGNAGES'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">Témoignages</p>
-              <v-card v-for="(temoignage, i) in temoignages" :key="i" variant="tonal" class="mb-3 pa-4 position-relative">
-                <v-row>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="temoignage.nom" label="Nom" density="comfortable" variant="outlined" />
-                  </v-col>
-                  <v-col cols="12" md="6">
-                    <v-text-field v-model="temoignage.role" label="Rôle" density="comfortable" variant="outlined" />
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field v-model="temoignage.texte" label="Témoignage" density="comfortable" variant="outlined" multiline :rows="2" />
-                  </v-col>
-                </v-row>
-                <v-btn icon size="small" variant="text" color="error" class="position-absolute" style="top: 4px; right: 4px" @click="temoignages.splice(i, 1)">
-                  <Trash2 :size="16" />
-                </v-btn>
-              </v-card>
-              <v-btn color="primary" variant="outlined" @click="temoignages.push({ nom: '', role: '', texte: '' })">
-                <Plus :size="18" class="mr-2" /> Ajouter un témoignage
-              </v-btn>
-            </template>
-
-            <!-- FAQ -->
-            <template v-if="blocSelectionne === 'FAQ'">
-              <p class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase mb-2">Questions fréquentes</p>
-              <v-card v-for="(question, i) in questions" :key="i" variant="tonal" class="mb-3 pa-4 position-relative">
-                <v-col cols="12" class="pa-0 mb-3">
-                  <v-text-field v-model="question.question" label="Question" density="comfortable" variant="outlined" />
-                </v-col>
-                <v-col cols="12" class="pa-0 mb-3">
-                  <v-text-field v-model="question.reponse" label="Réponse" density="comfortable" variant="outlined" multiline :rows="2" />
-                </v-col>
-                <v-btn icon size="small" variant="text" color="error" class="position-absolute" style="top: 4px; right: 4px" @click="questions.splice(i, 1)">
-                  <Trash2 :size="16" />
-                </v-btn>
-              </v-card>
-              <v-btn color="primary" variant="outlined" @click="questions.push({ question: '', reponse: '' })">
-                <Plus :size="18" class="mr-2" /> Ajouter une question
-              </v-btn>
-            </template>
-
-            <!-- APPEL À L'ACTION -->
-            <template v-if="blocSelectionne === 'APPEL_ACTION'">
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Slogan</label>
-                <v-text-field v-model="appelAction.slogan" density="comfortable" variant="outlined" hide-details />
-              </div>
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Libellé du bouton</label>
-                <v-text-field v-model="appelAction.cta" density="comfortable" variant="outlined" hide-details />
-              </div>
-              <div class="d-flex align-center gap-3 mb-3">
-                <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">Lien du bouton</label>
-                <v-text-field v-model="appelAction.lien" density="comfortable" variant="outlined" hide-details placeholder="/inscription" />
-              </div>
-            </template>
-
-            <div class="d-flex align-center gap-3 mt-6">
-              <label class="text-body-2 font-weight-bold text-medium-emphasis text-uppercase" style="min-width: 120px">
-                Image d'illustration
-              </label>
-              <v-file-input
-                accept="image/*"
-                density="comfortable"
-                variant="outlined"
-                hide-details
-                :model-value="nouveauFichier"
-                prepend-icon=""
-                label="Choisir une image (conservé si vide)"
-                class="flex-grow-1"
-                @update:model-value="(fichiers) => (nouveauFichier = (fichiers as File[])[0] ?? null)"
-              />
-              <v-avatar v-if="imageActuelle" size="48" rounded>
-                <v-img :src="imageActuelle" />
-              </v-avatar>
-            </div>
+            <AccueilBlocEditor
+              :blocSelectionne="blocSelectionne"
+              :hero="hero"
+              :mentions="mentions"
+              :nouvelleMention="nouvelleMention"
+              @update:nouvelleMention="(val) => nouvelleMention = val"
+              @ajouterMention="ajouterMention"
+              :chiffres="chiffres"
+              :etapes="etapes"
+              :cartes="cartes"
+              :temoignages="temoignages"
+              :questions="questions"
+              :appelAction="appelAction"
+              :nouveauFichier="nouveauFichier"
+              :imageActuelle="imageActuelle"
+              @surFichierChoisi="surFichierChoisi"
+            />
           </v-card-text>
 
-          <v-card-actions class="pa-4 pt-0">
+          <v-card-actions class="px-6 py-4">
             <v-btn color="primary" variant="flat" class="font-weight-bold" :loading="enregistrement" @click="enregistrerBloc">
               <Check :size="18" class="mr-2" /> Enregistrer le bloc
             </v-btn>
@@ -515,5 +188,103 @@ onMounted(charger)
     </v-row>
 
     <v-progress-circular v-if="chargement" indeterminate color="primary" class="d-block mx-auto my-12" />
+
+    <!-- Aperçu en direct de la configuration (dont les blocs non enregistrés) -->
+    <v-dialog v-model="apercuOuvert" fullscreen transition="dialog-bottom-transition">
+      <v-card class="apercu-conteneur" flat>
+        <div class="barre-apercu">
+          <span class="font-display font-weight-bold">Aperçu de la page d'accueil</span>
+          <span class="texte-note-apercu">
+            Les blocs désactivés sont signalés ; votre brouillon du bloc en cours est inclus.
+          </span>
+          <v-btn size="small" variant="tonal" @click="apercuOuvert = false">
+            <X :size="16" class="mr-1" /> Fermer l'aperçu
+          </v-btn>
+        </div>
+        <div class="corps-apercu">
+          <VitrineAccueil :blocs="apercuBlocs()" :masques="apercuMasques" />
+        </div>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+.ligne-champ {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.etiquette-champ {
+  flex: 0 0 190px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-on-surface-variant));
+  line-height: 1.4;
+}
+
+.actions-page {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.separateur-actions {
+  width: 1px;
+  height: 32px;
+  background-color: rgb(var(--v-theme-outline));
+}
+
+@media (max-width: 959.98px) {
+  .actions-page {
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+.apercu-conteneur {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background-color: rgb(var(--v-theme-background));
+}
+
+.barre-apercu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  background-color: rgb(var(--v-theme-surface));
+  border-bottom: 1px solid rgb(var(--v-theme-outline));
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.texte-note-apercu {
+  flex: 1;
+  font-size: 13px;
+  color: rgb(var(--v-theme-on-surface-variant));
+}
+
+.corps-apercu {
+  flex: 1;
+  overflow-y: auto;
+}
+
+@media (max-width: 700px) {
+  .ligne-champ {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .etiquette-champ {
+    flex: unset;
+  }
+}
+</style>

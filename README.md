@@ -1,6 +1,6 @@
 # PGNOC-TI — Frontend
 
-Interface web de la plateforme de gestion numérique des ordres de cession.
+Interface web de la plateforme de gestion numérique des demandes d'ouverture de compte-titres.
 
 ## Stack
 

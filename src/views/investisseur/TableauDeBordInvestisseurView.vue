@@ -75,7 +75,7 @@ onMounted(async () => {
 
     <header class="mb-8">
       <h1 class="font-display text-h4 font-weight-bold mb-2">Aperçu du Portefeuille</h1>
-      <p class="text-muted">Gérez vos dossiers de cession et suivez leur instruction en temps réel.</p>
+      <p class="text-muted">Gérez vos demandes d'ouverture de compte-titres et suivez leur instruction en temps réel.</p>
     </header>
 
     <v-row class="mb-6">
@@ -137,7 +137,7 @@ onMounted(async () => {
           </v-card-title>
           <v-card-text class="px-6 pb-6">
             <v-alert v-if="!dossiers.chargement && !dossiers.liste.length" type="info" variant="tonal" class="mt-4">
-              Aucun dossier pour le moment. Commencez votre première souscription.
+              Aucun dossier pour le moment. Commencez votre première demande d'ouverture.
               <v-btn variant="text" color="primary" size="small" class="mt-1" @click="demarrerDossier">
                 Découvrir les SGI <ChevronRight :size="14" class="ml-1" />
               </v-btn>
@@ -191,11 +191,11 @@ onMounted(async () => {
         <v-card class="glass-panel flex-grow-1">
           <v-card-title class="d-flex align-center pt-6 px-6 font-display font-weight-bold">
             <FolderPlus :size="20" class="mr-2 text-primary" />
-            Souscription
+            Ouverture de compte-titres
           </v-card-title>
           <v-card-text class="px-6 pb-6">
             <p class="text-body-2 text-muted mb-6">
-              Ouvrez un nouveau dossier de cession de titres auprès d'une de nos Sociétés de Gestion partenaires.
+              Déposez une nouvelle demande d'ouverture de compte-titres auprès d'une de nos Sociétés de Gestion partenaires.
             </p>
             <v-btn color="primary" variant="flat" block class="btn-principal hover-lift" @click="demarrerDossier">
               Démarrer un Dossier <ChevronRight :size="16" class="ml-2" />

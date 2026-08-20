@@ -5,6 +5,7 @@ interface GestionJwt {
   refreshCourant(): string | null
   appliquer(access: string, refresh: string | null): void
   deconnecter(): void
+  redirigerVersLogin(): void
 }
 
 let gestionJwt: GestionJwt = {
@@ -12,6 +13,7 @@ let gestionJwt: GestionJwt = {
   refreshCourant: () => null,
   appliquer: () => undefined,
   deconnecter: () => undefined,
+  redirigerVersLogin: () => undefined,
 }
 
 export function enregistrerGestionJwt(gestion: GestionJwt): void {
@@ -73,10 +75,7 @@ api.interceptors.response.use(
       return api(config)
     } catch (cause) {
       gestionJwt.deconnecter()
-      const { default: router } = await import('@/router')
-      if (router.currentRoute.value.name !== 'login') {
-        await router.push({ name: 'login' })
-      }
+      gestionJwt.redirigerVersLogin()
       return Promise.reject(cause)
     }
   },

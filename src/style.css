@@ -58,3 +58,110 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* -------------------------------------
+   VITRINE PUBLIQUE (page d'accueil)
+   Sections partagées : en-tête, ornement, conteneur
+   ------------------------------------- */
+
+.section-vitrine {
+  padding: 96px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.en-tete-section {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 56px;
+}
+
+.en-tete-section .sur-titre {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.06);
+  border: 1px solid rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.en-tete-section .sur-titre::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(var(--v-theme-accent));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-accent), 0.12);
+}
+
+.en-tete-section h2 {
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  color: rgb(var(--v-theme-on-surface));
+  margin: 0 0 18px;
+  text-wrap: balance;
+}
+
+.ornement-titre {
+  position: relative;
+  width: 64px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-accent)));
+  overflow: visible;
+}
+
+.ornement-titre::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgb(var(--v-theme-secondary));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), 0.18);
+}
+
+/* Apparition progressive des sections au défilement (directive v-reveal) */
+.reveal-initial {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-initial,
+  .reveal-active {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .section-vitrine {
+    padding: 64px 20px;
+  }
+  .en-tete-section {
+    margin-bottom: 40px;
+  }
+}

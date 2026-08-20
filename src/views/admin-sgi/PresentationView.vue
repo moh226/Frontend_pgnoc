@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
 import {
   Building2,
   History,
   Eye,
-  Plus,
   CloudUpload,
   BadgeCheck,
   Target,
@@ -15,156 +13,45 @@ import {
   Phone,
 } from '@lucide/vue'
 
-import { presentationSgi, publierPresentation } from '@/api/sgiAdmin'
-import { extraireMessageErreur } from '@/api/client'
 import SgiPresentationRenderer from '@/components/SgiPresentationRenderer.vue'
-import type {
-  PresentationActivite,
-  PresentationMembre,
-  PresentationReference,
-  PresentationSgi,
-  PresentationStructuree,
-} from '@/types'
+import PresentationDynamicList from '@/components/presentation/PresentationDynamicList.vue'
+import type { FieldDefinition } from '@/components/presentation/PresentationDynamicList.vue'
+import { usePresentationForm } from '@/composables/usePresentationForm'
 import { formaterDate } from '@/utils/format'
 
-const presentation = ref<PresentationSgi | null>(null)
-const chargement = ref(false)
-const erreur = ref('')
-const succes = ref('')
-const envoiEnCours = ref(false)
+const {
+  presentation,
+  chargement,
+  erreur,
+  succes,
+  envoiEnCours,
+  apercuOuvert,
+  formulaire,
+  apercu,
+  rienRenseigne,
+  publier,
+  ajouterActivite,
+  supprimerActivite,
+  ajouterMembre,
+  supprimerMembre,
+  ajouterReference,
+  supprimerReference,
+} = usePresentationForm()
 
-interface LigneActivite {
-  titre: string
-  description: string
-}
-interface LigneMembre {
-  nom: string
-  fonction: string
-}
-interface LigneReference {
-  titre: string
-  annee: string
-  description: string
-}
+const activiteFields: FieldDefinition[] = [
+  { key: 'titre', label: 'Pôle (ex : Intermédiation / Investissement)' },
+  { key: 'description', label: 'Description' },
+]
 
-const formulaire = reactive({
-  forme_sociale: '',
-  date_creation_societe: '',
-  capital_social: '',
-  numero_agrement: '',
-  date_agrement: '',
-  autorite_agrement: 'AMF-UEMOA (ex-CREPMF)',
-  mission: '',
-  vision: '',
-  ancrage_regional: '',
-  adresse: '',
-  telephone: '',
-  email_contact: '',
-  site_web: '',
-  activites: [] as LigneActivite[],
-  membres: [] as LigneMembre[],
-  references: [] as LigneReference[],
-})
+const membreFields: FieldDefinition[] = [
+  { key: 'nom', label: 'Nom' },
+  { key: 'fonction', label: 'Fonction' },
+]
 
-const apercuOuvert = ref(false)
-
-const apercu = computed<PresentationStructuree>(() => ({
-  forme_sociale: formulaire.forme_sociale,
-  date_creation_societe: formulaire.date_creation_societe || null,
-  capital_social: formulaire.capital_social,
-  numero_agrement: formulaire.numero_agrement,
-  date_agrement: formulaire.date_agrement || null,
-  autorite_agrement: formulaire.autorite_agrement,
-  est_regule: Boolean(formulaire.numero_agrement),
-  mission: formulaire.mission,
-  vision: formulaire.vision,
-  ancrage_regional: formulaire.ancrage_regional,
-  adresse: formulaire.adresse,
-  telephone: formulaire.telephone,
-  email_contact: formulaire.email_contact,
-  site_web: formulaire.site_web,
-  activites: formulaire.activites.map((a, i): PresentationActivite => ({ ...a, ordre: i })),
-  membres: formulaire.membres.map((m, i): PresentationMembre => ({ ...m, ordre: i })),
-  references: formulaire.references.map((r, i): PresentationReference => ({ ...r, ordre: i })),
-}))
-
-const rienRenseigne = computed(() => {
-  const f = formulaire
-  return !(
-    f.forme_sociale ||
-    f.date_creation_societe ||
-    f.capital_social ||
-    f.numero_agrement ||
-    f.date_agrement ||
-    f.mission ||
-    f.vision ||
-    f.ancrage_regional ||
-    f.adresse ||
-    f.telephone ||
-    f.email_contact ||
-    f.site_web ||
-    f.activites.length ||
-    f.membres.length ||
-    f.references.length
-  )
-})
-
-async function charger() {
-  chargement.value = true
-  erreur.value = ''
-  try {
-    presentation.value = await presentationSgi()
-    const p = presentation.value
-    formulaire.forme_sociale = p.forme_sociale
-    formulaire.date_creation_societe = p.date_creation_societe ?? ''
-    formulaire.capital_social = p.capital_social
-    formulaire.numero_agrement = p.numero_agrement
-    formulaire.date_agrement = p.date_agrement ?? ''
-    formulaire.autorite_agrement = p.autorite_agrement || 'AMF-UEMOA (ex-CREPMF)'
-    formulaire.mission = p.mission
-    formulaire.vision = p.vision
-    formulaire.ancrage_regional = p.ancrage_regional
-    formulaire.adresse = p.adresse
-    formulaire.telephone = p.telephone
-    formulaire.email_contact = p.email_contact
-    formulaire.site_web = p.site_web
-    formulaire.activites = p.activites.map(({ titre, description }) => ({ titre, description }))
-    formulaire.membres = p.membres.map(({ nom, fonction }) => ({ nom, fonction }))
-    formulaire.references = p.references.map(({ titre, annee, description }) => ({
-      titre,
-      annee,
-      description,
-    }))
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    chargement.value = false
-  }
-}
-
-function ajouterLigne<L>(liste: L[]) {
-  liste.push({} as L)
-}
-
-function retirerLigne<L>(liste: L[], index: number) {
-  liste.splice(index, 1)
-}
-
-async function publier() {
-  envoiEnCours.value = true
-  erreur.value = ''
-  succes.value = ''
-  try {
-    presentation.value = await publierPresentation(apercu.value)
-    succes.value = 'Présentation publiée avec succès.'
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-onMounted(() => void charger())
+const referenceFields: FieldDefinition[] = [
+  { key: 'titre', label: 'Réalisation / distinction' },
+  { key: 'annee', label: 'Année', width: '130px' },
+]
 </script>
 
 <template>
@@ -316,85 +203,25 @@ onMounted(() => void charger())
               <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
                 <Layers :size="17" class="mr-2" /> Domaines d'activité
               </h2>
-              <div
-                v-for="(activite, i) in formulaire.activites"
-                :key="i"
-                class="d-flex align-start mb-3 gap-2"
-              >
-                <v-text-field
-                  v-model="activite.titre"
-                  label="Pôle (ex : Intermédiation / Investissement)"
-                  variant="outlined"
-                  density="comfortable"
-                  class="flex-grow-1"
-                  hide-details="auto"
-                />
-                <v-text-field
-                  v-model="activite.description"
-                  label="Description"
-                  variant="outlined"
-                  density="comfortable"
-                  class="flex-grow-1"
-                  hide-details="auto"
-                />
-                <v-btn
-                  variant="text"
-                  color="error"
-                  icon="mdi-delete-outline"
-                  @click="retirerLigne(formulaire.activites, i)"
-                />
-              </div>
-              <v-btn
-                variant="tonal"
-                color="primary"
-                size="small"
-                class="mb-6"
-                @click="ajouterLigne(formulaire.activites)"
-              >
-                <Plus :size="15" class="mr-1" /> Ajouter un pôle
-              </v-btn>
+              <PresentationDynamicList
+                :items="formulaire.activites"
+                :fields="activiteFields"
+                add-label="Ajouter un pôle"
+                @add="ajouterActivite"
+                @remove="supprimerActivite"
+              />
 
               <!-- Gouvernance et équipe -->
               <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
                 <Users :size="17" class="mr-2" /> Gouvernance et équipe
               </h2>
-              <div
-                v-for="(membre, i) in formulaire.membres"
-                :key="i"
-                class="d-flex align-start mb-3 gap-2"
-              >
-                <v-text-field
-                  v-model="membre.nom"
-                  label="Nom"
-                  variant="outlined"
-                  density="comfortable"
-                  class="flex-grow-1"
-                  hide-details="auto"
-                />
-                <v-text-field
-                  v-model="membre.fonction"
-                  label="Fonction"
-                  variant="outlined"
-                  density="comfortable"
-                  class="flex-grow-1"
-                  hide-details="auto"
-                />
-                <v-btn
-                  variant="text"
-                  color="error"
-                  icon="mdi-delete-outline"
-                  @click="retirerLigne(formulaire.membres, i)"
-                />
-              </div>
-              <v-btn
-                variant="tonal"
-                color="primary"
-                size="small"
-                class="mb-6"
-                @click="ajouterLigne(formulaire.membres)"
-              >
-                <Plus :size="15" class="mr-1" /> Ajouter un dirigeant
-              </v-btn>
+              <PresentationDynamicList
+                :items="formulaire.membres"
+                :fields="membreFields"
+                add-label="Ajouter un dirigeant"
+                @add="ajouterMembre"
+                @remove="supprimerMembre"
+              />
 
               <!-- Ancrage régional -->
               <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
@@ -413,43 +240,13 @@ onMounted(() => void charger())
               <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
                 <Trophy :size="17" class="mr-2" /> Références et réalisations
               </h2>
-              <div
-                v-for="(reference, i) in formulaire.references"
-                :key="i"
-                class="d-flex align-start mb-3 gap-2"
-              >
-                <v-text-field
-                  v-model="reference.titre"
-                  label="Réalisation / distinction"
-                  variant="outlined"
-                  density="comfortable"
-                  class="flex-grow-1"
-                  hide-details="auto"
-                />
-                <v-text-field
-                  v-model="reference.annee"
-                  label="Année"
-                  variant="outlined"
-                  density="comfortable"
-                  style="max-width: 130px"
-                  hide-details="auto"
-                />
-                <v-btn
-                  variant="text"
-                  color="error"
-                  icon="mdi-delete-outline"
-                  @click="retirerLigne(formulaire.references, i)"
-                />
-              </div>
-              <v-btn
-                variant="tonal"
-                color="primary"
-                size="small"
-                class="mb-6"
-                @click="ajouterLigne(formulaire.references)"
-              >
-                <Plus :size="15" class="mr-1" /> Ajouter une référence
-              </v-btn>
+              <PresentationDynamicList
+                :items="formulaire.references"
+                :fields="referenceFields"
+                add-label="Ajouter une référence"
+                @add="ajouterReference"
+                @remove="supprimerReference"
+              />
 
               <!-- Contact -->
               <h2 class="text-subtitle-1 font-weight-bold text-primary mb-3 d-flex align-center">
@@ -509,11 +306,6 @@ onMounted(() => void charger())
                   <CloudUpload :size="18" class="mr-2" /> Publier la présentation
                 </v-btn>
               </div>
-              <!--
-          <p class="text-caption text-medium-emphasis text-right mt-2">
-            La sauvegarde rend immédiatement la page visible par les investisseurs.
-          </p>
-          -->
             </v-card-text>
           </v-card>
         </v-col>
@@ -558,9 +350,9 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="pa-5">
           <v-spacer />
-          <v-btn color="primary" variant="flat" @click="apercuOuvert = false"
-            >Fermer l'aperçu</v-btn
-          >
+          <v-btn color="primary" variant="flat" @click="apercuOuvert = false">
+            Fermer l'aperçu
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -579,10 +371,6 @@ onMounted(() => void charger())
 
 .border-l-4 {
   border-left-width: 4px !important;
-}
-
-.gap-2 {
-  gap: 10px;
 }
 
 .hover-lift {

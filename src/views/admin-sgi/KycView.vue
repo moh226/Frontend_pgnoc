@@ -5,208 +5,33 @@ import {
   Eye,
   Plus,
   Layers,
-  FileText,
-  Camera,
   Power,
-  PowerOff,
-  XCircle,
-  GripVertical
+  PowerOff
 } from '@lucide/vue'
 
-import {
-  creerChamp,
-  creerEtape,
-  listeChampsKycAdmin,
-  listetEtapesKycAdmin,
-  modifierChamp,
-  modifierEtape,
-} from '@/api/kycAdmin'
-import { extraireMessageErreur } from '@/api/client'
-import type { ChampKycAdmin, EtapeKycAdmin, TypeChampKyc } from '@/types'
+import { useKycAdmin, LIBELLES_TYPE } from '@/composables/useKycAdmin'
+import KycFieldCard from '@/components/kyc/KycFieldCard.vue'
+import KycFieldPreview from '@/components/kyc/KycFieldPreview.vue'
 
-const LIBELLES_TYPE: Record<TypeChampKyc, string> = {
-  TEXTE_COURT: 'Texte court',
-  TEXTE_LONG: 'Texte long',
-  NOMBRE: 'Nombre',
-  DATE: 'Date',
-  BOOLEEN: 'Case à cocher',
-  CHOIX_UNIQUE: 'Choix unique',
-  CHOIX_MULTIPLE: 'Choix multiple',
-  FICHIER: 'Fichier joint',
-  SELFIE: 'Selfie de vérification',
-}
+const {
+  etapes,
+  champsParEtape,
+  chargement,
+  erreur,
+  dialogEtape,
+  dialogChamp,
+  envoiEnCours,
+  formulaireEtape,
+  formulaireChamp,
+  charger,
+  creerNouvelleEtape,
+  ouvrirChamp,
+  creerNouveauChamp,
+  basculerEtape,
+  basculerChamp,
+} = useKycAdmin()
 
-const etapes = ref<EtapeKycAdmin[]>([])
-const champsParEtape = ref(new Map<string, ChampKycAdmin[]>())
-const chargement = ref(false)
-const erreur = ref('')
-
-const dialogEtape = ref(false)
-const dialogChamp = ref(false)
-const envoiEnCours = ref(false)
-
-const formulaireEtape = ref({ nom: '', ordre: 1 })
-const formulaireChamp = ref({
-  etape: '',
-  nom: '',
-  code: '',
-  type: 'TEXTE_COURT' as TypeChampKyc,
-  obligatoire: true,
-  ordre: 1,
-  justification: '',
-  options_choix: '',
-  formats_acceptes: '',
-  taille_max_mo: null as number | null,
-})
-
-async function charger() {
-  chargement.value = true
-  erreur.value = ''
-  try {
-    const etapesChargees = await listetEtapesKycAdmin()
-    etapes.value = [...etapesChargees].sort((a, b) => a.ordre - b.ordre)
-    champsParEtape.value.clear()
-    await Promise.all(
-      etapes.value.map(async (e) => {
-        champsParEtape.value.set(e.id, await listeChampsKycAdmin(e.id))
-      }),
-    )
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    chargement.value = false
-  }
-}
-
-async function creerNouvelleEtape() {
-  if (!formulaireEtape.value.nom.trim()) return
-  envoiEnCours.value = true
-  erreur.value = ''
-  try {
-    const etape = await creerEtape({
-      nom: formulaireEtape.value.nom.trim(),
-      ordre: formulaireEtape.value.ordre,
-    })
-    champsParEtape.value.set(etape.id, [])
-    etapes.value.push(etape)
-    etapes.value.sort((a, b) => a.ordre - b.ordre)
-    dialogEtape.value = false
-    formulaireEtape.value = { nom: '', ordre: etapes.value.length + 1 }
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-function ouvrirChamp(etapeId: string) {
-  formulaireChamp.value = {
-    etape: etapeId,
-    nom: '',
-    code: '',
-    type: 'TEXTE_COURT',
-    obligatoire: true,
-    ordre: 1,
-    justification: '',
-    options_choix: '',
-    formats_acceptes: '',
-    taille_max_mo: null,
-  }
-  dialogChamp.value = true
-}
-
-function codeDuNom(nom: string): string {
-  return nom
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '')
-}
-
-async function creerNouveauChamp() {
-  if (!formulaireChamp.value.nom.trim()) return
-  envoiEnCours.value = true
-  erreur.value = ''
-  try {
-    const champ = await creerChamp({
-      etape: formulaireChamp.value.etape,
-      code: formulaireChamp.value.code.trim() || codeDuNom(formulaireChamp.value.nom),
-      nom: formulaireChamp.value.nom.trim(),
-      type: formulaireChamp.value.type,
-      obligatoire: formulaireChamp.value.obligatoire,
-      ordre: formulaireChamp.value.ordre,
-      justification: formulaireChamp.value.justification.trim() || undefined,
-      options_choix:
-        formulaireChamp.value.type === 'CHOIX_UNIQUE' ||
-        formulaireChamp.value.type === 'CHOIX_MULTIPLE'
-          ? formulaireChamp.value.options_choix
-              .split(',')
-              .map((o) => o.trim())
-              .filter(Boolean)
-          : null,
-      formats_acceptes:
-        formulaireChamp.value.type === 'FICHIER' ||
-        formulaireChamp.value.type === 'SELFIE'
-          ? formulaireChamp.value.formats_acceptes.trim() || undefined
-          : undefined,
-      taille_max_mo:
-        formulaireChamp.value.type === 'FICHIER' ||
-        formulaireChamp.value.type === 'SELFIE'
-          ? formulaireChamp.value.taille_max_mo
-          : null,
-    })
-    const actuels = champsParEtape.value.get(champ.etape) ?? []
-    champsParEtape.value.set(champ.etape, [...actuels, champ])
-    dialogChamp.value = false
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  } finally {
-    envoiEnCours.value = false
-  }
-}
-
-async function basculerEtape(etape: EtapeKycAdmin) {
-  erreur.value = ''
-  try {
-    const maj = await modifierEtape(etape.id, { actif: !etape.actif })
-    etape.actif = maj.actif
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  }
-}
-
-async function basculerChamp(champ: ChampKycAdmin) {
-  erreur.value = ''
-  try {
-    const maj = await modifierChamp(champ.id, { actif: !champ.actif })
-    champ.actif = maj.actif
-  } catch (cause) {
-    erreur.value = extraireMessageErreur(cause)
-  }
-}
-
-// --- Aperçu temps réel du formulaire côté investisseur ---
 const apercuOuvert = ref(false)
-const valeursApercu = ref<Record<string, string>>({})
-
-function champVisibleDansApercu(champ: ChampKycAdmin): boolean {
-  if (!champ.champ_parent) return true
-  return valeursApercu.value[champ.champ_parent] === champ.valeur_declencheur
-}
-
-function nomDuParent(champ: ChampKycAdmin): string {
-  if (!champ.champ_parent) return ''
-  for (const champs of champsParEtape.value.values()) {
-    const parent = champs.find((c) => c.id === champ.champ_parent)
-    if (parent) return parent.nom
-  }
-  return champ.champ_parent.slice(0, 8)
-}
-
-function etapesVisibles(): EtapeKycAdmin[] {
-  return etapes.value.filter((e) => e.actif)
-}
 
 onMounted(() => void charger())
 </script>
@@ -304,67 +129,13 @@ onMounted(() => void charger())
           </div>
           
           <div class="fields-grid d-flex flex-column gap-3">
-            <div 
-              v-for="champ in champsParEtape.get(etape.id)" 
+            <KycFieldCard
+              v-for="champ in champsParEtape.get(etape.id)"
               :key="champ.id"
-              class="field-card bg-surface rounded-lg pa-4 d-flex align-center border"
-              :class="{ 'opacity-70': !champ.actif }"
-            >
-              <!-- Poignée de drag (visuelle uniquement) -->
-              <div class="cursor-grab text-grey-lighten-1 mr-3 flex-shrink-0">
-                <GripVertical :size="20" />
-              </div>
-
-              <!-- Infos principales -->
-              <div class="flex-grow-1 min-w-0 pr-4">
-                <div class="d-flex align-center mb-1">
-                  <span class="font-weight-bold text-body-1 text-truncate mr-2">{{ champ.nom }}</span>
-                  <v-chip v-if="champ.obligatoire" color="error" size="x-small" variant="flat" class="font-weight-bold px-2">Requis</v-chip>
-                  <v-chip v-else color="info" size="x-small" variant="tonal" class="font-weight-bold px-2">Optionnel</v-chip>
-                </div>
-                
-                <div class="text-caption text-medium-emphasis d-flex align-center flex-wrap gap-x-2 gap-y-1">
-                  <span class="d-flex align-center text-primary font-weight-medium">
-                    <FileText :size="12" class="mr-1" /> {{ LIBELLES_TYPE[champ.type] }}
-                  </span>
-                  
-                  <span v-if="champ.type === 'CHOIX_UNIQUE' || champ.type === 'CHOIX_MULTIPLE'" class="text-truncate" style="max-width: 200px;">
-                    • {{ champ.options_choix?.join(', ') }}
-                  </span>
-                  <span v-else-if="champ.type === 'FICHIER' || champ.type === 'SELFIE'">
-                    • {{ champ.formats_acceptes || 'PDF' }} (max {{ champ.taille_max_mo }}Mo)
-                  </span>
-
-                  <span v-if="champ.champ_parent" class="d-flex align-center text-warning ml-2 border-l pl-2">
-                    <Eye :size="12" class="mr-1" />
-                    Conditionnel
-                  </span>
-                </div>
-              </div>
-
-              <!-- Actions du champ -->
-              <div class="d-flex align-center flex-shrink-0 gap-2">
-                <v-chip
-                  size="small"
-                  :color="champ.actif ? 'success' : 'grey'"
-                  variant="tonal"
-                  class="font-weight-bold d-none d-sm-flex"
-                >
-                  {{ champ.actif ? 'Actif' : 'Inactif' }}
-                </v-chip>
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  :color="champ.actif ? 'error' : 'success'"
-                  @click="basculerChamp(champ)"
-                  :title="champ.actif ? 'Désactiver' : 'Activer'"
-                >
-                  <PowerOff v-if="champ.actif" :size="18" />
-                  <Power v-else :size="18" />
-                </v-btn>
-              </div>
-            </div>
+              :champ="champ"
+              :libelles-type="LIBELLES_TYPE"
+              @basculer="basculerChamp"
+            />
           </div>
 
         </v-expansion-panel-text>
@@ -551,161 +322,11 @@ onMounted(() => void charger())
       </v-card>
     </v-dialog>
 
-    <!-- Aperçu temps réel du formulaire côté investisseur -->
-    <v-dialog v-model="apercuOuvert" max-width="800" scrollable>
-      <v-card class="rounded-xl elevation-24 bg-background">
-        <v-card-title class="d-flex align-center pa-6 bg-surface border-b">
-          <div class="bg-primary-lighten-5 text-primary rounded-circle pa-2 mr-3">
-            <Eye :size="24" />
-          </div>
-          <div>
-            <div class="font-display font-weight-bold text-h6">Aperçu du formulaire</div>
-            <div class="text-caption text-medium-emphasis">Simulation du rendu pour l'investisseur</div>
-          </div>
-          <v-spacer />
-          <v-btn variant="tonal" icon color="grey-darken-1" size="small" @click="apercuOuvert = false">
-            <XCircle :size="20" />
-          </v-btn>
-        </v-card-title>
-        
-        <v-card-text class="pa-6 pa-md-8 custom-scrollbar bg-background">
-          <v-alert type="info" variant="tonal" class="mb-6 rounded-lg border-l-4">
-            Testez les champs et les conditions d'affichage en direct. Les données ne sont pas enregistrées.
-          </v-alert>
-
-          <template v-if="!etapesVisibles().length">
-            <div class="text-center pa-8 bg-surface rounded-xl border border-dashed">
-              <Layers :size="48" class="text-grey-lighten-1 mb-4 mx-auto" />
-              <div class="text-h6 font-weight-medium mb-1">Aucune étape active</div>
-              <div class="text-body-2 text-medium-emphasis">L'investisseur verra un parcours vide. Activez des étapes pour prévisualiser.</div>
-            </div>
-          </template>
-
-          <div v-for="etape in etapesVisibles()" :key="etape.id" class="mb-8 bg-surface rounded-xl border overflow-hidden">
-            <div class="bg-surface-variant px-6 py-4 border-b d-flex align-center">
-              <div class="step-badge-small bg-primary text-white mr-3 font-weight-bold flex-shrink-0 d-flex align-center justify-center">
-                {{ etape.ordre }}
-              </div>
-              <div class="text-h6 font-display font-weight-bold">{{ etape.nom }}</div>
-            </div>
-
-            <div class="pa-6">
-              <v-alert
-                v-if="!champsParEtape.get(etape.id)?.some((champ) => champ.actif)"
-                type="warning"
-                variant="tonal"
-                class="mb-0 border-l-4"
-              >
-                Aucun champ actif configuré dans cette étape.
-              </v-alert>
-
-              <v-row v-else>
-                <template v-for="champ in champsParEtape.get(etape.id)" :key="champ.id">
-                  <v-col cols="12" v-if="champ.actif">
-                    <div v-if="champVisibleDansApercu(champ)">
-                      <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis mb-2">
-                        {{ champ.nom }}
-                        <span v-if="champ.obligatoire" class="text-error">*</span>
-                      </div>
-
-                      <v-text-field
-                        v-if="champ.type === 'TEXTE_COURT' || champ.type === 'NOMBRE' || champ.type === 'DATE'"
-                        :model-value="valeursApercu[champ.id]"
-                        :type="champ.type === 'DATE' ? 'date' : champ.type === 'NOMBRE' ? 'number' : 'text'"
-                        :hint="champ.justification || undefined"
-                        persistent-hint
-                        variant="outlined"
-                        class="premium-input"
-                        placeholder="Votre réponse"
-                        @update:model-value="(v: string | null) => { valeursApercu[champ.id] = (v ?? '') }"
-                      />
-                      
-                      <v-textarea
-                        v-else-if="champ.type === 'TEXTE_LONG'"
-                        :model-value="valeursApercu[champ.id]"
-                        :hint="champ.justification || undefined"
-                        persistent-hint
-                        variant="outlined"
-                        class="premium-input"
-                        rows="3"
-                        placeholder="Votre réponse"
-                        @update:model-value="(v: string | null) => { valeursApercu[champ.id] = (v ?? '') }"
-                      />
-                      
-                      <v-select
-                        v-else-if="champ.type === 'CHOIX_UNIQUE'"
-                        :model-value="valeursApercu[champ.id] || undefined"
-                        :items="champ.options_choix ?? []"
-                        :hint="champ.justification || undefined"
-                        persistent-hint
-                        variant="outlined"
-                        class="premium-input"
-                        placeholder="Sélectionnez une option"
-                        @update:model-value="(v: string | null) => { valeursApercu[champ.id] = (v ?? '') }"
-                      />
-                      
-                      <div v-else-if="champ.type === 'CHOIX_MULTIPLE'" class="bg-surface-variant pa-4 rounded-lg">
-                        <p v-if="champ.justification" class="text-caption text-medium-emphasis mb-2">{{ champ.justification }}</p>
-                        <v-checkbox
-                          v-for="option in champ.options_choix ?? []"
-                          :key="option"
-                          :label="option"
-                          :model-value="(valeursApercu[champ.id] ?? '').split('|').includes(option)"
-                          density="compact"
-                          hide-details
-                          color="primary"
-                          @update:model-value="(c: boolean | null) => {
-                            const actuelles = (valeursApercu[champ.id] ?? '').split('|').filter(Boolean)
-                            valeursApercu[champ.id] = (c ? [...actuelles, option] : actuelles.filter((o) => o !== option)).join('|')
-                          }"
-                        />
-                      </div>
-                      
-                      <v-switch
-                        v-else-if="champ.type === 'BOOLEEN'"
-                        :model-value="valeursApercu[champ.id] === 'oui'"
-                        :label="champ.justification || 'Oui / Non'"
-                        color="primary"
-                        inset
-                        class="mt-0"
-                        hide-details
-                        @update:model-value="(v: boolean | null) => { valeursApercu[champ.id] = v ? 'oui' : 'non' }"
-                      />
-                      
-                      <div v-else-if="champ.type === 'FICHIER'" class="premium-file-input pa-6 rounded-lg text-center d-flex flex-column align-center justify-center">
-                        <div class="bg-surface-variant rounded-circle pa-3 mb-3">
-                          <FileText :size="24" class="text-primary" />
-                        </div>
-                        <div class="text-body-1 font-weight-medium">Dépôt de document simulé</div>
-                        <div class="text-caption text-medium-emphasis">Formats acceptés : {{ champ.formats_acceptes || 'pdf' }} (Max {{ champ.taille_max_mo ?? '—' }} Mo)</div>
-                      </div>
-
-                      <div v-else-if="champ.type === 'SELFIE'" class="premium-file-input pa-6 rounded-lg text-center d-flex flex-column align-center justify-center">
-                        <div class="bg-surface-variant rounded-circle pa-3 mb-3">
-                          <Camera :size="24" class="text-primary" />
-                        </div>
-                        <div class="text-body-1 font-weight-medium">Selfie — capture caméra à la saisie</div>
-                        <div class="text-caption text-medium-emphasis">L'investisseur se prend en photo carte en main (aucun upload de fichier existant) · Formats : {{ champ.formats_acceptes || 'jpg, png, webp' }} (Max {{ champ.taille_max_mo ?? 5 }} Mo)</div>
-                      </div>
-
-                      <div v-if="champ.champ_parent" class="text-caption text-warning mt-2 d-flex align-center">
-                        <Eye :size="12" class="mr-1" />
-                        Aperçu conditionnel : Affiché car « {{ nomDuParent(champ) }} » = {{ champ.valeur_declencheur }}
-                      </div>
-                    </div>
-
-                    <div v-else class="pa-3 bg-surface-variant rounded-lg border border-dashed text-caption text-medium-emphasis d-flex align-center justify-center opacity-70">
-                      <Eye :size="14" class="mr-2" />
-                      {{ champ.nom }} (Masqué car « {{ nomDuParent(champ) }} » ≠ {{ champ.valeur_declencheur }})
-                    </div>
-                  </v-col>
-                </template>
-              </v-row>
-            </div>
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <KycFieldPreview
+      v-model="apercuOuvert"
+      :etapes="etapes"
+      :champs-par-etape="champsParEtape"
+    />
   </v-container>
 </template>
 
@@ -732,13 +353,6 @@ onMounted(() => void charger())
   font-size: 1.1rem;
 }
 
-.step-badge-small {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-}
-
 .gap-2 {
   gap: 8px;
 }
@@ -751,14 +365,6 @@ onMounted(() => void charger())
   gap: 16px;
 }
 
-.gap-x-2 {
-  column-gap: 8px;
-}
-
-.gap-y-1 {
-  row-gap: 4px;
-}
-
 /* Premium Inputs */
 .premium-input :deep(.v-field) {
   border-radius: 8px;
@@ -768,11 +374,6 @@ onMounted(() => void charger())
 
 .premium-input :deep(.v-field:hover) {
   border-color: rgb(var(--v-theme-primary));
-}
-
-.premium-file-input {
-  border: 1px dashed rgba(var(--v-theme-on-surface), 0.2);
-  background-color: rgba(var(--v-theme-surface), 0.5);
 }
 
 .border-l-4 {
@@ -802,10 +403,5 @@ onMounted(() => void charger())
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--v-theme-on-surface), 0.3);
-}
-
-/* Transitions */
-.opacity-70 {
-  opacity: 0.7;
 }
 </style>
