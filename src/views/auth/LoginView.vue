@@ -116,6 +116,14 @@ function continuerAvecGoogle() {
           >
             Inscription réussie. Connectez-vous pour continuer.
           </v-alert>
+          <v-alert
+            v-if="route.query.mot_de_passe_change === 'ok'"
+            type="success"
+            class="mb-4"
+            variant="tonal"
+          >
+            Mot de passe changé. Connectez-vous avec votre nouveau mot de passe.
+          </v-alert>
           <v-alert v-if="erreur" type="error" class="mb-4" variant="tonal">
             {{ erreur }}
           </v-alert>

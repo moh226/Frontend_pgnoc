@@ -290,3 +290,90 @@ export interface EntreeJournalAudit {
   ip_address: string | null
   user_agent: string
 }
+
+export type TypePersonne = 'PHYSIQUE' | 'MORALE' | 'MINEUR'
+
+export interface ProfilMoi {
+  id: string
+  email: string
+  prenom: string
+  nom: string
+  role: RoleCode
+  sgi: string | null
+  date_joined: string
+  type_personne?: TypePersonne | null
+  matricule?: string | null
+  fonction?: string | null
+}
+
+export interface DonneesProfilMoi {
+  prenom: string
+  nom: string
+  type_personne?: TypePersonne
+  matricule?: string
+  fonction?: string
+}
+
+export interface PayloadChangementMotDePasse {
+  ancien_mot_de_passe: string
+  nouveau_mot_de_passe: string
+  confirmation: string
+}
+
+export type TypeBlocAccueil =
+  | 'HERO'
+  | 'REASSURANCE'
+  | 'CHIFFRES'
+  | 'ETAPES'
+  | 'SECURITE'
+  | 'TEMOIGNAGES'
+  | 'FAQ'
+  | 'APPEL_ACTION'
+
+export interface ObjetSimpleAccueil {
+  titre?: string
+  description?: string
+}
+
+export interface ContenuBlocAccueil {
+  cta_principal?: string
+  lien_principal?: string
+  cta_secondaire?: string
+  lien_secondaire?: string
+  mentions?: string[]
+  chiffres?: { valeur: string; libelle: string }[]
+  etapes?: { titre: string; description: string }[]
+  cartes?: ObjetSimpleAccueil[]
+  temoignages?: { nom: string; role: string; texte: string }[]
+  questions?: { question: string; reponse: string }[]
+  cta?: string
+  lien?: string
+  slogan?: string
+}
+
+export interface BlocAccueilPublic {
+  type: TypeBlocAccueil
+  titre: string
+  contenu: ContenuBlocAccueil
+  image_url: string | null
+}
+
+export interface BlocAccueilAdmin extends BlocAccueilPublic {
+  image: string | null
+  actif: boolean
+  ordre: number
+  publie: boolean
+  date_publication: string | null
+  date_maj: string
+}
+
+export interface ElementOrdreBlocAccueil {
+  type: TypeBlocAccueil
+  actif: boolean
+  ordre: number
+}
+
+export interface PayloadOrdreBlocAccueil {
+  blocs?: ElementOrdreBlocAccueil[]
+  publier?: boolean
+}

@@ -32,11 +32,13 @@ export const NAVIGATION_PAR_ROLE: Record<RoleCode, ItemNavigation[]> = {
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/espace-investisseur' },
     { titre: 'Mes dossiers', icone: 'mdi-folder-multiple-outline', vers: '/espace-investisseur/dossiers' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/espace-investisseur/notifications' },
+    { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],
   AGENT_SGI: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/espace-agent' },
     { titre: 'Dossiers à instruire', icone: 'mdi-folder-multiple-outline', vers: '/espace-agent/dossiers' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/espace-agent/notifications' },
+    { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],
   ADMIN_SGI: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/admin-sgi' },
@@ -46,12 +48,15 @@ export const NAVIGATION_PAR_ROLE: Record<RoleCode, ItemNavigation[]> = {
     { titre: 'Convention', icone: 'mdi-file-pdf-box', vers: '/admin-sgi/convention' },
     { titre: 'Présentation', icone: 'mdi-text-box-outline', vers: '/admin-sgi/presentation' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/admin-sgi/notifications' },
+    { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],
   ADMIN_GENERAL: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/admin-general' },
     { titre: 'SGI partenaires', icone: 'mdi-bank-outline', vers: '/admin-general/sgi' },
     { titre: 'Comptes internes', icone: 'mdi-account-group-outline', vers: '/admin-general/utilisateurs' },
+    { titre: "Page d'accueil", icone: 'mdi-web', vers: '/admin-general/accueil' },
     { titre: "Journal d'audit", icone: 'mdi-shield-search-outline', vers: '/admin-general/journal' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/admin-general/notifications' },
+    { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],
 }

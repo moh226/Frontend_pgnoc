@@ -15,6 +15,11 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/',
+      name: 'accueil',
+      component: () => import('@/views/AccueilView.vue'),
+    },
+    {
       path: '/login',
       name: 'login',
       component: () => import('@/views/auth/LoginView.vue'),
@@ -170,6 +175,11 @@ const router = createRouter({
           component: () => import('@/views/admin-general/UtilisateursView.vue'),
         },
         {
+          path: 'accueil',
+          name: 'admin-general-accueil',
+          component: () => import('@/views/admin-general/AccueilEditionView.vue'),
+        },
+        {
           path: 'journal',
           name: 'admin-general-journal',
           component: () => import('@/views/admin-general/JournalAuditView.vue'),
@@ -188,8 +198,16 @@ const router = createRouter({
       meta: { requiertAuthentification: true, roles: ['INVESTISSEUR'] },
     },
     {
-      path: '/',
-      redirect: () => redirectionPourRole(useAuthStore().role),
+      path: '/parametres',
+      component: () => import('@/layouts/AppLayout.vue'),
+      meta: { requiertAuthentification: true },
+      children: [
+        {
+          path: '',
+          name: 'parametres',
+          component: () => import('@/views/ParametresView.vue'),
+        },
+      ],
     },
     {
       path: '/:chemin(.*)*',
@@ -200,6 +218,10 @@ const router = createRouter({
 
 router.beforeEach((vers) => {
   const auth = useAuthStore()
+
+  if (vers.name === 'accueil' && auth.estConnecte) {
+    return redirectionPourRole(auth.role)
+  }
 
   if (vers.meta.requiertAuthentification && !auth.estConnecte) {
     return {
