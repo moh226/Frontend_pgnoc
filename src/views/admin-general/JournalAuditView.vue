@@ -144,20 +144,20 @@ onMounted(() => void charger())
       <v-table v-else class="premium-table">
         <thead class="bg-surface-variant">
           <tr>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4">Date & Heure</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4">Auteur</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4">Action</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4">Entité</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4">Modifications</th>
-            <th class="text-uppercase text-caption font-weight-bold tracking-wider px-6 py-4 text-end">Adresse IP</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4">Date & Heure</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4">Auteur</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4">Action</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4">Entité</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4">Modifications</th>
+            <th class="text-uppercase text-body-2 font-weight-bold tracking-wider px-6 py-4 text-end">Adresse IP</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="entree in entrees" :key="entree.id" class="table-row">
-            <td class="px-6 py-4 text-body-2 font-weight-medium whitespace-nowrap">
+            <td class="px-6 py-4 text-body-1 font-weight-medium whitespace-nowrap">
               {{ formaterDate(entree.date_action) }}
             </td>
-            <td class="px-6 py-4 text-body-2">
+            <td class="px-6 py-4 text-body-1">
               <span class="font-weight-bold text-primary">{{ entree.utilisateur_email || 'Système' }}</span>
             </td>
             <td class="px-6 py-4">
@@ -165,13 +165,13 @@ onMounted(() => void charger())
                 {{ entree.action_libelle }}
               </v-chip>
             </td>
-            <td class="px-6 py-4 text-body-2">
+            <td class="px-6 py-4 text-body-1">
               <div class="font-weight-medium">{{ entree.entite_concernee || '—' }}</div>
-              <div v-if="entree.entite_id" class="text-caption text-medium-emphasis mt-1 text-uppercase tracking-wider">
+              <div v-if="entree.entite_id" class="text-body-2 text-medium-emphasis mt-1 text-uppercase tracking-wider">
                 ID: {{ entree.entite_id.slice(0, 8) }}
               </div>
             </td>
-            <td class="px-6 py-4 text-body-2">
+            <td class="px-6 py-4 text-body-1">
               <v-tooltip location="bottom" max-width="400" :disabled="!entree.avant && !entree.apres">
                 <template v-slot:activator="{ props }">
                   <span
@@ -185,7 +185,7 @@ onMounted(() => void charger())
                     <template v-else>—</template>
                   </span>
                 </template>
-                <div class="text-caption">
+                <div class="text-body-2">
                   <div class="text-error font-weight-bold mb-1">Avant :</div>
                   <div class="mb-2">{{ afficherDiff(entree.avant) || 'Aucun' }}</div>
                   <div class="text-success font-weight-bold mb-1">Après :</div>
@@ -193,7 +193,7 @@ onMounted(() => void charger())
                 </div>
               </v-tooltip>
             </td>
-            <td class="px-6 py-4 text-caption text-medium-emphasis font-weight-medium text-end whitespace-nowrap">
+            <td class="px-6 py-4 text-body-2 text-medium-emphasis font-weight-medium text-end whitespace-nowrap">
               {{ entree.ip_address || '—' }}
             </td>
           </tr>

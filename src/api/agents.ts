@@ -17,7 +17,7 @@ export async function listeAgents(): Promise<AgentSgi[]> {
       params: page === 1 ? undefined : { page },
     })
     agents.push(...data.results)
-    if (!data.next) break
+    if (!data.next || page >= 50) break
     page += 1
   }
   return agents

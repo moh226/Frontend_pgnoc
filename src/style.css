@@ -5,15 +5,58 @@ body {
     system-ui,
     -apple-system,
     sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   background-color: rgb(var(--v-theme-background));
   color: rgb(var(--v-theme-on-surface));
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.font-display, 
-.text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6, 
+.font-display,
+.text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6,
 .v-card-title, .v-toolbar-title {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* Améliorer la lisibilité du texte medium-emphasis */
+.text-medium-emphasis {
+  opacity: 0.82 !important;
+}
+
+/* Spacing et lisibilité pour les contenus de données */
+.text-body-1, .text-body-2 {
+  line-height: 1.65;
+}
+
+/* Tableaux — améliorer la lisibilité des cellules */
+.v-table th {
+  font-size: 0.8125rem !important;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.v-table td {
+  font-size: 0.9375rem !important;
+  line-height: 1.55;
+}
+
+/* List items — meilleure hauteur de ligne */
+.v-list-item-title {
+  line-height: 1.4;
+}
+
+.v-list-item-subtitle {
+  line-height: 1.5;
+  font-size: 0.875rem !important;
+}
+
+/* Alerts — meilleur line-height */
+.v-alert {
+  line-height: 1.6;
 }
 
 /* Animations de transition pour Vuetify */

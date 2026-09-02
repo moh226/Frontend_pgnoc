@@ -12,6 +12,7 @@ import {
   Activity
 } from '@lucide/vue'
 
+import { FEATURES } from '@/config/features'
 import { LIBELLES_ACTION_AUDIT } from '@/config/audit'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { LIBELLES_ROLE } from '@/config/navigation'
@@ -179,7 +180,7 @@ onMounted(async () => {
 
       <v-row class="mt-4">
         <!-- Ventilation par statut -->
-        <v-col cols="12" lg="5">
+        <v-col :cols="FEATURES.JOURNAL_AUDIT ? 5 : 12">
           <v-card class="rounded-xl elevation-2 h-100 d-flex flex-column">
             <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center font-weight-bold">
               <FolderKanban :size="20" class="text-primary mr-3" />
@@ -209,63 +210,65 @@ onMounted(async () => {
           </v-card>
         </v-col>
 
-        <!-- Activité Récente -->
-        <v-col cols="12" lg="7">
-          <v-card class="rounded-xl elevation-2 h-100 d-flex flex-column">
-            <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
-              <History :size="20" class="text-primary mr-3" />
-              <span class="font-weight-bold">Activité récente (Audit)</span>
-              <v-spacer />
-              <v-btn variant="text" color="primary" class="font-weight-bold text-caption tracking-wider hover-lift" :to="{ name: 'admin-general-journal' }">
-                Journal complet <ArrowRight :size="16" class="ml-1" />
-              </v-btn>
-            </v-card-title>
-            
-            <v-card-text class="pa-0 flex-grow-1">
-              <div v-if="!admin.tableauDeBord.activite_recente.length" class="pa-8 text-center h-100 d-flex flex-column justify-center align-center">
-                <Clock :size="48" class="text-grey-lighten-1 mb-4" />
-                <div class="text-body-1 text-medium-emphasis">Aucune activité récente enregistrée.</div>
-              </div>
+        <!-- Activité Récente (Audit) -->
+        <template v-if="FEATURES.JOURNAL_AUDIT">
+          <v-col cols="7">
+            <v-card class="rounded-xl elevation-2 h-100 d-flex flex-column">
+              <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
+                <History :size="20" class="text-primary mr-3" />
+                <span class="font-weight-bold">Activité récente (Audit)</span>
+                <v-spacer />
+                <v-btn variant="text" color="primary" class="font-weight-bold text-caption tracking-wider hover-lift" :to="{ name: 'admin-general-journal' }">
+                  Journal complet <ArrowRight :size="16" class="ml-1" />
+                </v-btn>
+              </v-card-title>
               
-              <v-list v-else lines="two" class="bg-transparent pa-0 custom-list">
-                <template v-for="(trace, index) in admin.tableauDeBord.activite_recente" :key="index">
-                  <v-divider v-if="index > 0" />
-                  <v-list-item class="px-6 py-4 hover-row">
-                    <template #prepend>
-                      <v-avatar color="info-lighten-4" class="mr-4 text-info">
-                        <Activity :size="20" />
-                      </v-avatar>
-                    </template>
-                    
-                    <v-list-item-title class="font-weight-bold text-body-1 mb-1">
-                      {{ LIBELLES_ACTION_AUDIT[trace.action] ?? trace.action }}
-                    </v-list-item-title>
-                    
-                    <v-list-item-subtitle class="text-caption text-medium-emphasis">
-                      <span class="font-weight-medium text-on-surface">{{ trace.email || 'Système' }}</span>
-                      <template v-if="trace.entite_concernee">
-                        <span class="mx-2">•</span>
-                        {{ trace.entite_concernee }}
-                        <span class="text-medium-emphasis"> (ID: {{ trace.entite_id?.slice(0, 8) }})</span>
+              <v-card-text class="pa-0 flex-grow-1">
+                <div v-if="!admin.tableauDeBord.activite_recente.length" class="pa-8 text-center h-100 d-flex flex-column justify-center align-center">
+                  <Clock :size="48" class="text-grey-lighten-1 mb-4" />
+                  <div class="text-body-1 text-medium-emphasis">Aucune activité récente enregistrée.</div>
+                </div>
+                
+                <v-list v-else lines="two" class="bg-transparent pa-0 custom-list">
+                  <template v-for="(trace, index) in admin.tableauDeBord.activite_recente" :key="index">
+                    <v-divider v-if="index > 0" />
+                    <v-list-item class="px-6 py-4 hover-row">
+                      <template #prepend>
+                        <v-avatar color="info-lighten-4" class="mr-4 text-info">
+                          <Activity :size="20" />
+                        </v-avatar>
                       </template>
-                    </v-list-item-subtitle>
-                    
-                    <template #append>
-                      <div class="d-flex flex-column align-end justify-center ml-4">
-                        <span class="text-caption font-weight-medium text-medium-emphasis mb-1">
-                          {{ formaterJour(trace.date) }}
-                        </span>
-                        <span class="text-caption text-disabled">
-                          {{ formaterHeure(trace.date) }}
-                        </span>
-                      </div>
-                    </template>
-                  </v-list-item>
-                </template>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-col>
+                      
+                      <v-list-item-title class="font-weight-bold text-body-1 mb-1">
+                        {{ LIBELLES_ACTION_AUDIT[trace.action] ?? trace.action }}
+                      </v-list-item-title>
+                      
+                      <v-list-item-subtitle class="text-caption text-medium-emphasis">
+                        <span class="font-weight-medium text-on-surface">{{ trace.email || 'Système' }}</span>
+                        <template v-if="trace.entite_concernee">
+                          <span class="mx-2">•</span>
+                          {{ trace.entite_concernee }}
+                          <span class="text-medium-emphasis"> (ID: {{ trace.entite_id?.slice(0, 8) }})</span>
+                        </template>
+                      </v-list-item-subtitle>
+                      
+                      <template #append>
+                        <div class="d-flex flex-column align-end justify-center ml-4">
+                          <span class="text-caption font-weight-medium text-medium-emphasis mb-1">
+                            {{ formaterJour(trace.date) }}
+                          </span>
+                          <span class="text-caption text-disabled">
+                            {{ formaterHeure(trace.date) }}
+                          </span>
+                        </div>
+                      </template>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </template>
       </v-row>
     </template>
 

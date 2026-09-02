@@ -94,7 +94,7 @@ onMounted(() => void charger())
       <v-card-text class="pa-4 pa-md-6 d-flex flex-wrap align-center gap-3">
         <div class="d-flex align-center mr-4 text-medium-emphasis">
           <Filter :size="18" class="mr-2" />
-          <span class="font-weight-medium text-caption text-uppercase tracking-wider">Statuts</span>
+          <span class="font-weight-medium text-body-2 text-uppercase tracking-wider">Statuts</span>
         </div>
         
         <v-chip
@@ -140,7 +140,7 @@ onMounted(() => void charger())
               {{ dossier.reference }}
             </v-list-item-title>
             
-            <v-list-item-subtitle class="text-caption text-medium-emphasis">
+            <v-list-item-subtitle class="text-body-2">
               <span class="font-weight-medium text-on-surface">{{ dossier.investisseur_email }}</span>
               <template v-if="dossier.date_soumission">
                 <span class="mx-2">•</span>

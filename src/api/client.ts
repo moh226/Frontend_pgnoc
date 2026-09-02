@@ -22,12 +22,16 @@ export function enregistrerGestionJwt(gestion: GestionJwt): void {
 
 export const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? '/api',
+  timeout: 15000,
   headers: {
     Accept: 'application/json',
   },
 })
 
 api.interceptors.request.use((config) => {
+  const url = config.url ?? ''
+  const estAppelPublic = url.includes('/login') || url.includes('/register') || url.includes('/refresh')
+  if (estAppelPublic) return config
   const access = gestionJwt.accessCourant()
   if (access) {
     config.headers.Authorization = `Bearer ${access}`

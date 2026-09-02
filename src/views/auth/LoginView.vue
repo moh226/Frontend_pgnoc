@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from '@lucide/vue'
 
@@ -16,20 +16,6 @@ const motDePasse = ref('')
 const afficherMotDePasse = ref(false)
 const erreur = ref('')
 const enCours = ref(false)
-
-const orbeUn = ref<HTMLElement | null>(null)
-const orbeDeux = ref<HTMLElement | null>(null)
-
-function survol(e: MouseEvent) {
-  if (window.innerWidth <= 768 || !orbeUn.value || !orbeDeux.value) return
-  const x = e.clientX / window.innerWidth - 0.5
-  const y = e.clientY / window.innerHeight - 0.5
-  orbeUn.value.style.transform = `translate(${x * 20}px, ${y * 20}px)`
-  orbeDeux.value.style.transform = `translate(${x * -40}px, ${y * -40}px)`
-}
-
-onMounted(() => window.addEventListener('mousemove', survol))
-onUnmounted(() => window.removeEventListener('mousemove', survol))
 
 async function seConnecter() {
   erreur.value = ''
@@ -49,7 +35,7 @@ async function seConnecter() {
 
 function destinationApresConnexion(): string {
   const demandee = route.query.redirection
-  const role = auth.role
+  const role = auth.roleActuel
   if (typeof demandee === 'string' && demandee.startsWith('/')) {
     const cible = router.resolve(demandee)
     const roles = cible.meta.roles
@@ -66,510 +52,547 @@ function continuerAvecGoogle() {
 </script>
 
 <template>
-  <v-container fluid class="auth-page pa-0">
-    <v-row class="auth-split ma-0" no-gutters>
-      <v-col cols="12" md="6" class="auth-visuel d-none d-md-flex align-center justify-center">
-        <div class="contenu-visuel">
-          <span class="etiquette">Security First Architecture</span>
-          <h1 class="titre-visuel font-display">
-            L'excellence en <br />
-            <span class="accent">Haute Sécurité.</span>
-          </h1>
-          <p class="descriptif">
-            Protégez vos actifs avec une technologie de pointe et une gestion de patrimoine
-            exclusive.
-          </p>
-          <div class="carte-pro glass-panel mt-8">
-            <ShieldCheck class="text-primary mr-4" :size="32" />
-            <div>
-              <p class="carte-titre">Conformité KYC</p>
-              <p class="carte-sous-titre">Session 256-bit Sécurisée</p>
-            </div>
+  <div class="auth-page">
+    <!-- Branding à gauche (masqué sur mobile) -->
+    <div class="brand-content">
+      <div class="brand-badge">
+        <ShieldCheck :size="20" />
+        <span>Security First</span>
+      </div>
+      <h1 class="brand-titre">
+        Votre compte-titre en toute <span class="brand-accent">sérénité</span>.
+      </h1>
+      <p class="brand-desc">
+        Plateforme sécurisée de demande de compte-titre
+        auprès de vos SGI partenaires. Parcours 100% dématérialisé.
+      </p>
+      <div class="brand-features">
+        <div class="brand-feature">
+          <div class="brand-feature-icon">
+            <ShieldCheck :size="18" />
+          </div>
+          <div>
+            <p class="brand-feature-title">Conformité KYC</p>
+            <p class="brand-feature-desc">Vérification complète et sécurisée</p>
           </div>
         </div>
-      </v-col>
-
-      <v-col cols="12" md="6" class="auth-forme d-flex flex-column align-center justify-center">
-        <div class="carte-forme">
-          <header class="entete-forme">
-            <div class="logo-bar">
-              <span class="logo-icone">
-                <Lock class="text-primary" :size="24" />
-              </span>
-              <span class="logo-texte font-display">PGNOC-TI</span>
-            </div>
-            <a class="lien-aide" href="#">Support VIP</a>
-          </header>
-
-          <div class="titre-forme">
-            <h2 class="font-display">Accès Espace Sécurisé</h2>
-            <p>Authentifiez-vous pour accéder à vos portefeuilles et demandes.</p>
+        <div class="brand-feature">
+          <div class="brand-feature-icon brand-feature-icon--accent">
+            <Lock :size="18" />
           </div>
+          <div>
+            <p class="brand-feature-title">Chiffrement 256-bit</p>
+            <p class="brand-feature-desc">Vos données sont protégées</p>
+          </div>
+        </div>
+      </div>
+      <p class="brand-footer">© 2026 PGNOC-TI</p>
+    </div>
 
-          <v-alert
-            v-if="route.query.inscription === 'ok'"
-            type="success"
-            class="mb-4"
-            variant="tonal"
-          >
-            Inscription réussie. Connectez-vous pour continuer.
-          </v-alert>
-          <v-alert
-            v-if="route.query.mot_de_passe_change === 'ok'"
-            type="success"
-            class="mb-4"
-            variant="tonal"
-          >
-            Mot de passe changé. Connectez-vous avec votre nouveau mot de passe.
-          </v-alert>
-          <v-alert v-if="erreur" type="error" class="mb-4" variant="tonal">
-            {{ erreur }}
-          </v-alert>
-
-          <v-form @submit.prevent="seConnecter">
-            <div class="champ-groupe">
-              <label class="etiquette-champ" for="champ-email">Adresse Email</label>
-              <div class="champ-doux">
-                <v-text-field
-                  id="champ-email"
-                  v-model="email"
-                  variant="plain"
-                  type="email"
-                  placeholder="nom@sgi.com"
-                  autocomplete="email"
-                  density="comfortable"
-                  hide-details
-                  required
-                />
-                <Mail class="icone-champ" :size="20" />
-              </div>
+    <!-- Formulaire à droite, sur carte blanche -->
+    <main class="form-panel">
+      <div class="form-card">
+        <header class="form-header">
+          <div class="form-logo">
+            <div class="form-logo-icon">
+              <Lock :size="20" />
             </div>
+            <span class="form-logo-text">PGNOC-TI</span>
+          </div>
+        </header>
 
-            <div class="champ-groupe">
-              <label class="etiquette-champ" for="champ-mot-de-passe">Mot de passe</label>
-              <div class="champ-doux">
-                <v-text-field
-                  id="champ-mot-de-passe"
-                  v-model="motDePasse"
-                  variant="plain"
-                  :type="afficherMotDePasse ? 'text' : 'password'"
-                  placeholder="••••••••"
-                  autocomplete="current-password"
-                  density="comfortable"
-                  hide-details
-                  required
-                />
-                <button
-                  type="button"
-                  class="bouton-oeil"
-                  :aria-label="
-                    afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
-                  "
-                  @click="afficherMotDePasse = !afficherMotDePasse"
-                >
-                  <EyeOff v-if="afficherMotDePasse" :size="20" />
-                  <Eye v-else :size="20" />
-                </button>
-              </div>
-              <div class="ligne-oubli">
-                <a href="#" class="lien-oubli">Mot de passe oublié ?</a>
-              </div>
-            </div>
-
-            <v-btn color="primary" class="btn-principal hover-lift" type="submit" :loading="enCours" block>
-              Se connecter
-              <ArrowRight :size="18" class="ml-2" />
-            </v-btn>
-
-            <div class="separateur">
-              <span class="separateur-ligne" />
-              <span class="separateur-texte">OU</span>
-              <span class="separateur-ligne" />
-            </div>
-
-            <v-btn class="btn-google" type="button" block @click="continuerAvecGoogle">
-              <v-icon icon="mdi-google" size="20" class="mr-2" />
-              Continuer avec Google
-            </v-btn>
-          </v-form>
-
-          <p class="pied-forme">
-            Pas encore de compte ?
-            <router-link class="lien-principal" :to="{ name: 'inscription' }"
-              >S'inscrire</router-link
-            >
-          </p>
+        <div class="form-title">
+          <h2>Bienvenue</h2>
+          <p>Connectez-vous pour accéder à votre espace sécurisé.</p>
         </div>
 
-        <footer class="pied-legal">
-          <div class="liens-legaux">
-            <a href="#">Confidentialité</a>
-            <a href="#">CGU</a>
-            <a href="#">Compliance</a>
+        <v-alert
+          v-if="route.query.inscription === 'ok'"
+          type="success"
+          class="mb-6"
+          variant="tonal"
+          rounded="lg"
+        >
+          Inscription réussie. Connectez-vous pour continuer.
+        </v-alert>
+        <v-alert
+          v-if="route.query.mot_de_passe_change === 'ok'"
+          type="success"
+          class="mb-6"
+          variant="tonal"
+          rounded="lg"
+        >
+          Mot de passe changé. Connectez-vous avec votre nouveau mot de passe.
+        </v-alert>
+        <v-alert v-if="erreur" type="error" class="mb-6" variant="tonal" rounded="lg">
+          {{ erreur }}
+        </v-alert>
+
+        <v-form @submit.prevent="seConnecter" class="form-body">
+          <div class="field">
+            <label class="field-label" for="login-email">Email</label>
+            <div class="field-input">
+              <Mail class="field-icon" :size="18" />
+              <input
+                id="login-email"
+                v-model="email"
+                type="email"
+                placeholder="vous@exemple.com"
+                autocomplete="email"
+                required
+              />
+            </div>
           </div>
-          <p>© 2026 PGNOC-TI. Haute Sécurité.</p>
-        </footer>
-      </v-col>
-    </v-row>
-  </v-container>
+
+          <div class="field">
+            <div class="field-row">
+              <label class="field-label" for="login-password">Mot de passe</label>
+              <a href="#" class="field-link">Mot de passe oublié ?</a>
+            </div>
+            <div class="field-input">
+              <Lock class="field-icon" :size="18" />
+              <input
+                id="login-password"
+                v-model="motDePasse"
+                :type="afficherMotDePasse ? 'text' : 'password'"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                class="field-toggle"
+                :aria-label="afficherMotDePasse ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                @click="afficherMotDePasse = !afficherMotDePasse"
+              >
+                <EyeOff v-if="afficherMotDePasse" :size="18" />
+                <Eye v-else :size="18" />
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" :disabled="enCours">
+            <span v-if="enCours" class="btn-spinner" />
+            <span v-else>Se connecter</span>
+            <ArrowRight v-if="!enCours" :size="18" />
+          </button>
+        </v-form>
+
+        <div class="divider">
+          <span class="divider-line" />
+          <span class="divider-text">OU</span>
+          <span class="divider-line" />
+        </div>
+
+        <button type="button" class="btn-google" @click="continuerAvecGoogle">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continuer avec Google
+        </button>
+
+        <p class="form-footer">
+          Pas encore de compte ?
+          <router-link :to="{ name: 'inscription' }" class="form-footer-link">
+            S'inscrire
+          </router-link>
+        </p>
+      </div>
+    </main>
+  </div>
 </template>
 
 <style scoped>
 .auth-page {
   min-height: 100dvh;
-  background-color: rgb(var(--v-theme-background));
-  color: rgb(var(--v-theme-on-surface));
-  overflow: hidden;
-  position: relative;
+  display: flex;
+  background: linear-gradient(135deg, #0C3C94 0%, #091E4D 35%, #D6DEE8 65%, rgb(var(--v-theme-surface)) 100%);
+  color: #fff;
 }
 
-.auth-split {
-  position: relative;
+/* ── Branding (gauche) ── */
+.brand-content {
+  position: absolute;
+  top: 50%;
+  left: 80px;
+  transform: translateY(-50%);
+  max-width: 440px;
   z-index: 1;
-  min-height: 100dvh;
 }
 
-.auth-visuel {
-  background-color: rgb(var(--v-theme-surface-variant));
-  border-right: 1px solid rgb(var(--v-theme-outline-variant));
-}
-
-.contenu-visuel {
-  max-width: 480px;
-  padding: 32px;
-}
-
-.etiquette {
-  display: block;
-  font-size: 12px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: rgb(var(--v-theme-primary));
-  margin-bottom: 16px;
-  font-weight: 600;
-}
-
-.titre-visuel {
-  font-size: 48px;
-  line-height: 56px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: rgb(var(--v-theme-on-surface));
-}
-
-.titre-visuel .accent {
-  color: rgb(var(--v-theme-primary));
-}
-
-.descriptif {
-  font-size: 18px;
-  line-height: 28px;
-  color: rgba(var(--v-theme-on-surface-variant), 0.8);
-  max-width: 384px;
-  margin-top: 16px;
-}
-
-.carte-pro {
-  display: flex;
-  align-items: center;
-  border-radius: 12px;
-  padding: 16px;
-  max-width: 280px;
-}
-
-.carte-pro .v-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-primary), 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carte-titre {
-  font-size: 12px;
-  color: rgb(var(--v-theme-on-surface));
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.carte-sous-titre {
-  font-size: 10px;
-  color: rgb(var(--v-theme-outline));
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.auth-forme {
-  background-color: rgb(var(--v-theme-surface));
-  padding: 40px 32px 24px;
-}
-
-.carte-forme {
-  width: 100%;
-  max-width: 400px;
-}
-
-.entete-forme {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 40px;
-}
-
-.logo-bar {
-  display: flex;
+.brand-badge {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.logo-texte {
-  font-size: 24px;
-  line-height: 32px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 100px;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: -0.02em;
-  color: rgb(var(--v-theme-on-surface));
-}
-
-.lien-aide {
-  font-size: 12px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgb(var(--v-theme-outline));
-  transition: color 0.2s;
-  text-decoration: none;
+  margin-bottom: 32px;
 }
 
-.lien-aide:hover {
-  color: rgb(var(--v-theme-primary));
-}
-
-.titre-forme {
-  margin-bottom: 24px;
-}
-
-.titre-forme h2 {
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
-  margin-bottom: 8px;
-}
-
-.titre-forme p {
-  font-size: 16px;
-  line-height: 24px;
-  color: rgb(var(--v-theme-on-surface-variant));
-}
-
-.champ-groupe {
-  margin-bottom: 24px;
-}
-
-.etiquette-champ {
-  display: block;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgb(var(--v-theme-outline));
-  margin-bottom: 4px;
-}
-
-.champ-doux {
-  display: flex;
-  align-items: center;
-  background-color: rgb(var(--v-theme-surface-variant));
-  border: 1px solid rgb(var(--v-theme-outline));
-  border-radius: 6px;
-  padding: 0 8px;
-  transition: box-shadow 0.2s, border-color 0.2s;
-}
-
-.champ-doux:focus-within {
-  border-color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
-  background-color: rgb(var(--v-theme-surface));
-}
-
-.champ-doux :deep(.v-text-field) {
-  flex: 1;
-  font-size: 16px;
-}
-
-.champ-doux :deep(.v-field) {
-  background: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-.champ-doux :deep(.v-field__field input) {
-  color: rgb(var(--v-theme-on-surface)) !important;
-}
-
-.icone-champ,
-.bouton-oeil {
-  color: rgb(var(--v-theme-outline));
-  transition: color 0.2s;
-}
-
-.bouton-oeil {
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-}
-
-.bouton-oeil:hover {
-  color: rgb(var(--v-theme-primary));
-}
-
-.ligne-oubli {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-.lien-oubli {
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgba(var(--v-theme-primary), 0.8);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.lien-oubli:hover {
-  color: rgb(var(--v-theme-primary));
-}
-
-.btn-principal {
-  height: 48px;
-  font-size: 14px;
+.brand-titre {
+  font-size: 40px;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(var(--v-theme-primary), 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-transform: uppercase;
-  margin-top: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
 }
 
-.btn-principal:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 4px 24px rgba(var(--v-theme-primary), 0.25);
+.brand-accent {
+  color: #F7C600;
 }
 
-.btn-principal:active {
-  transform: scale(0.97);
+.brand-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 40px;
 }
 
-.separateur {
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brand-feature {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.separateur-ligne {
-  height: 1px;
-  background: rgba(var(--v-theme-outline), 0.2);
-  flex: 1;
+.brand-feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  flex-shrink: 0;
 }
 
-.separateur-texte {
+.brand-feature-icon--accent {
+  background: rgba(247, 198, 0, 0.2);
+  color: #F7C600;
+}
+
+.brand-feature-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.brand-feature-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 2px 0 0;
+}
+
+.brand-footer {
   font-size: 12px;
-  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 32px 0 0;
+}
+
+/* ── Formulaire (droite, carte blanche) ── */
+.form-panel {
+  margin-left: auto;
+  width: 520px;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  background: rgb(var(--v-theme-surface));
+  border-radius: 24px 0 0 24px;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
+}
+
+.form-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.form-header {
+  margin-bottom: 40px;
+}
+
+.form-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgb(var(--v-theme-primary));
+  color: #fff;
+}
+
+.form-logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.form-title {
+  margin-bottom: 32px;
+}
+
+.form-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgb(var(--v-theme-on-surface));
+  margin: 0 0 8px;
+}
+
+.form-title p {
+  font-size: 15px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  margin: 0;
+}
+
+/* ── Champs ── */
+.form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.field-link {
+  font-size: 13px;
+  color: rgb(var(--v-theme-primary));
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.field-link:hover {
+  text-decoration: underline;
+}
+
+.field-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 48px;
+  background: rgb(var(--v-theme-surface-variant));
+  border: 1.5px solid var(--v-theme-outline);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.field-input:focus-within {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 3px rgba(12, 60, 148, 0.1);
+  background: rgb(var(--v-theme-surface));
+}
+
+.field-icon {
+  color: rgb(var(--v-theme-on-surface-variant));
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.field-input:focus-within .field-icon {
+  color: rgb(var(--v-theme-primary));
+}
+
+.field-input input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: rgb(var(--v-theme-on-surface));
+  outline: none;
+  font-family: inherit;
+  caret-color: rgb(var(--v-theme-primary));
+}
+
+.field-input input::placeholder {
+  color: rgb(var(--v-theme-on-surface-variant));
+  opacity: 0.6;
+}
+
+.field-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: rgb(var(--v-theme-on-surface-variant));
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.field-toggle:hover {
+  color: rgb(var(--v-theme-primary));
+  background: rgba(12, 60, 148, 0.08);
+}
+
+/* ── Boutons ── */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  margin-top: 8px;
+  padding: 0 24px;
+  background: rgb(var(--v-theme-primary));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 16px rgba(12, 60, 148, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgb(var(--v-theme-on-surface-variant));
+  opacity: 0.2;
+}
+
+.divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--v-theme-on-surface-variant));
   text-transform: uppercase;
-  color: rgba(var(--v-theme-outline), 0.6);
+  letter-spacing: 0.08em;
 }
 
 .btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
   height: 48px;
+  padding: 0 24px;
+  background: rgb(var(--v-theme-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
+  border: 1.5px solid var(--v-theme-outline);
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
-  border-radius: 8px;
-  color: rgb(var(--v-theme-on-surface));
-  border: 1px solid rgba(var(--v-theme-outline), 0.3);
-  background: rgb(var(--v-theme-surface-variant));
-  text-transform: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn-google:hover {
   background: rgb(var(--v-theme-outline));
+  border-color: rgb(var(--v-theme-outline));
 }
 
-.btn-google:active {
-  transform: scale(0.97);
-}
-
-.pied-forme {
+/* ── Footer ── */
+.form-footer {
   text-align: center;
-  margin-top: 24px;
-  color: rgba(var(--v-theme-on-surface-variant), 0.7);
-  font-size: 16px;
+  margin-top: 28px;
+  font-size: 14px;
+  color: rgb(var(--v-theme-on-surface-variant));
 }
 
-.lien-principal {
+.form-footer-link {
   color: rgb(var(--v-theme-primary));
   font-weight: 700;
   text-decoration: none;
   margin-left: 4px;
 }
 
-.lien-principal:hover {
+.form-footer-link:hover {
   text-decoration: underline;
 }
 
-.pied-legal {
-  margin-top: 48px;
-  width: 100%;
-  max-width: 400px;
-  border-top: 1px solid rgba(var(--v-theme-outline), 0.1);
-  padding-top: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.liens-legaux {
-  display: flex;
-  gap: 16px;
-}
-
-.liens-legaux a {
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: rgb(var(--v-theme-outline));
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.liens-legaux a:hover {
-  color: rgb(var(--v-theme-primary));
-}
-
-.pied-legal p {
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(var(--v-theme-outline), 0.5);
-}
-
+/* ── Responsive ── */
 @media (max-width: 959px) {
-  .titre-visuel {
-    font-size: 32px;
-    line-height: 40px;
+  .brand-content {
+    display: none;
   }
 
-  .carte-verre {
-    display: none;
+  .form-panel {
+    width: 100%;
+    border-radius: 0;
   }
 }
 </style>

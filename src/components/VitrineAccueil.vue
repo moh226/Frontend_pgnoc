@@ -56,7 +56,7 @@ function estMasque(type: TypeBlocAccueil): boolean {
         <router-link
           v-if="auth.estConnecte"
           class="bouton-espace"
-          :to="redirectionPourRole(auth.role)"
+          :to="redirectionPourRole(auth.roleActuel)"
         >
           Mon espace <ArrowRight :size="16" />
         </router-link>
@@ -127,7 +127,7 @@ function estMasque(type: TypeBlocAccueil): boolean {
         <nav class="pied-liens">
           <router-link v-if="!auth.estConnecte" :to="{ name: 'inscription' }">S'inscrire</router-link>
           <router-link v-if="!auth.estConnecte" :to="{ name: 'login' }">Se connecter</router-link>
-          <router-link v-if="auth.estConnecte" :to="redirectionPourRole(auth.role)">
+          <router-link v-if="auth.estConnecte" :to="redirectionPourRole(auth.roleActuel)">
             Mon espace
           </router-link>
         </nav>

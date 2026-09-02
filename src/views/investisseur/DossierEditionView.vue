@@ -75,7 +75,7 @@ function estVisible(champId: string): boolean {
         <header class="content-header px-8 py-6 border-b d-flex align-center bg-surface">
           <div>
             <h1 class="text-h4 font-display font-weight-bold text-on-surface mb-1">{{ form.etapeCourante.value.titre }}</h1>
-            <p class="text-body-2 text-medium-emphasis mb-0">
+            <p class="text-body-1 text-medium-emphasis mb-0">
               <template v-if="form.etapeCourante.value.type === 'convention'">
                 Veuillez prendre connaissance du document officiel lié à votre SGI.
               </template>
@@ -91,7 +91,7 @@ function estVisible(champId: string): boolean {
           <!-- Circular Progress (Top Right) -->
           <div class="d-flex align-center">
             <div class="text-right mr-4 d-none d-sm-block">
-              <div class="text-caption font-weight-bold text-uppercase tracking-wider text-medium-emphasis">Complétion</div>
+              <div class="text-body-2 font-weight-bold text-uppercase tracking-wider text-medium-emphasis">Complétion</div>
               <div class="text-h6 font-weight-bold">{{ form.progression.value }}%</div>
             </div>
             <v-progress-circular
@@ -111,7 +111,7 @@ function estVisible(champId: string): boolean {
           <v-alert v-if="form.detail.value.statut === 'REJETE' && form.detail.value.motif_rejet" type="error" variant="tonal" class="mb-0 mt-4 border-l-4">
             <div class="font-weight-bold mb-1">Dossier rejeté — corrections demandées</div>
             {{ form.detail.value.motif_rejet }}
-            <div class="text-caption mt-2">
+            <div class="text-body-2 mt-2">
               Seuls les champs accompagnés d'un retour de l'agent sont modifiables ;
               les autres sont verrouillés.
             </div>
@@ -170,7 +170,7 @@ function estVisible(champId: string): boolean {
         <!-- Footer Action Bar -->
         <footer class="content-footer bg-surface border-t px-8 py-4 d-flex align-center">
           <template v-if="form.etapeCourante.value.type === 'convention'">
-            <div class="text-caption text-medium-emphasis flex-grow-1">
+            <div class="text-body-2 text-medium-emphasis flex-grow-1">
               La convention tarifaire doit être acceptée pour continuer.
             </div>
             <v-btn
@@ -199,15 +199,15 @@ function estVisible(champId: string): boolean {
             <div class="d-flex align-center flex-grow-1 mr-4">
               <template v-if="Object.values(form.etatsSauvegarde.value).some(e => e === 'en_cours' || e === 'attente')">
                 <v-progress-circular indeterminate size="16" width="2" color="primary" class="mr-2" />
-                <span class="text-caption text-primary font-weight-medium">Sauvegarde en cours...</span>
+                <span class="text-body-2 text-primary font-weight-medium">Sauvegarde en cours...</span>
               </template>
               <template v-else-if="Object.values(form.etatsSauvegarde.value).some(e => e === 'erreur')">
                 <AlertCircle :size="16" class="text-error mr-2" />
-                <span class="text-caption text-error font-weight-medium">Erreur lors de la sauvegarde</span>
+                <span class="text-body-2 text-error font-weight-medium">Erreur lors de la sauvegarde</span>
               </template>
               <template v-else-if="Object.values(form.etatsSauvegarde.value).some(e => e === 'ok')">
                 <CheckCircle :size="16" class="text-success mr-2" />
-                <span class="text-caption text-success font-weight-medium">Toutes les modifications sont enregistrées</span>
+                <span class="text-body-2 text-success font-weight-medium">Toutes les modifications sont enregistrées</span>
               </template>
             </div>
             

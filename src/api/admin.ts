@@ -117,7 +117,7 @@ async function toutesLesPages<T>(
       params: page === 1 ? params : { ...params, page },
     })
     elements.push(...data.results)
-    if (!data.next) break
+    if (!data.next || page >= 50) break
     page += 1
   }
   return elements

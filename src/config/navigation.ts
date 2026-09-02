@@ -1,9 +1,11 @@
 import type { RoleCode } from '@/types'
+import { FEATURES } from '@/config/features'
 
 export interface ItemNavigation {
   titre: string
   icone: string
   vers: string
+  cache?: boolean
 }
 
 export const LIBELLES_ROLE: Record<RoleCode, string> = {
@@ -55,7 +57,7 @@ export const NAVIGATION_PAR_ROLE: Record<RoleCode, ItemNavigation[]> = {
     { titre: 'SGI partenaires', icone: 'mdi-bank-outline', vers: '/admin-general/sgi' },
     { titre: 'Comptes internes', icone: 'mdi-account-group-outline', vers: '/admin-general/utilisateurs' },
     { titre: "Page d'accueil", icone: 'mdi-web', vers: '/admin-general/accueil' },
-    { titre: "Journal d'audit", icone: 'mdi-shield-search-outline', vers: '/admin-general/journal' },
+    { titre: "Journal d'audit", icone: 'mdi-shield-search-outline', vers: '/admin-general/journal', cache: !FEATURES.JOURNAL_AUDIT },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/admin-general/notifications' },
     { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],

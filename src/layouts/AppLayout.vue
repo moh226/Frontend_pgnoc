@@ -13,7 +13,7 @@ const auth = useAuthStore()
 const notifications = useNotificationsStore()
 const theme = useTheme()
 
-const navigation = NAVIGATION_PAR_ROLE[auth.role ?? 'INVESTISSEUR'] ?? []
+const navigation = (NAVIGATION_PAR_ROLE[auth.roleActuel ?? 'INVESTISSEUR'] ?? []).filter(item => !item.cache)
 
 function toggleTheme() {
   theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
@@ -67,9 +67,9 @@ onMounted(() => {
       <Sun v-if="theme.global.current.value.dark" :size="20" />
       <Moon v-else :size="20" />
     </v-btn>
+    <v-chip v-if="auth.roleActuel" variant="tonal" color="primary" class="mr-2">
 
-    <v-chip v-if="auth.role" variant="tonal" color="primary" class="mr-2">
-      {{ LIBELLES_ROLE[auth.role] }}
+      {{ LIBELLES_ROLE[auth.roleActuel] }}
     </v-chip>
     <v-menu location="bottom end">
       <template #activator="{ props }">

@@ -61,6 +61,9 @@ function messageErreurCamera(cause: unknown, detaillerPermission: boolean): stri
   if (nom === 'NotReadableError') {
     return 'Votre caméra est utilisée par une autre application. Fermez-la puis réessayez.'
   }
+  if (nom === 'TypeError' || !(navigator.mediaDevices instanceof Object)) {
+    return "Votre navigateur ne permet pas l'accès à la caméra. Utilisez un navigateur récent (Chrome, Firefox, Edge) et vérifiez que la connexion est sécurisée (HTTPS)."
+  }
   return "L'ouverture de la caméra a échoué. Réessayez dans un instant."
 }
 
@@ -69,6 +72,9 @@ async function demarrerCamera() {
   demarrage.value = true
   etat.value = { nom: 'demarrage' }
   try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw Object.assign(new Error('API caméra indisponible'), { name: 'TypeError' })
+    }
     flux = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false,

@@ -1,6 +1,37 @@
 import { createVuetify } from 'vuetify'
 
 export default createVuetify({
+  defaults: {
+    VBtn: {
+      fontWeight: 600,
+      letterSpacing: '0.01em',
+    },
+    VCardTitle: {
+      class: 'font-display',
+      style: 'line-height: 1.3; letter-spacing: -0.01em;',
+    },
+    VCardText: {
+      style: 'line-height: 1.65;',
+    },
+    VDataTable: {
+      VTh: {
+        class: 'font-weight-bold',
+        style: 'font-size: 0.8125rem; letter-spacing: 0.04em;',
+      },
+      VTd: {
+        style: 'font-size: 0.9375rem; line-height: 1.55;',
+      },
+    },
+    VListItemTitle: {
+      style: 'line-height: 1.4;',
+    },
+    VListItemSubtitle: {
+      style: 'font-size: 0.875rem; line-height: 1.5;',
+    },
+    VAlert: {
+      style: 'line-height: 1.6;',
+    },
+  },
   theme: {
     defaultTheme: 'light',
     themes: {

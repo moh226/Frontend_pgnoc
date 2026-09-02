@@ -10,7 +10,8 @@ import {
   Bell, 
   ArrowRight,
   TrendingUp,
-  FileText
+  FileText,
+  CheckCircle2
 } from '@lucide/vue'
 
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'

@@ -55,7 +55,14 @@ export function useDossierAgent(id: string) {
   }
 
   async function prendreEnCharge() {
-    await dossiers.prendreEnCharge(id)
+    envoiEnCours.value = true
+    try {
+      await dossiers.prendreEnCharge(id)
+    } catch (cause) {
+      dossiers.erreur = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
   }
 
   async function rejeter() {
@@ -65,6 +72,8 @@ export function useDossierAgent(id: string) {
       await dossiers.deciderDossier(id, 'rejeter', motifRejet.value)
       dialogRejet.value = false
       motifRejet.value = ''
+    } catch (cause) {
+      dossiers.erreur = extraireMessageErreur(cause)
     } finally {
       envoiEnCours.value = false
     }
@@ -75,6 +84,8 @@ export function useDossierAgent(id: string) {
     try {
       await dossiers.deciderDossier(id, 'valider')
       dialogValidation.value = false
+    } catch (cause) {
+      dossiers.erreur = extraireMessageErreur(cause)
     } finally {
       envoiEnCours.value = false
     }

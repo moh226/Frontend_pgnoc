@@ -26,6 +26,8 @@ function lireStockage(): SessionStockee | null {
   }
 }
 
+let promesseInit: Promise<void> | null = null
+
 export const useAuthStore = defineStore('auth', {
   state: (): SessionStockee => ({
     access: null,
@@ -36,7 +38,7 @@ export const useAuthStore = defineStore('auth', {
 
   getters: {
     estConnecte: (etat) => Boolean(etat.access),
-    role: (etat): RoleCode | null =>
+    roleActuel: (etat): RoleCode | null =>
       etat.role ?? (etat.access ? roleDepuisJwt(etat.access) : null),
     nomComplet: (etat) =>
       [etat.utilisateur?.prenom, etat.utilisateur?.nom].filter(Boolean).join(' ') ||
@@ -46,6 +48,13 @@ export const useAuthStore = defineStore('auth', {
 
   actions: {
     initialiser() {
+      if (!promesseInit) {
+        promesseInit = this._initialiser()
+      }
+      return promesseInit
+    },
+
+    async _initialiser() {
       const lu = lireStockage()
       if (lu) {
         this.access = lu.access
@@ -53,7 +62,11 @@ export const useAuthStore = defineStore('auth', {
         this.utilisateur = lu.utilisateur
         this.role = lu.role ?? (lu.access ? roleDepuisJwt(lu.access) : null)
         if (jwtEstExpire(this.access) && this.refresh) {
-          rafraichirJeton().catch(() => this.deconnecter())
+          try {
+            await rafraichirJeton()
+          } catch {
+            this.deconnecter()
+          }
         }
       }
     },

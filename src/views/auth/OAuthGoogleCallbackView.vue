@@ -45,7 +45,7 @@ onMounted(async () => {
     }
 
     auth.fixerJetons(jetons.access, jetons.refresh)
-    await router.replace(redirectionPourRole(auth.role))
+    await router.replace(redirectionPourRole(auth.roleActuel))
   } catch (cause) {
     console.error('Retour Google : erreur inattendue', cause)
     messageErreur.value = 'La connexion Google a échoué. Réessayez.'

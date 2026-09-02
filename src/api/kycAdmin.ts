@@ -9,7 +9,7 @@ async function toutesLesPages<T>(chemin: string, params?: Record<string, string>
       params: page === 1 ? params : { ...params, page: String(page) },
     })
     elements.push(...data.results)
-    if (!data.next) break
+    if (!data.next || page >= 50) break
     page += 1
   }
   return elements

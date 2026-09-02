@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { redirectionPourRole } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth'
 import type { RoleCode } from '@/types'
+import { jwtEstExpire } from '@/utils/jwt'
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -216,11 +217,12 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((vers) => {
+router.beforeEach(async (vers) => {
   const auth = useAuthStore()
+  await auth.initialiser()
 
   if (vers.name === 'accueil' && auth.estConnecte) {
-    return redirectionPourRole(auth.role)
+    return redirectionPourRole(auth.roleActuel)
   }
 
   if (vers.meta.requiertAuthentification && !auth.estConnecte) {
@@ -230,12 +232,17 @@ router.beforeEach((vers) => {
     }
   }
 
-  if (vers.meta.roles?.length && auth.role && !vers.meta.roles.includes(auth.role)) {
+  if (auth.estConnecte && jwtEstExpire(auth.access) && !auth.refresh) {
+    auth.deconnecter()
+    return { name: 'login' }
+  }
+
+  if (vers.meta.roles?.length && auth.roleActuel && !vers.meta.roles.includes(auth.roleActuel)) {
     return { name: 'acces-refuse' }
   }
 
   if ((vers.name === 'login' || vers.name === 'inscription') && auth.estConnecte) {
-    const destination = redirectionPourRole(auth.role)
+    const destination = redirectionPourRole(auth.roleActuel)
     return destination === '/login' ? { name: 'acces-refuse' } : destination
   }
 
