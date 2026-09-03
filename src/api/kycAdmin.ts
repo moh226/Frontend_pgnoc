@@ -68,3 +68,11 @@ export async function modifierChamp(
   const { data } = await api.patch<ChampKycAdmin>(`/dossiers/admin/champs-kyc/${id}/`, parametres)
   return data
 }
+
+export async function supprimerEtape(id: string): Promise<void> {
+  await api.delete(`/dossiers/admin/etapes-kyc/${id}/`)
+}
+
+export async function supprimerChamp(id: string): Promise<void> {
+  await api.delete(`/dossiers/admin/champs-kyc/${id}/`)
+}

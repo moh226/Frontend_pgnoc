@@ -180,3 +180,14 @@ export async function verifierAuthenticiteSelfie(
   )
   return data
 }
+
+export async function transférerDossier(
+  dossierId: string,
+  agentId: string,
+): Promise<DossierDetail> {
+  const { data } = await api.post<DossierDetail>(
+    `/dossiers/dossiers/${dossierId}/transferer/`,
+    { agent_id: agentId },
+  )
+  return data
+}

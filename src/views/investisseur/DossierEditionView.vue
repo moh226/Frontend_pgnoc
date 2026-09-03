@@ -24,7 +24,7 @@ onMounted(() => {
 })
 
 function quitterFormulaire() {
-  router.push({ name: 'investisseur-dossier-detail', params: { id: dossierId.value } })
+  router.replace({ name: 'investisseur-dossier-detail', params: { id: dossierId.value } })
 }
 
 async function soumettreFinal() {

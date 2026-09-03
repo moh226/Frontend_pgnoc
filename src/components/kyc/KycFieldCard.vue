@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ChampKycAdmin } from '@/types'
-import { GripVertical, FileText, Eye, PowerOff, Power } from '@lucide/vue'
+import { GripVertical, FileText, Eye, PowerOff, Power, Pencil, Trash2 } from '@lucide/vue'
 
 defineProps<{
   champ: ChampKycAdmin
@@ -9,6 +9,8 @@ defineProps<{
 
 defineEmits<{
   (e: 'basculer', champ: ChampKycAdmin): void
+  (e: 'editer', champ: ChampKycAdmin): void
+  (e: 'supprimer', champ: ChampKycAdmin): void
 }>()
 </script>
 
@@ -59,6 +61,26 @@ defineEmits<{
       >
         {{ champ.actif ? 'Actif' : 'Inactif' }}
       </v-chip>
+      <v-btn
+        icon
+        variant="text"
+        size="small"
+        color="grey-darken-1"
+        title="Modifier"
+        @click="$emit('editer', champ)"
+      >
+        <Pencil :size="16" />
+      </v-btn>
+      <v-btn
+        icon
+        variant="text"
+        size="small"
+        color="error"
+        title="Supprimer"
+        @click="$emit('supprimer', champ)"
+      >
+        <Trash2 :size="16" />
+      </v-btn>
       <v-btn
         icon
         variant="text"

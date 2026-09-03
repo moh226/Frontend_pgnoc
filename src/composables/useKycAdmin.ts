@@ -6,6 +6,8 @@ import {
   listetEtapesKycAdmin,
   modifierChamp,
   modifierEtape,
+  supprimerEtape as apiSupprimerEtape,
+  supprimerChamp as apiSupprimerChamp,
 } from '@/api/kycAdmin'
 import { extraireMessageErreur } from '@/api/client'
 import type { ChampKycAdmin, EtapeKycAdmin, TypeChampKyc } from '@/types'
@@ -30,7 +32,14 @@ export function useKycAdmin() {
   
   const dialogEtape = ref(false)
   const dialogChamp = ref(false)
+  const dialogSupprimerEtape = ref(false)
+  const dialogSupprimerChamp = ref(false)
   const envoiEnCours = ref(false)
+
+  const etapeEnEdition = ref<EtapeKycAdmin | null>(null)
+  const champEnEdition = ref<ChampKycAdmin | null>(null)
+  const etapeASupprimer = ref<EtapeKycAdmin | null>(null)
+  const champASupprimer = ref<ChampKycAdmin | null>(null)
 
   const formulaireEtape = ref({ nom: '', ordre: 1 })
   const formulaireChamp = ref({
@@ -173,6 +182,165 @@ export function useKycAdmin() {
     }
   }
 
+  function ouvrirEditionEtape(etape: EtapeKycAdmin) {
+    etapeEnEdition.value = etape
+    formulaireEtape.value = { nom: etape.nom, ordre: etape.ordre }
+    dialogEtape.value = true
+  }
+
+  function reinitialiserDialogEtape() {
+    etapeEnEdition.value = null
+    formulaireEtape.value = { nom: '', ordre: etapes.value.length + 1 }
+  }
+
+  async function sauvegarderEtape() {
+    if (!etapeEnEdition.value || !formulaireEtape.value.nom.trim()) return
+    envoiEnCours.value = true
+    erreur.value = ''
+    try {
+      const maj = await modifierEtape(etapeEnEdition.value.id, {
+        nom: formulaireEtape.value.nom.trim(),
+        ordre: formulaireEtape.value.ordre,
+      })
+      const idx = etapes.value.findIndex((e) => e.id === etapeEnEdition.value!.id)
+      if (idx !== -1) {
+        etapes.value[idx] = maj
+        etapes.value.sort((a, b) => a.ordre - b.ordre)
+      }
+      dialogEtape.value = false
+      etapeEnEdition.value = null
+    } catch (cause) {
+      erreur.value = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
+  function ouvrirSuppressionEtape(etape: EtapeKycAdmin) {
+    etapeASupprimer.value = etape
+    dialogSupprimerEtape.value = true
+  }
+
+  async function confirmerSuppressionEtape() {
+    if (!etapeASupprimer.value) return
+    envoiEnCours.value = true
+    erreur.value = ''
+    try {
+      await apiSupprimerEtape(etapeASupprimer.value.id)
+      etapes.value = etapes.value.filter((e) => e.id !== etapeASupprimer.value!.id)
+      champsParEtape.value.delete(etapeASupprimer.value.id)
+      dialogSupprimerEtape.value = false
+      etapeASupprimer.value = null
+    } catch (cause) {
+      erreur.value = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
+  function ouvrirEditionChamp(champ: ChampKycAdmin) {
+    champEnEdition.value = champ
+    formulaireChamp.value = {
+      etape: champ.etape,
+      nom: champ.nom,
+      code: champ.code,
+      type: champ.type,
+      obligatoire: champ.obligatoire,
+      ordre: champ.ordre,
+      justification: champ.justification ?? '',
+      options_choix: champ.options_choix?.join(', ') ?? '',
+      formats_acceptes: champ.formats_acceptes ?? '',
+      taille_max_mo: champ.taille_max_mo ?? null,
+    }
+    dialogChamp.value = true
+  }
+
+  function reinitialiserDialogChamp() {
+    champEnEdition.value = null
+    formulaireChamp.value = {
+      etape: '',
+      nom: '',
+      code: '',
+      type: 'TEXTE_COURT',
+      obligatoire: true,
+      ordre: 1,
+      justification: '',
+      options_choix: '',
+      formats_acceptes: '',
+      taille_max_mo: null,
+    }
+  }
+
+  async function sauvegarderChamp() {
+    if (!champEnEdition.value || !formulaireChamp.value.nom.trim()) return
+    envoiEnCours.value = true
+    erreur.value = ''
+    try {
+      const maj = await modifierChamp(champEnEdition.value.id, {
+        code: formulaireChamp.value.code.trim() || codeDuNom(formulaireChamp.value.nom),
+        nom: formulaireChamp.value.nom.trim(),
+        type: formulaireChamp.value.type,
+        obligatoire: formulaireChamp.value.obligatoire,
+        ordre: formulaireChamp.value.ordre,
+        justification: formulaireChamp.value.justification.trim() || undefined,
+        options_choix:
+          formulaireChamp.value.type === 'CHOIX_UNIQUE' ||
+          formulaireChamp.value.type === 'CHOIX_MULTIPLE'
+            ? formulaireChamp.value.options_choix
+                .split(',')
+                .map((o) => o.trim())
+                .filter(Boolean)
+            : null,
+        formats_acceptes:
+          formulaireChamp.value.type === 'FICHIER' ||
+          formulaireChamp.value.type === 'SELFIE'
+            ? formulaireChamp.value.formats_acceptes.trim() || undefined
+            : undefined,
+        taille_max_mo:
+          formulaireChamp.value.type === 'FICHIER' ||
+          formulaireChamp.value.type === 'SELFIE'
+            ? formulaireChamp.value.taille_max_mo
+            : null,
+      })
+      const actuels = champsParEtape.value.get(maj.etape) ?? []
+      const idx = actuels.findIndex((c) => c.id === champEnEdition.value!.id)
+      if (idx !== -1) {
+        actuels[idx] = maj
+      }
+      dialogChamp.value = false
+      champEnEdition.value = null
+    } catch (cause) {
+      erreur.value = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
+  function ouvrirSuppressionChamp(champ: ChampKycAdmin) {
+    champASupprimer.value = champ
+    dialogSupprimerChamp.value = true
+  }
+
+  async function confirmerSuppressionChamp() {
+    if (!champASupprimer.value) return
+    envoiEnCours.value = true
+    erreur.value = ''
+    try {
+      await apiSupprimerChamp(champASupprimer.value.id)
+      const actuels = champsParEtape.value.get(champASupprimer.value.etape) ?? []
+      champsParEtape.value.set(
+        champASupprimer.value.etape,
+        actuels.filter((c) => c.id !== champASupprimer.value!.id),
+      )
+      dialogSupprimerChamp.value = false
+      champASupprimer.value = null
+    } catch (cause) {
+      erreur.value = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
   return {
     etapes,
     champsParEtape,
@@ -180,7 +348,13 @@ export function useKycAdmin() {
     erreur,
     dialogEtape,
     dialogChamp,
+    dialogSupprimerEtape,
+    dialogSupprimerChamp,
     envoiEnCours,
+    etapeEnEdition,
+    champEnEdition,
+    etapeASupprimer,
+    champASupprimer,
     formulaireEtape,
     formulaireChamp,
     charger,
@@ -189,5 +363,15 @@ export function useKycAdmin() {
     creerNouveauChamp,
     basculerEtape,
     basculerChamp,
+    ouvrirEditionEtape,
+    sauvegarderEtape,
+    ouvrirSuppressionEtape,
+    confirmerSuppressionEtape,
+    ouvrirEditionChamp,
+    sauvegarderChamp,
+    ouvrirSuppressionChamp,
+    confirmerSuppressionChamp,
+    reinitialiserDialogEtape,
+    reinitialiserDialogChamp,
   }
 }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   Building2,
   History,
@@ -11,6 +12,11 @@ import {
   MapPin,
   Trophy,
   Phone,
+  Monitor,
+  Tablet,
+  Smartphone,
+  Maximize2,
+  X,
 } from '@lucide/vue'
 
 import SgiPresentationRenderer from '@/components/SgiPresentationRenderer.vue'
@@ -25,7 +31,6 @@ const {
   erreur,
   succes,
   envoiEnCours,
-  apercuOuvert,
   formulaire,
   apercu,
   rienRenseigne,
@@ -52,6 +57,21 @@ const referenceFields: FieldDefinition[] = [
   { key: 'titre', label: 'Réalisation / distinction' },
   { key: 'annee', label: 'Année', width: '130px' },
 ]
+
+type DeviceMode = 'desktop' | 'tablet' | 'mobile'
+const deviceMode = ref<DeviceMode>('desktop')
+const apercuFullscreen = ref(false)
+
+const deviceWidths: Record<DeviceMode, string> = {
+  desktop: '100%',
+  tablet: '768px',
+  mobile: '375px',
+}
+
+function ouvrirApercu(mode?: DeviceMode) {
+  if (mode) deviceMode.value = mode
+  apercuFullscreen.value = true
+}
 </script>
 
 <template>
@@ -96,7 +116,7 @@ const referenceFields: FieldDefinition[] = [
                 variant="tonal"
                 color="info"
                 class="d-lg-none"
-                @click="apercuOuvert = true"
+                @click="ouvrirApercu('mobile')"
               >
                 <Eye :size="15" class="mr-1" /> Aperçu
               </v-btn>
@@ -318,6 +338,15 @@ const referenceFields: FieldDefinition[] = [
                 Aperçu en direct
               </span>
               <v-spacer />
+              <v-btn
+                size="small"
+                variant="text"
+                color="primary"
+                class="font-weight-bold mr-2 d-none d-sm-flex"
+                @click="ouvrirApercu()"
+              >
+                <Maximize2 :size="15" class="mr-1" /> Agrandir
+              </v-btn>
               <v-chip size="x-small" color="success" variant="tonal" class="font-weight-bold">
                 Temps réel
               </v-chip>
@@ -333,25 +362,69 @@ const referenceFields: FieldDefinition[] = [
       </v-row>
     </template>
 
-    <!-- Aperçu temps réel (repli mobile) -->
-    <v-dialog v-model="apercuOuvert" max-width="860" scrollable>
-      <v-card>
-        <v-card-title class="d-flex align-center pa-5">
+    <!-- Aperçu fullscreen avec simulation d'appareil -->
+    <v-dialog v-model="apercuFullscreen" fullscreen transition="dialog-bottom-transition" scrollable>
+      <v-card class="d-flex flex-column" style="height: 100%;">
+        <!-- Toolbar -->
+        <v-card-title class="d-flex align-center pa-4 border-b flex-grow-0" style="min-height: 64px;">
           <Eye :size="20" color="info" class="mr-2" />
-          <span class="font-display font-weight-bold">Aperçu de la page « À propos »</span>
+          <span class="font-display font-weight-bold">Aperçu de la présentation SGI</span>
           <v-spacer />
-          <v-btn variant="text" icon="mdi-close" @click="apercuOuvert = false" />
+
+          <!-- Toggle device -->
+          <v-btn-toggle v-model="deviceMode" mandatory density="comfortable" variant="outlined" divided class="mr-4">
+            <v-btn value="desktop" size="small">
+              <Monitor :size="16" />
+              <span class="d-none d-sm-inline ml-1 text-caption">Desktop</span>
+            </v-btn>
+            <v-btn value="tablet" size="small">
+              <Tablet :size="16" />
+              <span class="d-none d-sm-inline ml-1 text-caption">Tablette</span>
+            </v-btn>
+            <v-btn value="mobile" size="small">
+              <Smartphone :size="16" />
+              <span class="d-none d-sm-inline ml-1 text-caption">Mobile</span>
+            </v-btn>
+          </v-btn-toggle>
+
+          <v-btn variant="text" icon @click="apercuFullscreen = false">
+            <X :size="20" />
+          </v-btn>
         </v-card-title>
-        <v-card-text class="pa-6">
-          <v-alert type="info" variant="tonal" class="mb-5">
-            Reflet direct de la configuration, même non enregistrée.
-          </v-alert>
-          <SgiPresentationRenderer :presentation="apercu" />
+
+        <!-- Zone d'aperçu -->
+        <v-card-text class="pa-0 flex-grow-1 overflow-hidden d-flex justify-center" style="background: rgb(var(--v-theme-surface-variant));">
+          <div class="apercu-scroll-wrapper pa-6 pa-md-10 d-flex justify-center" style="width: 100%; overflow-y: auto;">
+            <div
+              class="apercu-device-frame rounded-xl elevation-4 overflow-y-auto bg-surface"
+              :style="{
+                width: deviceWidths[deviceMode],
+                maxWidth: '100%',
+                transition: 'width 0.3s ease',
+              }"
+            >
+              <div class="pa-6 pa-md-8">
+                <v-alert v-if="rienRenseigne" type="info" variant="tonal" class="mb-0">
+                  Remplissez une section pour voir l'aperçu se mettre à jour instantanément.
+                </v-alert>
+                <SgiPresentationRenderer v-else :presentation="apercu" />
+              </div>
+            </div>
+          </div>
         </v-card-text>
-        <v-card-actions class="pa-5">
+
+        <!-- Footer -->
+        <v-card-actions class="pa-4 border-t flex-grow-0 d-flex justify-center" style="min-height: 56px;">
+          <v-chip size="small" color="info" variant="tonal" class="font-weight-bold mr-2">
+            <component :is="deviceMode === 'desktop' ? Monitor : deviceMode === 'tablet' ? Tablet : Smartphone" :size="14" class="mr-1" />
+            {{ deviceMode === 'desktop' ? 'Desktop' : deviceMode === 'tablet' ? '768px' : '375px' }}
+          </v-chip>
+          <v-chip size="small" color="success" variant="tonal" class="font-weight-bold">
+            Reflet en temps réel
+          </v-chip>
           <v-spacer />
-          <v-btn color="primary" variant="flat" @click="apercuOuvert = false">
-            Fermer l'aperçu
+          <v-btn color="primary" variant="flat" class="font-weight-bold" @click="apercuFullscreen = false">
+            Fermer
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -406,5 +479,26 @@ const referenceFields: FieldDefinition[] = [
   50% {
     opacity: 0.4;
   }
+}
+
+/* Device frame scrollbar */
+.apercu-device-frame::-webkit-scrollbar {
+  width: 6px;
+}
+.apercu-device-frame::-webkit-scrollbar-track {
+  background: transparent;
+}
+.apercu-device-frame::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--v-theme-on-surface), 0.15);
+  border-radius: 3px;
+}
+.apercu-device-frame::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.3);
+}
+
+/* Fullscreen dialog background */
+:deep(.v-overlay--active .v-overlay__scrim) {
+  background: rgb(var(--v-theme-surface)) !important;
+  opacity: 1 !important;
 }
 </style>

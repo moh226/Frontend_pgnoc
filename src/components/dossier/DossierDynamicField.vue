@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { CheckCircle, DownloadCloud } from '@lucide/vue'
+import { computed, ref } from 'vue'
+import { CheckCircle, DownloadCloud, File, X } from '@lucide/vue'
 import CaptureSelfieField from '@/components/CaptureSelfieField.vue'
 import type { ChampKyc } from '@/types'
 import { formaterDate } from '@/utils/format'
@@ -23,6 +23,41 @@ const emit = defineEmits<{
   (e: 'upload-fichier', file: File | null): void
   (e: 'ouvrir-fichier', dossierId: string, valeurId: string): void
 }>()
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const dragOver = ref(false)
+const fichierEnCours = ref<File | null>(null)
+
+function getAccept(): string {
+  return props.champ.formats_acceptes?.split(',').map((f) => '.' + f.trim()).join(',') ?? ''
+}
+
+function onFileDrop(e: DragEvent) {
+  dragOver.value = false
+  const f = e.dataTransfer?.files?.[0]
+  if (f) {
+    fichierEnCours.value = f
+    emit('upload-fichier', f)
+  }
+}
+
+function onFileSelect(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0] ?? null
+  if (f) {
+    fichierEnCours.value = f
+    emit('upload-fichier', f)
+  }
+}
+
+function openFilePicker() {
+  if (!props.verrouille) fileInputRef.value?.click()
+}
+
+function clearFile() {
+  fichierEnCours.value = null
+  if (fileInputRef.value) fileInputRef.value.value = ''
+  emit('upload-fichier', null)
+}
 
 function choixMultiples(): string[] {
   if (!props.valeur) return []
@@ -190,6 +225,15 @@ const optionsChoix = computed(() => {
     <div v-else-if="champ.type === 'FICHIER'">
       <p v-if="champ.justification" class="text-caption text-medium-emphasis mb-3">{{ champ.justification }}</p>
       
+      <input
+        ref="fileInputRef"
+        type="file"
+        :accept="getAccept()"
+        class="d-none"
+        :disabled="verrouille"
+        @change="onFileSelect"
+      />
+
       <div v-if="fichierUrl" class="uploaded-file-card d-flex align-center pa-4 rounded-lg mb-3 bg-surface border">
         <div class="icon-box bg-success-lighten-5 text-success rounded-circle d-flex align-center justify-center mr-4" style="width: 40px; height: 40px;">
           <CheckCircle :size="20" />
@@ -209,32 +253,44 @@ const optionsChoix = computed(() => {
         </v-btn>
       </div>
 
-      <v-file-input
+      <div
         v-else
-        :accept="champ.formats_acceptes?.split(',').map((f) => '.' + f.trim()).join(',')"
-        variant="outlined"
-        class="premium-file-input"
-        prepend-icon=""
-        :disabled="verrouille"
-        @update:model-value="(f: File | File[] | null) => {
-          // Si v-file-input renvoie un tableau, on prend le premier fichier, sinon on prend l'objet directement (dépend des versions de vuetify)
-          const file = Array.isArray(f) ? (f[0] ?? null) : f;
-          emit('upload-fichier', file);
-        }"
+        class="upload-drop-zone rounded-lg d-flex flex-column align-center justify-center text-center pa-6"
+        :class="{ 'upload-drop-zone--active': dragOver, 'upload-drop-zone--disabled': verrouille }"
+        @click="openFilePicker"
+        @dragover.prevent="!verrouille && (dragOver = true)"
+        @dragleave="dragOver = false"
+        @drop.prevent="onFileDrop"
       >
-        <template v-slot:prepend-inner>
-          <div class="d-flex flex-column align-center justify-center w-100 py-6 text-center" style="cursor: pointer;">
-            <div class="upload-icon-wrapper bg-surface-variant rounded-circle d-flex align-center justify-center mb-3">
-              <DownloadCloud :size="24" class="text-primary" />
-            </div>
-            <div class="text-body-1 font-weight-medium text-on-surface">Téléverser votre document</div>
-            <div class="text-caption text-medium-emphasis mt-1">
-              Cliquez ou glissez-déposez ici.<br>
-              Formats : {{ champ.formats_acceptes }} (Max {{ champ.taille_max_mo }}MB)
-            </div>
+        <template v-if="!fichierEnCours">
+          <div class="upload-icon-wrapper rounded-circle d-flex align-center justify-center mb-3">
+            <DownloadCloud :size="24" class="text-primary" />
+          </div>
+          <div class="text-body-1 font-weight-medium text-on-surface">Téléverser votre document</div>
+          <div class="text-caption text-medium-emphasis mt-1">
+            Cliquez ou glissez-déposez ici.<br>
+            Formats : {{ champ.formats_acceptes }} (Max {{ champ.taille_max_mo }}MB)
           </div>
         </template>
-      </v-file-input>
+        <template v-else>
+          <div class="bg-success-lighten-5 rounded-circle d-flex align-center justify-center mb-3" style="width: 56px; height: 56px;">
+            <File :size="24" class="text-success" />
+          </div>
+          <div class="text-body-1 font-weight-medium text-on-surface mb-1">{{ fichierEnCours.name }}</div>
+          <div class="text-caption text-medium-emphasis mb-2">
+            {{ (fichierEnCours.size / 1024 / 1024).toFixed(2) }} Mo
+          </div>
+          <v-btn
+            v-if="!verrouille"
+            size="x-small"
+            variant="tonal"
+            color="error"
+            @click.stop="clearFile"
+          >
+            <X :size="14" class="mr-1" /> Supprimer
+          </v-btn>
+        </template>
+      </div>
     </div>
 
     <!-- Commentaire Agent -->
@@ -288,6 +344,25 @@ const optionsChoix = computed(() => {
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid rgb(var(--v-theme-outline));
+}
+
+.upload-drop-zone {
+  border: 2px dashed rgba(var(--v-theme-on-surface), 0.2);
+  background-color: transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 140px;
+}
+
+.upload-drop-zone:hover:not(.upload-drop-zone--disabled),
+.upload-drop-zone--active {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.03);
+}
+
+.upload-drop-zone--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .upload-icon-wrapper {

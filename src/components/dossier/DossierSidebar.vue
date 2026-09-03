@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, Check, ShieldCheck } from '@lucide/vue'
+import { ArrowLeft, Check } from '@lucide/vue'
 
 defineProps<{
   etapesGlobales: Array<{ id: string; titre: string; sousTitre?: string }>
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <aside class="sidebar bg-slate-900 d-flex flex-column h-100">
+  <aside class="sidebar d-flex flex-column h-100">
     <div class="pa-6 border-b border-white-10">
       <v-btn variant="text" class="text-white hover-lift px-0 text-body-2 font-weight-medium" @click="emit('quitter')">
         <ArrowLeft :size="18" class="mr-2" /> Quitter le formulaire
@@ -56,18 +56,6 @@ const emit = defineEmits<{
         </div>
       </div>
     </div>
-
-    <div class="pa-6 mt-auto">
-      <div class="security-card pa-4 rounded-lg">
-        <div class="d-flex align-center mb-2">
-          <ShieldCheck class="text-success mr-2" :size="20" />
-          <span class="text-caption font-weight-bold text-uppercase text-success tracking-wider">Sécurité Avancée</span>
-        </div>
-        <p class="text-caption text-grey-lighten-1 mb-0 line-height-1-5">
-          Vos données sont chiffrées de bout-en-bout via AES-256 et stockées dans des serveurs souverains sécurisés.
-        </p>
-      </div>
-    </div>
   </aside>
 </template>
 
@@ -75,11 +63,8 @@ const emit = defineEmits<{
 .sidebar {
   width: 320px;
   flex-shrink: 0;
+  background-color: #0A2A63;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bg-slate-900 {
-  background-color: #0f172a;
 }
 
 .border-white-10 {
@@ -95,10 +80,6 @@ const emit = defineEmits<{
 
 .tracking-wider {
   letter-spacing: 0.05em !important;
-}
-
-.line-height-1-5 {
-  line-height: 1.5;
 }
 
 /* Custom Scrollbar Dark */
@@ -189,10 +170,5 @@ const emit = defineEmits<{
 
 .step-title {
   color: white;
-}
-
-.security-card {
-  background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
-  border: 1px solid rgba(255,255,255,0.05);
 }
 </style>

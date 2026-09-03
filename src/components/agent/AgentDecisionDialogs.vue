@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import {
   ShieldCheck,
   ShieldBan,
@@ -6,9 +7,11 @@ import {
   XCircle,
   MessageSquare,
   AlertCircle,
-  ShieldAlert
+  ShieldAlert,
+  ArrowRightLeft,
 } from '@lucide/vue'
 import { formaterDate } from '@/utils/format'
+import { useAgentsStore } from '@/stores/agents'
 import type { VerificationPreuveVie } from '@/api/dossiers'
 
 const dialogCommentaire = defineModel<boolean>('dialogCommentaire', { required: true })
@@ -21,19 +24,41 @@ const dialogValidation = defineModel<boolean>('dialogValidation', { required: tr
 
 const dialogAuthenticite = defineModel<boolean>('dialogAuthenticite', { required: true })
 
-defineProps<{
+const dialogTransfert = defineModel<boolean>('dialogTransfert', { required: true })
+const agentCible = defineModel<string>('agentCible', { required: true })
+
+const props = defineProps<{
   envoiEnCours: boolean
   verificationEnCours: boolean
   erreurVerification: string
   verificationPreuve: VerificationPreuveVie | null
   conforme: boolean
+  agentEmail?: string | null
 }>()
 
 const emit = defineEmits<{
   envoyerCommentaire: []
   rejeter: []
   valider: []
+  confirmerTransfert: []
 }>()
+
+const agentsStore = useAgentsStore()
+
+const agentsActifs = computed(() =>
+  agentsStore.liste
+    .filter((a) => a.is_active)
+    .map((a) => ({
+      ...a,
+      label: `${a.prenom || ''} ${a.nom || ''}`.trim() || a.email,
+    })),
+)
+
+onMounted(async () => {
+  if (!agentsStore.liste.length) {
+    await agentsStore.charger()
+  }
+})
 </script>
 
 <template>
@@ -217,6 +242,61 @@ const emit = defineEmits<{
           @click="emit('valider')"
         >
           <CheckCircle2 :size="18" class="mr-2" /> Valider le dossier
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- Modale Transfert -->
+  <v-dialog v-model="dialogTransfert" max-width="500">
+    <v-card class="rounded-xl elevation-24">
+      <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center border-b pb-4">
+        <ArrowRightLeft :size="24" class="text-warning mr-3" />
+        Transférer le dossier
+      </v-card-title>
+      <v-card-text class="px-6 py-6">
+        <div class="text-body-2 text-medium-emphasis mb-4">
+          Agent actuel : <strong>{{ agentEmail || '—' }}</strong>
+        </div>
+
+        <v-autocomplete
+          v-model="agentCible"
+          :items="agentsActifs"
+          item-title="label"
+          item-value="id"
+          label="Sélectionner un agent"
+          variant="outlined"
+          class="premium-input mb-4"
+          hide-details="auto"
+          clearable
+          placeholder="Rechercher un agent..."
+        >
+          <template #item="{ props, item }">
+            <v-list-item v-bind="props" :subtitle="item.email" />
+          </template>
+        </v-autocomplete>
+
+        <v-alert type="warning" variant="tonal" class="border-l-4 mb-0">
+          <template #prepend>
+            <AlertCircle :size="20" class="mr-2" />
+          </template>
+          <span class="text-body-2 font-weight-medium">
+            Le dossier sera transféré à l'agent sélectionné. Vous n'aurez plus accès à ce dossier.
+          </span>
+        </v-alert>
+      </v-card-text>
+      <v-card-actions class="px-6 pb-6 pt-0 border-t mt-2">
+        <v-spacer />
+        <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogTransfert = false">Annuler</v-btn>
+        <v-btn
+          color="warning"
+          variant="flat"
+          class="px-6 font-weight-bold shadow-sm"
+          :disabled="!agentCible || envoiEnCours"
+          :loading="envoiEnCours"
+          @click="emit('confirmerTransfert')"
+        >
+          <ArrowRightLeft :size="16" class="mr-2" /> Transférer
         </v-btn>
       </v-card-actions>
     </v-card>

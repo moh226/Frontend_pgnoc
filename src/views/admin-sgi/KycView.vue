@@ -6,10 +6,18 @@ import {
   Plus,
   Layers,
   Power,
-  PowerOff
+  PowerOff,
+  Zap,
+  TrendingUp,
+  Settings,
+  PiggyBank,
+  CheckCircle2,
+  Pencil,
+  Trash2,
 } from '@lucide/vue'
 
 import { useKycAdmin, LIBELLES_TYPE } from '@/composables/useKycAdmin'
+import { useKycTemplates } from '@/composables/useKycTemplates'
 import KycFieldCard from '@/components/kyc/KycFieldCard.vue'
 import KycFieldPreview from '@/components/kyc/KycFieldPreview.vue'
 
@@ -20,7 +28,13 @@ const {
   erreur,
   dialogEtape,
   dialogChamp,
+  dialogSupprimerEtape,
+  dialogSupprimerChamp,
   envoiEnCours,
+  etapeEnEdition,
+  champEnEdition,
+  etapeASupprimer,
+  champASupprimer,
   formulaireEtape,
   formulaireChamp,
   charger,
@@ -29,7 +43,31 @@ const {
   creerNouveauChamp,
   basculerEtape,
   basculerChamp,
+  ouvrirEditionEtape,
+  sauvegarderEtape,
+  ouvrirSuppressionEtape,
+  confirmerSuppressionEtape,
+  ouvrirEditionChamp,
+  sauvegarderChamp,
+  ouvrirSuppressionChamp,
+  confirmerSuppressionChamp,
+  reinitialiserDialogEtape,
+  reinitialiserDialogChamp,
 } = useKycAdmin()
+
+const {
+  templates,
+  activationEnCours,
+  erreur: erreurTemplate,
+  estDejaActif,
+  activerTemplate,
+} = useKycTemplates(etapes, charger)
+
+const TEMPLATE_ICONS: Record<string, typeof TrendingUp> = {
+  TrendingUp,
+  Settings,
+  PiggyBank,
+}
 
 const apercuOuvert = ref(false)
 
@@ -65,14 +103,89 @@ onMounted(() => void charger())
       </div>
     </div>
 
+    <v-alert v-if="erreurTemplate" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
+      {{ erreurTemplate }}
+    </v-alert>
+
     <v-progress-linear v-if="chargement" indeterminate color="primary" class="mb-6 rounded" />
 
     <v-alert v-if="!chargement && !etapes.length" type="info" variant="tonal" class="mb-6 rounded-lg border-l-4">
-      Aucune étape définie. Créez votre première étape pour démarrer la configuration de votre parcours KYC.
+      Aucune étape définie. Activez un template ci-dessous ou créez votre première étape pour démarrer.
     </v-alert>
 
+    <!-- Section Templates prédéfinis -->
+    <div class="mb-8">
+      <div class="d-flex align-center mb-4">
+        <Zap :size="20" class="text-primary mr-2" />
+        <h2 class="text-subtitle-1 font-weight-bold">Templates rapides</h2>
+        <v-chip size="small" variant="tonal" color="primary" class="ml-2 font-weight-bold">
+          {{ templates.length }} disponible(s)
+        </v-chip>
+      </div>
+      <p class="text-body-2 text-medium-emphasis mb-4">
+        Activez un template pour ajouter automatiquement une étape complète avec ses champs préconfigurés.
+      </p>
+      <v-row>
+        <v-col
+          v-for="template in templates"
+          :key="template.id"
+          cols="12"
+          md="4"
+        >
+          <v-card
+            class="template-card rounded-xl elevation-1 h-100 d-flex flex-column"
+            :class="{ 'template-card--active': estDejaActif(template.id) }"
+          >
+            <v-card-text class="pa-5 flex-grow-1 d-flex flex-column">
+              <div class="d-flex align-center mb-3">
+                <div
+                  class="icon-box rounded-lg pa-2 mr-3"
+                  :class="estDejaActif(template.id) ? 'bg-success-lighten-5 text-success' : 'bg-primary-lighten-5 text-primary'"
+                >
+                  <component :is="TEMPLATE_ICONS[template.icon] ?? TrendingUp" :size="20" />
+                </div>
+                <div class="flex-grow-1">
+                  <div class="font-weight-bold text-body-1">{{ template.nom }}</div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ template.champs.length }} champ(s)
+                  </div>
+                </div>
+                <v-chip
+                  v-if="estDejaActif(template.id)"
+                  size="x-small"
+                  color="success"
+                  variant="flat"
+                  class="font-weight-bold"
+                >
+                  <CheckCircle2 :size="12" class="mr-1" /> Activé
+                </v-chip>
+              </div>
+              <p class="text-body-2 text-medium-emphasis mb-4 flex-grow-1">
+                {{ template.description }}
+              </p>
+              <v-btn
+                :color="estDejaActif(template.id) ? 'success' : 'primary'"
+                :variant="estDejaActif(template.id) ? 'tonal' : 'flat'"
+                block
+                class="font-weight-bold"
+                :disabled="estDejaActif(template.id) || activationEnCours !== null"
+                :loading="activationEnCours === template.id"
+                @click="activerTemplate(template)"
+              >
+                <Zap v-if="!estDejaActif(template.id)" :size="16" class="mr-2" />
+                <CheckCircle2 v-else :size="16" class="mr-2" />
+                {{ estDejaActif(template.id) ? 'Déjà actif' : 'Activer' }}
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
+
+    <v-divider class="mb-8" />
+
     <!-- Liste des étapes (Accordéon stylisé) -->
-    <v-expansion-panels v-else variant="accordion" class="premium-panels mb-6">
+    <v-expansion-panels v-if="etapes.length" variant="accordion" class="premium-panels mb-6">
       <v-expansion-panel 
         v-for="etape in etapes" 
         :key="etape.id"
@@ -112,10 +225,16 @@ onMounted(() => void charger())
           <div class="d-flex align-center justify-space-between mb-4">
             <h3 class="text-subtitle-1 font-weight-bold">Champs de l'étape</h3>
             <div class="d-flex gap-2">
+              <v-btn size="small" variant="text" color="grey-darken-1" class="hover-lift font-weight-bold" @click="ouvrirEditionEtape(etape)">
+                <Pencil :size="16" class="mr-1" /> Modifier
+              </v-btn>
+              <v-btn size="small" variant="text" color="error" class="hover-lift font-weight-bold" @click="ouvrirSuppressionEtape(etape)">
+                <Trash2 :size="16" class="mr-1" /> Supprimer
+              </v-btn>
               <v-btn size="small" variant="text" :color="etape.actif ? 'error' : 'success'" class="hover-lift font-weight-bold" @click="basculerEtape(etape)">
                 <PowerOff v-if="etape.actif" :size="16" class="mr-2" />
                 <Power v-else :size="16" class="mr-2" />
-                {{ etape.actif ? "Désactiver" : "Activer" }} l'étape
+                {{ etape.actif ? "Désactiver" : "Activer" }}
               </v-btn>
               <v-btn size="small" color="primary" variant="flat" class="hover-lift font-weight-bold" @click="ouvrirChamp(etape.id)">
                 <Plus :size="16" class="mr-1" /> Ajouter un champ
@@ -135,6 +254,8 @@ onMounted(() => void charger())
               :champ="champ"
               :libelles-type="LIBELLES_TYPE"
               @basculer="basculerChamp"
+              @editer="ouvrirEditionChamp"
+              @supprimer="ouvrirSuppressionChamp"
             />
           </div>
 
@@ -142,15 +263,15 @@ onMounted(() => void charger())
       </v-expansion-panel>
     </v-expansion-panels>
 
-    <!-- Modale Création Étape -->
+    <!-- Modale Création/Édition Étape -->
     <v-dialog v-model="dialogEtape" max-width="500">
       <v-card class="rounded-xl elevation-24">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5">
-          Nouvelle étape KYC
+          {{ etapeEnEdition ? 'Modifier l\'étape' : 'Nouvelle étape KYC' }}
         </v-card-title>
         <v-card-text class="px-6 py-4">
           <p class="text-body-2 text-medium-emphasis mb-6">
-            Créez une nouvelle section logique pour regrouper les informations demandées à l'investisseur.
+            {{ etapeEnEdition ? 'Modifiez le nom ou l\'ordre de cette étape.' : 'Créez une nouvelle section logique pour regrouper les informations demandées à l\'investisseur.' }}
           </p>
           <div class="d-flex flex-column gap-4">
             <v-text-field 
@@ -174,26 +295,26 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-2">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogEtape = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogEtape = false; reinitialiserDialogEtape()">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"
             class="px-6 font-weight-bold"
             :loading="envoiEnCours"
             :disabled="!formulaireEtape.nom.trim()"
-            @click="creerNouvelleEtape"
+            @click="etapeEnEdition ? sauvegarderEtape() : creerNouvelleEtape()"
           >
-            Créer l'étape
+            {{ etapeEnEdition ? 'Enregistrer' : 'Créer l\'étape' }}
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Modale Création Champ -->
+    <!-- Modale Création/Édition Champ -->
     <v-dialog v-model="dialogChamp" max-width="600">
       <v-card class="rounded-xl elevation-24">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
-          Nouveau champ
+          {{ champEnEdition ? 'Modifier le champ' : 'Nouveau champ' }}
         </v-card-title>
         <v-card-text class="px-6 py-4 custom-scrollbar" style="max-height: 70vh; overflow-y: auto;">
           
@@ -307,16 +428,82 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-4 border-t">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogChamp = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogChamp = false; reinitialiserDialogChamp()">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"
             class="px-6 font-weight-bold"
             :loading="envoiEnCours"
             :disabled="!formulaireChamp.nom.trim()"
-            @click="creerNouveauChamp"
+            @click="champEnEdition ? sauvegarderChamp() : creerNouveauChamp()"
           >
-            Enregistrer le champ
+            {{ champEnEdition ? 'Enregistrer' : 'Enregistrer le champ' }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modale Confirmation Suppression Étape -->
+    <v-dialog v-model="dialogSupprimerEtape" max-width="450">
+      <v-card class="rounded-xl elevation-24">
+        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
+          <div class="bg-error-lighten-5 rounded-lg pa-2 mr-3">
+            <Trash2 :size="24" class="text-error" />
+          </div>
+          Supprimer l'étape ?
+        </v-card-title>
+        <v-card-text class="px-6 py-4">
+          <p class="text-body-1 mb-2">
+            Êtes-vous sûr de vouloir supprimer l'étape <strong>{{ etapeASupprimer?.nom }}</strong> ?
+          </p>
+          <v-alert type="warning" variant="tonal" class="rounded-lg">
+            Cette action est irréversible. Tous les champs de cette étape seront également supprimés.
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="px-6 pb-6 pt-2">
+          <v-spacer />
+          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogSupprimerEtape = false">Annuler</v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            class="px-6 font-weight-bold"
+            :loading="envoiEnCours"
+            @click="confirmerSuppressionEtape"
+          >
+            Supprimer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Modale Confirmation Suppression Champ -->
+    <v-dialog v-model="dialogSupprimerChamp" max-width="450">
+      <v-card class="rounded-xl elevation-24">
+        <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
+          <div class="bg-error-lighten-5 rounded-lg pa-2 mr-3">
+            <Trash2 :size="24" class="text-error" />
+          </div>
+          Supprimer le champ ?
+        </v-card-title>
+        <v-card-text class="px-6 py-4">
+          <p class="text-body-1 mb-2">
+            Êtes-vous sûr de vouloir supprimer le champ <strong>{{ champASupprimer?.nom }}</strong> ?
+          </p>
+          <v-alert type="warning" variant="tonal" class="rounded-lg">
+            Cette action est irréversible. Les données saisies par les investisseurs pour ce champ seront également perdues.
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="px-6 pb-6 pt-2">
+          <v-spacer />
+          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogSupprimerChamp = false">Annuler</v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            class="px-6 font-weight-bold"
+            :loading="envoiEnCours"
+            @click="confirmerSuppressionChamp"
+          >
+            Supprimer
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -403,5 +590,20 @@ onMounted(() => void charger())
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(var(--v-theme-on-surface), 0.3);
+}
+
+.template-card {
+  border: 1px solid rgb(var(--v-theme-outline));
+  transition: all 0.2s ease;
+}
+
+.template-card:hover:not(.template-card--active) {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 4px 12px -4px rgba(var(--v-theme-primary), 0.15);
+}
+
+.template-card--active {
+  border-color: rgb(var(--v-theme-success));
+  background-color: rgba(var(--v-theme-success), 0.02);
 }
 </style>

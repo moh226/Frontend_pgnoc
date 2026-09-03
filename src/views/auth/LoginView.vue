@@ -415,6 +415,7 @@ function continuerAvecGoogle() {
   gap: 10px;
   padding: 0 14px;
   height: 48px;
+  box-sizing: border-box;
   background: rgb(var(--v-theme-surface-variant));
   border: 1.5px solid var(--v-theme-outline);
   border-radius: 10px;
@@ -452,6 +453,22 @@ function continuerAvecGoogle() {
 .field-input input::placeholder {
   color: rgb(var(--v-theme-on-surface-variant));
   opacity: 0.6;
+}
+
+/* Masquer l'icône oeil du navigateur (Chrome/Edge) */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="text"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Chrome 128+ */
+input::-webkit-strong-password-toggle {
+  display: none !important;
+}
+
+/* Edge */
+input::-ms-reveal {
+  display: none !important;
 }
 
 .field-toggle {

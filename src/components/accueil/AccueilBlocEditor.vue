@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Plus, Trash2 } from '@lucide/vue'
+import { ref } from 'vue'
+import { Plus, Trash2, Image, X, Upload } from '@lucide/vue'
 import type { TypeBlocAccueil } from '@/types'
 import type {
   LigneChiffre,
@@ -28,6 +29,25 @@ const emit = defineEmits<{
   (e: 'ajouterMention'): void
   (e: 'surFichierChoisi', value: File | File[]): void
 }>()
+
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const dragOver = ref(false)
+
+function onFileDrop(e: DragEvent) {
+  dragOver.value = false
+  const f = e.dataTransfer?.files?.[0]
+  if (f && f.type.startsWith('image/')) emit('surFichierChoisi', f)
+}
+
+function onFileSelect(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0]
+  if (f) emit('surFichierChoisi', f)
+}
+
+function clearFile() {
+  if (fileInputRef.value) fileInputRef.value.value = ''
+  emit('surFichierChoisi', null as unknown as File)
+}
 </script>
 
 <template>
@@ -204,20 +224,38 @@ const emit = defineEmits<{
     <label class="etiquette-champ">
       Image d'illustration
     </label>
-    <v-file-input
-      :model-value="nouveauFichier"
-      accept="image/*"
-      density="comfortable"
-      variant="outlined"
-      hide-details
-      prepend-icon=""
-      label="Choisir une image (conservé si vide)"
-      class="flex-grow-1"
-      @update:model-value="(fichiers) => emit('surFichierChoisi', fichiers as File | File[])"
-    />
-    <v-avatar v-if="imageActuelle" size="48" rounded>
-      <v-img :src="imageActuelle" />
-    </v-avatar>
+    <div class="d-flex align-center flex-grow-1" style="gap: 16px;">
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept="image/*"
+        class="d-none"
+        @change="onFileSelect"
+      />
+      <div
+        class="hero-upload-zone rounded-lg d-flex align-center justify-center text-center flex-grow-1"
+        :class="{ 'hero-upload-zone--active': dragOver }"
+        @click="fileInputRef?.click()"
+        @dragover.prevent="dragOver = true"
+        @dragleave="dragOver = false"
+        @drop.prevent="onFileDrop"
+      >
+        <template v-if="!nouveauFichier">
+          <Upload :size="18" class="text-medium-emphasis mr-2" />
+          <span class="text-body-2 text-medium-emphasis">Choisir une image (conservé si vide)</span>
+        </template>
+        <template v-else>
+          <Image :size="18" class="text-primary mr-2" />
+          <span class="text-body-2 font-weight-medium text-primary mr-2">{{ nouveauFichier.name }}</span>
+          <v-btn size="x-small" variant="text" icon @click.stop="clearFile">
+            <X :size="14" />
+          </v-btn>
+        </template>
+      </div>
+      <v-avatar v-if="imageActuelle" size="48" rounded>
+        <v-img :src="imageActuelle" />
+      </v-avatar>
+    </div>
   </div>
 </template>
 
@@ -276,5 +314,20 @@ const emit = defineEmits<{
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+.hero-upload-zone {
+  border: 1px dashed rgba(var(--v-theme-on-surface), 0.25);
+  background-color: transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  padding: 12px 16px;
+  min-height: 48px;
+}
+
+.hero-upload-zone:hover,
+.hero-upload-zone--active {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.03);
 }
 </style>

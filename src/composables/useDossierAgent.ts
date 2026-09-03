@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import { 
   etapesKyc, 
   verifierAuthenticiteSelfie, 
+  transférerDossier,
   type VerificationPreuveVie 
 } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
@@ -29,12 +30,25 @@ export function useDossierAgent(id: string) {
   const verificationEnCours = ref(false)
   const erreurVerification = ref('')
 
+  const dialogTransfert = ref(false)
+  const agentCible = ref('')
+
   const champsParId = ref(new Map<string, ChampKyc>())
 
   // Computed
   const estPriseEnChargeParMoi = computed(
     () => dossiers.detail?.agent_email === auth.utilisateur?.email,
   )
+
+  const estAdminSgi = computed(
+    () => auth.roleActuel === 'ADMIN_SGI',
+  )
+
+  const peutTransférer = computed(() => {
+    if (!estAdminSgi.value) return false
+    const statut = dossiers.detail?.statut
+    return statut === 'EN_INSTRUCTION' || statut === 'SOUMIS'
+  })
 
   // Actions
   function ouvrirCommentaire(valeurId: string) {
@@ -84,6 +98,26 @@ export function useDossierAgent(id: string) {
     try {
       await dossiers.deciderDossier(id, 'valider')
       dialogValidation.value = false
+    } catch (cause) {
+      dossiers.erreur = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
+  function ouvrirTransfert() {
+    agentCible.value = ''
+    dialogTransfert.value = true
+  }
+
+  async function confirmerTransférer() {
+    if (!agentCible.value) return
+    envoiEnCours.value = true
+    try {
+      await transférerDossier(id, agentCible.value)
+      await dossiers.chargerDetail(id)
+      dialogTransfert.value = false
+      agentCible.value = ''
     } catch (cause) {
       dossiers.erreur = extraireMessageErreur(cause)
     } finally {
@@ -146,15 +180,21 @@ export function useDossierAgent(id: string) {
     motifRejet,
     dialogValidation,
     dialogAuthenticite,
+    dialogTransfert,
+    agentCible,
     verificationPreuve,
     verificationEnCours,
     erreurVerification,
     estPriseEnChargeParMoi,
+    estAdminSgi,
+    peutTransférer,
     ouvrirCommentaire,
     envoyerCommentaire,
     prendreEnCharge,
     rejeter,
     valider,
+    ouvrirTransfert,
+    confirmerTransférer,
     nomDuChamp,
     typeDuChamp,
     verifierPreuve,

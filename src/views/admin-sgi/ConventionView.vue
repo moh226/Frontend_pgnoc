@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { BookOpen, CloudUpload, FileText, Download, CheckCircle2, AlertCircle } from '@lucide/vue'
+import { BookOpen, CloudUpload, FileText, Download, CheckCircle2, AlertCircle, File } from '@lucide/vue'
 
 import { conventionSgi, publierConvention } from '@/api/sgiAdmin'
 import { extraireMessageErreur } from '@/api/client'
@@ -15,6 +15,8 @@ const titre = ref('')
 const fichier = ref<File | null>(null)
 const envoiEnCours = ref(false)
 const succes = ref('')
+const fileInputRef = ref<HTMLInputElement | null>(null)
+const dragOver = ref(false)
 
 async function charger() {
   chargement.value = true
@@ -49,6 +51,26 @@ async function publier() {
 }
 
 onMounted(() => void charger())
+
+function onFileDrop(e: DragEvent) {
+  dragOver.value = false
+  const f = e.dataTransfer?.files?.[0]
+  if (f && f.type === 'application/pdf') fichier.value = f
+}
+
+function onFileSelect(e: Event) {
+  const f = (e.target as HTMLInputElement).files?.[0] ?? null
+  fichier.value = f
+}
+
+function openFilePicker() {
+  fileInputRef.value?.click()
+}
+
+function clearFile() {
+  fichier.value = null
+  if (fileInputRef.value) fileInputRef.value.value = ''
+}
 </script>
 
 <template>
@@ -94,25 +116,47 @@ onMounted(() => void charger())
               
               <div class="text-subtitle-2 text-uppercase text-primary font-weight-bold tracking-wider mb-4">Document PDF</div>
               
-              <v-file-input
-                :model-value="fichier"
-                label="Fichier de la convention"
+              <input
+                ref="fileInputRef"
+                type="file"
                 accept="application/pdf,.pdf"
-                variant="outlined"
-                class="premium-file-input mb-8"
-                prepend-icon=""
-                @update:model-value="(f) => (fichier = Array.isArray(f) ? f[0] ?? null : f)"
+                class="d-none"
+                @change="onFileSelect"
+              />
+
+              <div
+                class="drop-zone rounded-xl d-flex flex-column align-center justify-center text-center pa-8 mb-8 cursor-pointer"
+                :class="{ 'drop-zone--active': dragOver, 'drop-zone--filled': fichier }"
+                @click="openFilePicker"
+                @dragover.prevent="dragOver = true"
+                @dragleave="dragOver = false"
+                @drop.prevent="onFileDrop"
               >
-                <template v-slot:prepend-inner>
-                  <div class="d-flex flex-column align-center justify-center w-100 py-4 text-center cursor-pointer">
-                    <div class="bg-primary-lighten-5 rounded-circle pa-3 mb-2">
-                      <CloudUpload :size="24" class="text-primary" />
-                    </div>
-                    <div class="text-body-1 font-weight-medium">Glissez ou sélectionnez un PDF</div>
-                    <div class="text-caption text-medium-emphasis">Taille maximale : 10 Mo</div>
+                <template v-if="!fichier">
+                  <div class="bg-primary-lighten-5 rounded-circle pa-4 mb-3">
+                    <CloudUpload :size="28" class="text-primary" />
                   </div>
+                  <div class="text-body-1 font-weight-medium mb-1">Glissez ou sélectionnez un PDF</div>
+                  <div class="text-caption text-medium-emphasis">Taille maximale : 10 Mo</div>
                 </template>
-              </v-file-input>
+                <template v-else>
+                  <div class="bg-success-lighten-5 rounded-circle pa-4 mb-3">
+                    <File :size="28" class="text-success" />
+                  </div>
+                  <div class="text-body-1 font-weight-medium mb-1">{{ fichier.name }}</div>
+                  <div class="text-caption text-medium-emphasis mb-3">
+                    {{ (fichier.size / 1024 / 1024).toFixed(2) }} Mo
+                  </div>
+                  <v-btn
+                    size="small"
+                    variant="tonal"
+                    color="error"
+                    @click.stop="clearFile"
+                  >
+                    Supprimer
+                  </v-btn>
+                </template>
+              </div>
               
               <v-btn
                 color="primary"
@@ -212,19 +256,23 @@ onMounted(() => void charger())
   border-color: rgb(var(--v-theme-primary));
 }
 
-.premium-file-input :deep(.v-field) {
-  border-radius: 12px;
-  border: 1px dashed rgba(var(--v-theme-on-surface), 0.2) !important;
-  background-color: transparent !important;
+.drop-zone {
+  border: 2px dashed rgba(var(--v-theme-on-surface), 0.2);
+  background-color: transparent;
+  transition: all 0.2s ease;
+  min-height: 180px;
 }
 
-.premium-file-input :deep(.v-field__input) {
-  display: none !important;
+.drop-zone:hover,
+.drop-zone--active {
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-primary), 0.03);
 }
 
-.premium-file-input :deep(.v-field:hover) {
-  border-color: rgb(var(--v-theme-primary)) !important;
-  background-color: rgba(var(--v-theme-primary), 0.02) !important;
+.drop-zone--filled {
+  border-style: solid;
+  border-color: rgb(var(--v-theme-success));
+  background-color: rgba(var(--v-theme-success), 0.03);
 }
 
 .hover-lift {

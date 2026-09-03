@@ -14,7 +14,8 @@ import {
   AlertCircle,
   FileText,
   User,
-  Calendar
+  Calendar,
+  ArrowRightLeft,
 } from '@lucide/vue'
 
 import { ouvrirFichierValeur } from '@/api/dossiers'
@@ -36,15 +37,20 @@ const {
   motifRejet,
   dialogValidation,
   dialogAuthenticite,
+  dialogTransfert,
+  agentCible,
   verificationPreuve,
   verificationEnCours,
   erreurVerification,
   estPriseEnChargeParMoi,
+  peutTransférer,
   ouvrirCommentaire,
   envoyerCommentaire,
   prendreEnCharge,
   rejeter,
   valider,
+  ouvrirTransfert,
+  confirmerTransférer,
   nomDuChamp,
   typeDuChamp,
   verifierPreuve,
@@ -108,6 +114,17 @@ onMounted(async () => {
               >
                 Instruit par vous
               </v-chip>
+              
+              <v-btn
+                v-if="peutTransférer"
+                color="warning"
+                variant="tonal"
+                size="large"
+                class="font-weight-bold"
+                @click="ouvrirTransfert"
+              >
+                <ArrowRightLeft :size="18" class="mr-2" /> Transférer
+              </v-btn>
               
               <v-btn color="error" variant="tonal" size="large" class="font-weight-bold" @click="dialogRejet = true">
                 <XCircle :size="18" class="mr-2" /> Rejeter
@@ -315,14 +332,18 @@ onMounted(async () => {
       v-model:motif-rejet="motifRejet"
       v-model:dialog-validation="dialogValidation"
       v-model:dialog-authenticite="dialogAuthenticite"
+      v-model:dialog-transfert="dialogTransfert"
+      v-model:agent-cible="agentCible"
       :envoi-en-cours="envoiEnCours"
       :verification-en-cours="verificationEnCours"
       :erreur-verification="erreurVerification"
       :verification-preuve="verificationPreuve"
       :conforme="conforme()"
+      :agent-email="dossiers.detail?.agent_email"
       @envoyer-commentaire="envoyerCommentaire"
       @rejeter="rejeter"
       @valider="valider"
+      @confirmer-transfert="confirmerTransférer"
     />
   </v-container>
 </template>

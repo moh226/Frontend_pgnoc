@@ -15,6 +15,7 @@ const nom = ref('')
 const motDePasse = ref('')
 const confirmation = ref('')
 const afficherMotDePasse = ref(false)
+const afficherConfirmation = ref(false)
 const erreurs = ref<Record<string, string>>({})
 const enCours = ref(false)
 
@@ -129,37 +130,36 @@ function continuerAvecGoogle() {
             <span v-if="erreurs.email" class="field-error">{{ erreurs.email }}</span>
           </div>
 
-          <div class="field-row-grid">
-            <div class="field">
-              <label class="field-label" for="reg-prenom">Prénom</label>
-              <div class="field-input">
-                <User class="field-icon" :size="18" />
-                <input
-                  id="reg-prenom"
-                  v-model="prenom"
-                  type="text"
-                  placeholder="Jean"
-                  autocomplete="given-name"
-                  required
-                />
-              </div>
-              <span v-if="erreurs.prenom" class="field-error">{{ erreurs.prenom }}</span>
+          <div class="field">
+            <label class="field-label" for="reg-prenom">Prénom</label>
+            <div class="field-input">
+              <User class="field-icon" :size="18" />
+              <input
+                id="reg-prenom"
+                v-model="prenom"
+                type="text"
+                placeholder="Jean"
+                autocomplete="given-name"
+                required
+              />
             </div>
-            <div class="field">
-              <label class="field-label" for="reg-nom">Nom</label>
-              <div class="field-input">
-                <User class="field-icon" :size="18" />
-                <input
-                  id="reg-nom"
-                  v-model="nom"
-                  type="text"
-                  placeholder="Traoré"
-                  autocomplete="family-name"
-                  required
-                />
-              </div>
-              <span v-if="erreurs.nom" class="field-error">{{ erreurs.nom }}</span>
+            <span v-if="erreurs.prenom" class="field-error">{{ erreurs.prenom }}</span>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="reg-nom">Nom</label>
+            <div class="field-input">
+              <User class="field-icon" :size="18" />
+              <input
+                id="reg-nom"
+                v-model="nom"
+                type="text"
+                placeholder="Traoré"
+                autocomplete="family-name"
+                required
+              />
             </div>
+            <span v-if="erreurs.nom" class="field-error">{{ erreurs.nom }}</span>
           </div>
 
           <div class="field">
@@ -194,11 +194,20 @@ function continuerAvecGoogle() {
               <input
                 id="reg-confirm"
                 v-model="confirmation"
-                type="password"
+                :type="afficherConfirmation ? 'text' : 'password'"
                 placeholder="••••••••"
                 autocomplete="new-password"
                 required
               />
+              <button
+                type="button"
+                class="field-toggle"
+                :aria-label="afficherConfirmation ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                @click="afficherConfirmation = !afficherConfirmation"
+              >
+                <EyeOff v-if="afficherConfirmation" :size="18" />
+                <Eye v-else :size="18" />
+              </button>
             </div>
             <span v-if="erreurs.password_confirmation" class="field-error">{{ erreurs.password_confirmation }}</span>
           </div>
@@ -343,12 +352,12 @@ function continuerAvecGoogle() {
 /* ── Formulaire (droite, carte blanche) ── */
 .form-panel {
   margin-left: auto;
-  width: 560px;
+  width: 520px;
   min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 40px;
+  padding: 48px;
   background: rgb(var(--v-theme-surface));
   border-radius: 24px 0 0 24px;
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
@@ -419,12 +428,6 @@ function continuerAvecGoogle() {
   gap: 6px;
 }
 
-.field-row-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
 .field-label {
   font-size: 13px;
   font-weight: 600;
@@ -437,6 +440,7 @@ function continuerAvecGoogle() {
   gap: 10px;
   padding: 0 14px;
   height: 48px;
+  box-sizing: border-box;
   background: rgb(var(--v-theme-surface-variant));
   border: 1.5px solid var(--v-theme-outline);
   border-radius: 10px;
@@ -474,6 +478,22 @@ function continuerAvecGoogle() {
 .field-input input::placeholder {
   color: rgb(var(--v-theme-on-surface-variant));
   opacity: 0.6;
+}
+
+/* Masquer l'icône oeil du navigateur (Chrome/Edge) */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="text"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Chrome 128+ */
+input::-webkit-strong-password-toggle {
+  display: none !important;
+}
+
+/* Edge */
+input::-ms-reveal {
+  display: none !important;
 }
 
 .field-toggle {
@@ -620,11 +640,6 @@ function continuerAvecGoogle() {
   .form-panel {
     width: 100%;
     border-radius: 0;
-  }
-
-  .field-row-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
   }
 }
 </style>

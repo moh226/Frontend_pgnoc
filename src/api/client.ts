@@ -89,17 +89,27 @@ export function extraireMessageErreur(
   erreur: unknown,
   fallback = 'Une erreur est survenue. Réessayez.',
 ): string {
-  const data = (erreur as AxiosError)?.response?.data
-  if (typeof data === 'string') return data
-  if (data && typeof data === 'object') {
-    const premiere = Object.values(data)[0]
-    if (Array.isArray(premiere)) return String(premiere[0])
-    if (typeof premiere === 'string') return premiere
-    if (premiere && typeof premiere === 'object') {
-      const interne = Object.values(premiere)[0]
-      if (Array.isArray(interne)) return String(interne[0])
-      if (typeof interne === 'string') return interne
+  const axiosErr = erreur as AxiosError
+  const status = axiosErr?.response?.status
+  const data = axiosErr?.response?.data
+
+  if (status) {
+    if (typeof data === 'string') return `[${status}] ${data}`
+    if (data && typeof data === 'object') {
+      const premiere = Object.values(data)[0]
+      if (Array.isArray(premiere)) return `[${status}] ${String(premiere[0])}`
+      if (typeof premiere === 'string') return `[${status}] ${premiere}`
+      if (premiere && typeof premiere === 'object') {
+        const interne = Object.values(premiere)[0]
+        if (Array.isArray(interne)) return `[${status}] ${String(interne[0])}`
+        if (typeof interne === 'string') return `[${status}] ${interne}`
+      }
     }
+    return `[${status}] ${fallback}`
   }
+
+  if (axiosErr?.code === 'ECONNABORTED') return 'Le serveur ne répond pas. Vérifiez votre connexion.'
+  if (axiosErr?.message?.includes('Network Error')) return 'Erreur réseau. Vérifiez que le serveur est accessible.'
+
   return fallback
 }
