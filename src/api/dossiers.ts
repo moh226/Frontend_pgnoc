@@ -1,5 +1,11 @@
 import { api } from './client'
-import type { DossierDetail, DossierListeItem, EtapeKyc, ResultatPagines } from '@/types'
+import type {
+  DashboardInvestisseur,
+  DossierDetail,
+  DossierListeItem,
+  EtapeKyc,
+  ResultatPagines,
+} from '@/types'
 
 export interface ParametresListeDossiers {
   statut?: string[]
@@ -189,5 +195,10 @@ export async function transférerDossier(
     `/dossiers/dossiers/${dossierId}/transferer/`,
     { agent_id: agentId },
   )
+  return data
+}
+
+export async function dashboardInvestisseur(): Promise<DashboardInvestisseur> {
+  const { data } = await api.get<DashboardInvestisseur>('/dossiers/investisseur/dashboard/')
   return data
 }

@@ -93,20 +93,27 @@ export function extraireMessageErreur(
   const status = axiosErr?.response?.status
   const data = axiosErr?.response?.data
 
-  if (status) {
-    if (typeof data === 'string') return `[${status}] ${data}`
-    if (data && typeof data === 'object') {
-      const premiere = Object.values(data)[0]
-      if (Array.isArray(premiere)) return `[${status}] ${String(premiere[0])}`
-      if (typeof premiere === 'string') return `[${status}] ${premiere}`
-      if (premiere && typeof premiere === 'object') {
-        const interne = Object.values(premiere)[0]
-        if (Array.isArray(interne)) return `[${status}] ${String(interne[0])}`
-        if (typeof interne === 'string') return `[${status}] ${interne}`
-      }
+  function messageDepuis(donnees: unknown): string | null {
+    if (typeof donnees === 'string') return donnees
+    if (!donnees || typeof donnees !== 'object') return null
+
+    for (const valeur of Object.values(donnees)) {
+      if (typeof valeur === 'string') return valeur
+      if (Array.isArray(valeur) && typeof valeur[0] === 'string') return valeur[0]
+      const imbrique = messageDepuis(valeur)
+      if (imbrique) return imbrique
     }
+    return null
+  }
+
+  if (status) {
+    const message = messageDepuis(data)
+    if (message) return `[${status}] ${message}`
     return `[${status}] ${fallback}`
   }
+
+  const message = messageDepuis(data)
+  if (message) return message
 
   if (axiosErr?.code === 'ECONNABORTED') return 'Le serveur ne répond pas. Vérifiez votre connexion.'
   if (axiosErr?.message?.includes('Network Error')) return 'Erreur réseau. Vérifiez que le serveur est accessible.'

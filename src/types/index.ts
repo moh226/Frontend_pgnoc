@@ -48,6 +48,20 @@ export interface DossierListeItem {
   date_soumission: string | null
 }
 
+export interface ActiviteDossierInvestisseur {
+  reference: string
+  sgi_nom: string
+  statut: StatutDossier
+  date_action: string
+}
+
+export interface DashboardInvestisseur {
+  total_dossiers: number
+  par_statut: Record<StatutDossier, number>
+  progression_moyenne: number
+  dernieres_activites: ActiviteDossierInvestisseur[]
+}
+
 export interface ValeurChamp {
   id: string
   champ: string

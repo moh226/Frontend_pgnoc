@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 import {
   commenterValeur,
+  dashboardInvestisseur,
   detailDossier,
   listeDossiers,
   prendreEnCharge,
@@ -10,7 +11,7 @@ import {
   validerDossier,
 } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
-import type { DossierDetail, DossierListeItem, StatutDossier } from '@/types'
+import type { DashboardInvestisseur, DossierDetail, DossierListeItem, StatutDossier } from '@/types'
 
 export const useDossiersStore = defineStore('dossiers', {
   state: () => ({
@@ -20,6 +21,8 @@ export const useDossiersStore = defineStore('dossiers', {
     detail: null as DossierDetail | null,
     detailChargement: false,
     erreur: '',
+    dashboard: null as DashboardInvestisseur | null,
+    dashboardChargement: false,
   }),
 
   getters: {
@@ -43,6 +46,39 @@ export const useDossiersStore = defineStore('dossiers', {
   },
 
   actions: {
+    async chargerDashboard() {
+      this.dashboardChargement = true
+      this.erreur = ''
+      try {
+        const reponse = await dashboardInvestisseur()
+        const statuts: StatutDossier[] = ['BROUILLON', 'SOUMIS', 'EN_INSTRUCTION', 'VALIDE', 'REJETE']
+        this.dashboard = {
+          ...reponse,
+          par_statut: Object.fromEntries(
+            statuts.map((statut) => [statut, reponse.par_statut?.[statut] ?? 0]),
+          ) as Record<StatutDossier, number>,
+        }
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+      } finally {
+        this.dashboardChargement = false
+      }
+    },
+
+    async chargerApercu() {
+      this.chargement = true
+      this.erreur = ''
+      try {
+        const reponse = await listeDossiers({ page: 1, page_size: 5 })
+        this.liste = reponse.results
+        this.total = reponse.count
+      } catch (cause) {
+        this.erreur = extraireMessageErreur(cause)
+      } finally {
+        this.chargement = false
+      }
+    },
+
     async chargerListe() {
       this.chargement = true
       this.erreur = ''

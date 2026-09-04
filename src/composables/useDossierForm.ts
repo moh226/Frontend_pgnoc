@@ -34,6 +34,43 @@ export function useDossierForm(dossierId: string) {
   const estModifiable = computed(() => detail.value?.statut === 'BROUILLON' || detail.value?.statut === 'REJETE')
   const tousChamps = computed(() => etapes.value.flatMap((e) => e.champs))
 
+  function champEstRenseigne(champ: ChampKyc): boolean {
+    const valeur = valeurs.value[champ.id]
+    if (champ.type === 'FICHIER' || champ.type === 'SELFIE') return Boolean(valeur?.fichier)
+    return Boolean(valeur?.valeur?.trim())
+  }
+
+  const statistiquesEtapes = computed(() =>
+    etapes.value.map((etape) => {
+      const visibles = etape.champs.filter((champ) => {
+        if (!champ.champ_parent) return true
+        return valeurs.value[champ.champ_parent]?.valeur === champ.valeur_declencheur
+      })
+      const obligatoires = visibles.filter((champ) => champ.obligatoire)
+      const restants = obligatoires.filter((champ) => !champEstRenseigne(champ))
+      return {
+        total: visibles.length,
+        completes: visibles.filter(champEstRenseigne).length,
+        restants: restants.length,
+        etapeComplete: restants.length === 0,
+      }
+    }),
+  )
+
+  const etapeCouranteIncomplete = computed(() => {
+    const index = etapeCourante.value?.kycIndex
+    return index !== undefined && (statistiquesEtapes.value[index]?.restants ?? 0) > 0
+  })
+
+  function continuerEtape() {
+    if (etapeCouranteIncomplete.value) {
+      erreur.value = `Veuillez renseigner les ${statistiquesEtapes.value[etapeCourante.value!.kycIndex!].restants} champ(s) obligatoire(s) avant de continuer.`
+      return
+    }
+    erreur.value = ''
+    etapeGlobaleActive.value = Math.min(etapeGlobaleActive.value + 1, etapesGlobales.value.length - 1)
+  }
+
   interface GlobalStep {
     id: string
     titre: string
@@ -272,6 +309,8 @@ export function useDossierForm(dossierId: string) {
     tousChamps,
     etapesGlobales,
     etapeCourante,
+    statistiquesEtapes,
+    etapeCouranteIncomplete,
     
     chargerDossier,
     rafraichirProgression,
@@ -279,6 +318,7 @@ export function useDossierForm(dossierId: string) {
     viderSauvegardes,
     surFichierSelectionne,
     accepterConventionDossier,
-    champVerrouille
+    champVerrouille,
+    continuerEtape,
   }
 }

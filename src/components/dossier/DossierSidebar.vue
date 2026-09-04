@@ -2,7 +2,7 @@
 import { ArrowLeft, Check } from '@lucide/vue'
 
 defineProps<{
-  etapesGlobales: Array<{ id: string; titre: string; sousTitre?: string }>
+  etapesGlobales: Array<{ id: string; titre: string; sousTitre?: string; kycIndex?: number }>
   etapeGlobaleActive: number
 }>()
 
@@ -162,6 +162,10 @@ const emit = defineEmits<{
 
 .step-subtitle {
   color: rgba(255, 255, 255, 0.7);
+}
+
+.step-count {
+  color: rgba(255, 255, 255, 0.58);
 }
 
 .step-item.active .step-subtitle {

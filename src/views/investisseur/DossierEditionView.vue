@@ -60,6 +60,7 @@ function estVisible(champId: string): boolean {
     <DossierSidebar 
       :etapesGlobales="form.etapesGlobales.value"
       :etapeGlobaleActive="form.etapeGlobaleActive.value"
+      :statistiques-etapes="form.statistiquesEtapes.value"
       @quitter="quitterFormulaire"
       @changer-etape="index => form.etapeGlobaleActive.value = index"
     />
@@ -72,7 +73,7 @@ function estVisible(champId: string): boolean {
 
       <template v-else-if="form.detail.value && form.etapeCourante.value">
         <!-- Header de la zone de contenu -->
-        <header class="content-header px-8 py-6 border-b d-flex align-center bg-surface">
+         <header class="content-header px-8 py-6 border-b d-flex align-center bg-surface">
           <div>
             <h1 class="text-h4 font-display font-weight-bold text-on-surface mb-1">{{ form.etapeCourante.value.titre }}</h1>
             <p class="text-body-1 text-medium-emphasis mb-0">
@@ -86,6 +87,16 @@ function estVisible(champId: string): boolean {
                 Finalisez votre demande en signant numériquement votre dossier.
               </template>
             </p>
+            <div v-if="form.etapeCourante.value.type === 'kyc' && form.etapeCourante.value.kycIndex !== undefined" class="step-progress mt-3">
+              <span class="text-caption font-weight-bold">
+                {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].completes }}
+                / {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].total }} champs renseignés
+              </span>
+              <span v-if="form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].restants" class="text-caption text-warning font-weight-bold">
+                {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].restants }} obligatoire(s) restant(s)
+              </span>
+              <span v-else class="text-caption text-success font-weight-bold">Étape complète</span>
+            </div>
           </div>
           <v-spacer />
           <!-- Circular Progress (Top Right) -->
@@ -211,14 +222,15 @@ function estVisible(champId: string): boolean {
               </template>
             </div>
             
-            <v-btn
-              color="primary"
+              <v-btn
+               color="primary"
               variant="flat"
               class="btn-principal px-6 shadow-sm"
-              @click="form.etapeGlobaleActive.value++"
-            >
-              Continuer vers {{ form.etapeGlobaleActive.value === form.etapesGlobales.value.length - 2 ? 'la signature' : 'l\'étape suivante' }}
-            </v-btn>
+               :disabled="form.etapeCouranteIncomplete.value"
+               @click="form.continuerEtape"
+             >
+               {{ form.etapeCouranteIncomplete.value ? 'Complétez les champs requis' : `Continuer vers ${form.etapeGlobaleActive.value === form.etapesGlobales.value.length - 2 ? 'la signature' : 'l\'étape suivante'}` }}
+             </v-btn>
           </template>
         </footer>
       </template>
@@ -255,6 +267,12 @@ function estVisible(champId: string): boolean {
 
 .content-header {
   min-height: 100px;
+}
+
+.step-progress {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .content-footer {
