@@ -104,10 +104,11 @@ onMounted(() => void admin.chargerSgi())
             <td class="px-6 py-4 text-center font-weight-bold text-primary">{{ sgi.nb_dossiers }}</td>
             <td class="px-6 py-4 text-center font-weight-medium text-medium-emphasis">{{ sgi.nb_utilisateurs }}</td>
             <td class="px-6 py-4 text-body-2 text-medium-emphasis">{{ formaterJour(sgi.date_creation) }}</td>
-            <td class="px-6 py-4 text-end d-flex justify-end align-center gap-3">
-              <v-chip 
-                :color="sgi.est_active ? 'success' : 'error'" 
-                variant="flat" 
+            <td class="px-6 py-4 text-end">
+              <div class="d-inline-flex align-center ga-3">
+              <v-chip
+                :color="sgi.est_active ? 'success' : 'error'"
+                variant="flat"
                 size="small"
                 class="font-weight-bold px-3"
               >
@@ -124,6 +125,7 @@ onMounted(() => void admin.chargerSgi())
                 <PowerOff v-if="sgi.est_active" :size="16" />
                 <Power v-else :size="16" />
               </v-btn>
+              </div>
             </td>
           </tr>
         </tbody>

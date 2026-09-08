@@ -207,10 +207,11 @@ onMounted(() => void charger())
             <td class="px-6 py-4 text-body-2 text-medium-emphasis">
               {{ formaterDate(utilisateur.date_joined) }}
             </td>
-            <td class="px-6 py-4 text-end d-flex justify-end align-center gap-3">
-              <v-chip 
-                :color="utilisateur.is_active ? 'success' : 'grey'" 
-                variant="flat" 
+            <td class="px-6 py-4 text-end">
+              <div class="d-inline-flex align-center ga-3">
+              <v-chip
+                :color="utilisateur.is_active ? 'success' : 'grey'"
+                variant="flat"
                 size="small"
                 class="font-weight-bold px-3"
               >
@@ -227,6 +228,7 @@ onMounted(() => void charger())
                 <PowerOff v-if="utilisateur.is_active" :size="16" />
                 <Power v-else :size="16" />
               </v-btn>
+              </div>
             </td>
           </tr>
         </tbody>
