@@ -5,6 +5,7 @@ import { useDebounceFn } from '@vueuse/core'
 
 import { LIBELLES_ROLE } from '@/config/navigation'
 import { ROLES_ADMIN } from '@/config/audit'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAdminStore } from '@/stores/admin'
 import { formaterDate } from '@/utils/format'
 
@@ -95,24 +96,13 @@ onMounted(() => void charger())
   <v-container fluid class="page-container pa-6 pa-md-8">
     
     <!-- En-tête -->
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <Shield :size="28" />
-          </div>
-          Utilisateurs
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Supervisez l'ensemble des utilisateurs de la plateforme.
-        </p>
-      </div>
-      <div class="mt-4 mt-md-0">
-        <v-btn color="primary" variant="flat" size="large" class="font-weight-bold hover-lift" @click="dialogCreation = true">
+    <EntetePage :icone="Shield" titre="Utilisateurs" sous-titre="Supervisez l'ensemble des utilisateurs de la plateforme.">
+      <template #actions>
+        <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" @click="dialogCreation = true">
           <UserPlus :size="18" class="mr-2" /> Créer un compte
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </EntetePage>
 
     <!-- Barre de filtres -->
     <v-card class="glass-panel mb-8">

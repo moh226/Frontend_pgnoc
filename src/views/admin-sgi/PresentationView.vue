@@ -21,6 +21,7 @@ import {
 
 import SgiPresentationRenderer from '@/components/SgiPresentationRenderer.vue'
 import PresentationDynamicList from '@/components/presentation/PresentationDynamicList.vue'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import type { FieldDefinition } from '@/components/presentation/PresentationDynamicList.vue'
 import { usePresentationForm } from '@/composables/usePresentationForm'
 import { formaterDate } from '@/utils/format'
@@ -76,17 +77,7 @@ function ouvrirApercu(mode?: DeviceMode) {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column mb-8">
-      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-          <Building2 :size="28" />
-        </div>
-        Présentation SGI
-      </h1>
-      <p class="text-body-1 text-medium-emphasis mb-0">
-        Personnalisez la page de presentation affichée aux investisseurs lors du choix de votre SGI.
-      </p>
-    </div>
+    <EntetePage :icone="Building2" titre="Présentation SGI" sous-titre="Personnalisez la page de présentation affichée aux investisseurs lors du choix de votre SGI." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}

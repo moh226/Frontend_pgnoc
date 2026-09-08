@@ -5,6 +5,7 @@ import { Filter, FileText, ArrowRight, Hand } from '@lucide/vue'
 
 import { listeDossiers, prendreEnCharge } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import type { DossierListeItem, StatutDossier } from '@/types'
 import { formaterJour } from '@/utils/format'
@@ -79,19 +80,7 @@ onMounted(() => void charger())
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <FileText :size="28" />
-          </div>
-          Base des Dossiers
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Consultez et instruisez les demandes d'ouverture de compte.
-        </p>
-      </div>
-    </div>
+    <EntetePage :icone="FileText" titre="Base des Dossiers" sous-titre="Consultez et instruisez les demandes d'ouverture de compte." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}

@@ -4,6 +4,7 @@ import { BookOpen, CloudUpload, FileText, Download, CheckCircle2, AlertCircle, F
 
 import { conventionSgi, publierConvention } from '@/api/sgiAdmin'
 import { extraireMessageErreur } from '@/api/client'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import type { ConventionSgi } from '@/types'
 import { formaterDate } from '@/utils/format'
 
@@ -75,17 +76,7 @@ function clearFile() {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column mb-8">
-      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-          <BookOpen :size="28" />
-        </div>
-        Convention Tarifaire
-      </h1>
-      <p class="text-body-1 text-medium-emphasis mb-0">
-        Définissez le document officiel que les investisseurs devront lire et accepter.
-      </p>
-    </div>
+    <EntetePage :icone="BookOpen" titre="Convention Tarifaire" sous-titre="Définissez le document officiel que les investisseurs devront lire et accepter." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
       {{ erreur }}

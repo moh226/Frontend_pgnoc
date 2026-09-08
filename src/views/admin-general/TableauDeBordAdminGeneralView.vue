@@ -16,6 +16,7 @@ import { FEATURES } from '@/config/features'
 import { LIBELLES_ACTION_AUDIT } from '@/config/audit'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { LIBELLES_ROLE } from '@/config/navigation'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAdminStore } from '@/stores/admin'
 import { useNotificationsStore } from '@/stores/notifications'
 import type { StatutDossier } from '@/types'
@@ -50,17 +51,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column mb-8">
-      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box pa-2 mr-4">
-          <LayoutDashboard :size="28" />
-        </div>
-        Supervision Globale
-      </h1>
-      <p class="text-body-1 text-medium-emphasis mb-0">
-        Vue d'ensemble de l'activité du système, des SGI partenaires et de la sécurité.
-      </p>
-    </div>
+    <EntetePage :icone="LayoutDashboard" titre="Supervision Globale" sous-titre="Vue d'ensemble de l'activité du système, des SGI partenaires et de la sécurité." />
 
     <v-alert v-if="admin.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ admin.erreur }}

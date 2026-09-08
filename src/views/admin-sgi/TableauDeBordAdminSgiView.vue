@@ -15,6 +15,7 @@ import {
 } from '@lucide/vue'
 
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAgentsStore } from '@/stores/agents'
 import { useDossiersStore } from '@/stores/dossiers'
 import { useNotificationsStore } from '@/stores/notifications'
@@ -47,17 +48,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column mb-8">
-      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box pa-2 mr-4">
-          <FolderKanban :size="28" />
-        </div>
-        Tableau de Bord
-      </h1>
-      <p class="text-body-1 text-medium-emphasis mb-0">
-        Vue d'ensemble de l'activité de votre SGI et des dossiers en attente.
-      </p>
-    </div>
+    <EntetePage :icone="FolderKanban" titre="Tableau de Bord" sous-titre="Vue d'ensemble de l'activité de votre SGI et des dossiers en attente." />
 
     <v-alert v-if="dossiers.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ dossiers.erreur }}

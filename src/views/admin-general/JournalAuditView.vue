@@ -5,6 +5,7 @@ import { useDebounceFn } from '@vueuse/core'
 
 import { exporterJournal, journalAudit } from '@/api/admin'
 import { extraireMessageErreur } from '@/api/client'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { ACTIONS_AUDIT, LIBELLES_ACTION_AUDIT } from '@/config/audit'
 import type { EntreeJournalAudit } from '@/types'
 import { formaterDate } from '@/utils/format'
@@ -91,24 +92,13 @@ onMounted(() => void charger())
   <v-container fluid class="page-container pa-6 pa-md-8">
     
     <!-- En-tête -->
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <ClipboardList :size="28" />
-          </div>
-          Journal d'Audit
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Traçabilité complète des actions effectuées sur la plateforme.
-        </p>
-      </div>
-      <div class="mt-4 mt-md-0">
-        <v-btn color="primary" variant="tonal" size="large" class="font-weight-bold hover-lift" :loading="exportEnCours" @click="exporter">
+    <EntetePage :icone="ClipboardList" titre="Journal d'Audit" sous-titre="Traçabilité complète des actions effectuées sur la plateforme.">
+      <template #actions>
+        <v-btn color="primary" variant="tonal" class="font-weight-bold hover-lift" :loading="exportEnCours" @click="exporter">
           <Download :size="18" class="mr-2" /> Exporter en CSV
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </EntetePage>
 
     <!-- Barre de recherche -->
     <v-card class="glass-panel mb-8">

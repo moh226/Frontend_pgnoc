@@ -14,6 +14,7 @@ import {
 
 import VitrineAccueil from '@/components/VitrineAccueil.vue'
 import AccueilBlocEditor from '@/components/accueil/AccueilBlocEditor.vue'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAccueilEditor, LIBELLES_TYPE } from '@/composables/useAccueilEditor'
 
 const {
@@ -57,31 +58,19 @@ onMounted(charger)
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <Globe :size="28" />
-          </div>
-          Page d'accueil
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Personnalisez les huit blocs de la vitrine publique puis publiez vos changements.
-        </p>
-      </div>
-      <div class="actions-page">
+    <EntetePage :icone="Globe" titre="Page d'accueil" sous-titre="Personnalisez les huit blocs de la vitrine publique puis publiez vos changements.">
+      <template #actions>
         <v-chip :color="nbPublies === 8 ? 'success' : 'warning'" variant="flat" class="font-weight-bold">
           {{ nbPublies }}/8 blocs publiés
         </v-chip>
-        <div class="separateur-actions" />
-        <v-btn variant="outlined" size="large" class="font-weight-bold" @click="apercuOuvert = true">
+        <v-btn variant="outlined" class="font-weight-bold" @click="apercuOuvert = true">
           <Eye :size="18" class="mr-2" /> Aperçu
         </v-btn>
-        <v-btn color="primary" variant="flat" size="large" class="font-weight-bold hover-lift" :loading="publication" @click="publierPage">
+        <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" :loading="publication" @click="publierPage">
           <Send :size="18" class="mr-2" /> Publier la page
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </EntetePage>
 
     <v-alert v-if="erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
       {{ erreur }}
@@ -239,26 +228,6 @@ onMounted(charger)
   text-transform: uppercase;
   color: rgb(var(--v-theme-on-surface-variant));
   line-height: 1.4;
-}
-
-.actions-page {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.separateur-actions {
-  width: 1px;
-  height: 32px;
-  background-color: rgb(var(--v-theme-outline));
-}
-
-@media (max-width: 959.98px) {
-  .actions-page {
-    margin-top: 16px;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
 }
 
 .apercu-conteneur {

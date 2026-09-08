@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { BellRing, CheckCircle2 } from '@lucide/vue'
 
 import { useNotificationsStore } from '@/stores/notifications'
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { formaterDate } from '@/utils/format'
 
 const notifications = useNotificationsStore()
@@ -29,17 +30,7 @@ onMounted(() => void notifications.charger())
 
 <template>
   <v-container fluid class="pa-6 pa-md-8">
-    <div class="d-flex flex-column mb-8">
-      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box pa-2 mr-4">
-          <BellRing :size="28" />
-        </div>
-        Notifications
-      </h1>
-      <p class="text-body-1 text-medium-emphasis mb-0">
-        Vos alertes et messages liés à l'activité de vos dossiers.
-      </p>
-    </div>
+    <EntetePage :icone="BellRing" titre="Notifications" sous-titre="Vos alertes et messages liés à l'activité de vos dossiers." />
 
     <v-alert v-if="notifications.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ notifications.erreur }}

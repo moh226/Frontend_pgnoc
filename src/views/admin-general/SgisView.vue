@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { Landmark, Plus, Power, PowerOff, Building2 } from '@lucide/vue'
 
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAdminStore } from '@/stores/admin'
 import { formaterJour } from '@/utils/format'
 
@@ -47,24 +48,13 @@ onMounted(() => void admin.chargerSgi())
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
     <!-- En-tête -->
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <Landmark :size="28" />
-          </div>
-          SGI Partenaires
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Gérez la liste et le statut des Sociétés de Gestion et d'Intermédiation enregistrées.
-        </p>
-      </div>
-      <div class="mt-4 mt-md-0">
-        <v-btn color="primary" variant="flat" size="large" class="font-weight-bold hover-lift" @click="dialogCreation = true">
+    <EntetePage :icone="Landmark" titre="SGI Partenaires" sous-titre="Gérez la liste et le statut des Sociétés de Gestion et d'Intermédiation enregistrées.">
+      <template #actions>
+        <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" @click="dialogCreation = true">
           <Plus :size="18" class="mr-2" /> Ajouter une SGI
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </EntetePage>
 
     <v-alert v-if="admin.erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
       {{ admin.erreur }}

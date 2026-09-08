@@ -16,6 +16,7 @@ import {
   Trash2,
 } from '@lucide/vue'
 
+import EntetePage from '@/components/commun/EntetePage.vue'
 import { useKycAdmin, LIBELLES_TYPE } from '@/composables/useKycAdmin'
 import { useKycTemplates } from '@/composables/useKycTemplates'
 import KycFieldCard from '@/components/kyc/KycFieldCard.vue'
@@ -81,27 +82,16 @@ onMounted(() => void charger())
     </v-alert>
 
     <!-- En-tête de page premium -->
-    <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
-      <div>
-        <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box pa-2 mr-4">
-            <Settings2 :size="28" />
-          </div>
-          Parcours KYC
-        </h1>
-        <p class="text-body-1 text-medium-emphasis mb-0">
-          Gérez les étapes et les informations requises pour l'ouverture de compte.
-        </p>
-      </div>
-      <div class="d-flex align-center mt-4 mt-md-0 gap-3">
+    <EntetePage :icone="Settings2" titre="Parcours KYC" sous-titre="Gérez les étapes et les informations requises pour l'ouverture de compte.">
+      <template #actions>
         <v-btn variant="outlined" color="primary" class="hover-lift" @click="apercuOuvert = true">
           <Eye :size="18" class="mr-2" /> Aperçu du formulaire
         </v-btn>
         <v-btn color="primary" variant="flat" class="hover-lift" @click="dialogEtape = true">
           <Plus :size="18" class="mr-2" /> Nouvelle étape
         </v-btn>
-      </div>
-    </div>
+      </template>
+    </EntetePage>
 
     <v-alert v-if="erreurTemplate" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
       {{ erreurTemplate }}
