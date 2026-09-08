@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ChevronRight, LifeBuoy, HelpCircle } from '@lucide/vue'
+import { ChevronRight } from '@lucide/vue'
 
 import { LIBELLES_ROLE, NAVIGATION_PAR_ROLE } from '@/config/navigation'
 import { useAuthStore } from '@/stores/auth'
@@ -13,7 +13,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'navigation'): void
   (e: 'deconnecter'): void
-  (e: 'support'): void
 }>()
 
 const auth = useAuthStore()
@@ -85,19 +84,6 @@ function estActif(vers: string): boolean {
 
     <div class="flex-grow-1" />
 
-    <!-- Support -->
-    <div class="px-4 pb-2">
-      <button class="encart-support" type="button" @click="emit('support')">
-        <span class="encart-support-icone">
-          <LifeBuoy :size="18" />
-        </span>
-        <span class="min-w-0">
-          <span class="encart-support-titre d-block">Contacter le support</span>
-          <span class="encart-support-texte d-block">Une question ? Nous sommes là.</span>
-        </span>
-      </button>
-    </div>
-
     <!-- Éléments secondaires -->
     <div class="section-label px-6 pt-2 pb-1">Général</div>
     <nav class="px-4 pb-2">
@@ -110,10 +96,6 @@ function estActif(vers: string): boolean {
         <v-icon icon="mdi-cog-outline" size="19" class="nav-icone" />
         <span class="nav-libelle">Paramètres</span>
       </router-link>
-      <button class="nav-item nav-item--compact" type="button" @click="emit('support')">
-        <HelpCircle :size="18" class="nav-icone-lucide" />
-        <span class="nav-libelle">Aide</span>
-      </button>
     </nav>
 
     <!-- Profil -->
@@ -221,14 +203,6 @@ function estActif(vers: string): boolean {
   opacity: 0.9;
 }
 
-.nav-icone-lucide {
-  flex-shrink: 0;
-  width: 21px;
-  display: grid;
-  place-items: center;
-  opacity: 0.9;
-}
-
 .nav-libelle {
   flex: 1;
   min-width: 0;
@@ -252,46 +226,6 @@ function estActif(vers: string): boolean {
 }
 
 .nav-item--compact { min-height: 38px; }
-
-/* ---------- Encart support ---------- */
-.encart-support {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-primary), 0.05);
-  color: rgb(var(--v-theme-on-surface));
-  text-align: left;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.encart-support:hover { background: rgba(var(--v-theme-primary), 0.09); }
-
-.encart-support-icone {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background: rgba(var(--v-theme-primary), 0.1);
-  color: rgb(var(--v-theme-primary));
-}
-
-.encart-support-titre {
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.encart-support-texte {
-  font-size: 0.72rem;
-  color: rgb(var(--v-theme-on-surface-variant));
-  line-height: 1.3;
-}
 
 /* ---------- Profil ---------- */
 .profil-bloc { margin-top: 6px; }

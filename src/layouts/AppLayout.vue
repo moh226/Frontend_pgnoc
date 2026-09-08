@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
-import { Bell, LifeBuoy, Menu, Moon, Sun } from '@lucide/vue'
+import { Bell, Menu, Moon, Sun } from '@lucide/vue'
 
 import { LIBELLES_ROLE, NAVIGATION_PAR_ROLE } from '@/config/navigation'
 import SidebarContenu from '@/components/commun/SidebarContenu.vue'
@@ -17,7 +17,6 @@ const theme = useTheme()
 const { mobile } = useDisplay()
 
 const drawerOuvert = ref(false)
-const dialogSupport = ref(false)
 
 const navigation = computed(() =>
   (NAVIGATION_PAR_ROLE[auth.roleActuel ?? 'INVESTISSEUR'] ?? []).filter((item) => !item.cache),
@@ -40,11 +39,6 @@ function fermerDrawerMobile() {
 function ouvrirNotifications() {
   const routeNotifications = navigation.value.find((item) => item.vers.endsWith('/notifications'))
   if (routeNotifications) void router.push(routeNotifications.vers)
-}
-
-function ouvrirSupport() {
-  dialogSupport.value = true
-  if (mobile.value) drawerOuvert.value = false
 }
 
 watch(() => route.fullPath, fermerDrawerMobile)
@@ -71,12 +65,11 @@ onMounted(() => {
       :chemin-actif="route.path"
       @navigation="fermerDrawerMobile"
       @deconnecter="deconnecter"
-      @support="ouvrirSupport"
     />
   </v-navigation-drawer>
 
   <v-navigation-drawer v-else permanent width="280" color="surface" class="sidebar-ombre">
-    <SidebarContenu :chemin-actif="route.path" @deconnecter="deconnecter" @support="ouvrirSupport" />
+    <SidebarContenu :chemin-actif="route.path" @deconnecter="deconnecter" />
   </v-navigation-drawer>
 
   <v-app-bar flat color="surface" height="64" class="app-bar px-4 px-sm-6">
@@ -101,42 +94,6 @@ onMounted(() => {
   <v-main class="zone-contenu">
     <router-view />
   </v-main>
-
-  <!-- Support -->
-  <v-dialog v-model="dialogSupport" max-width="440">
-    <v-card class="pa-2">
-      <v-card-title class="font-display font-weight-bold d-flex align-center pt-4 px-4">
-        <LifeBuoy :size="22" class="text-primary mr-3" />
-        Contacter le support
-      </v-card-title>
-      <v-card-text class="px-4 pb-2">
-        <p class="text-body-2 text-medium-emphasis mb-4">
-          Notre équipe vous accompagne dans l'utilisation de la plateforme et le traitement
-          de vos demandes d'ouverture de compte-titres.
-        </p>
-        <div class="d-flex flex-column ga-3">
-          <div class="d-flex align-center ga-3">
-            <v-icon icon="mdi-email-outline" size="20" class="text-primary" />
-            <div>
-              <div class="text-body-2 font-weight-bold">support@pgnoc-ti.org</div>
-              <div class="text-caption text-medium-emphasis">Réponse sous 24 h ouvrées</div>
-            </div>
-          </div>
-          <div class="d-flex align-center ga-3">
-            <v-icon icon="mdi-phone-outline" size="20" class="text-primary" />
-            <div>
-              <div class="text-body-2 font-weight-bold">+225 27 20 00 00 00</div>
-              <div class="text-caption text-medium-emphasis">Lundi – Vendredi, 8h – 17h</div>
-            </div>
-          </div>
-        </div>
-      </v-card-text>
-      <v-card-actions class="px-4 pb-4 pt-0">
-        <v-spacer />
-        <v-btn variant="text" class="font-weight-bold" @click="dialogSupport = false">Fermer</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <style scoped>
