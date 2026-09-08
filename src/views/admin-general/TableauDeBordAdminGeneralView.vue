@@ -127,7 +127,7 @@ onMounted(async () => {
               <span class="text-h5 text-success ml-1 pb-1">/ {{ admin.tableauDeBord.utilisateurs.total }}</span>
             </div>
             <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mb-3">
-              Comptes Internes
+              Utilisateurs
             </div>
             <div class="d-flex flex-wrap gap-2 mt-auto">
               <v-chip

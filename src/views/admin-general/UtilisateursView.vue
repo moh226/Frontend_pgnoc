@@ -101,10 +101,10 @@ onMounted(() => void charger())
           <div class="icon-box pa-2 mr-4">
             <Shield :size="28" />
           </div>
-          Comptes Internes
+          Utilisateurs
         </h1>
         <p class="text-body-1 text-medium-emphasis mb-0">
-          Supervisez l'ensemble des administrateurs et des agents du système.
+          Supervisez l'ensemble des utilisateurs de la plateforme.
         </p>
       </div>
       <div class="mt-4 mt-md-0">
