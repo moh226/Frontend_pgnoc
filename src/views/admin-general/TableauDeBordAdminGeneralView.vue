@@ -52,7 +52,7 @@ onMounted(async () => {
   <v-container fluid class="page-container pa-6 pa-md-8">
     <div class="d-flex flex-column mb-8">
       <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+        <div class="icon-box pa-2 mr-4">
           <LayoutDashboard :size="28" />
         </div>
         Supervision Globale
@@ -62,7 +62,7 @@ onMounted(async () => {
       </p>
     </div>
 
-    <v-alert v-if="admin.erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
+    <v-alert v-if="admin.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ admin.erreur }}
     </v-alert>
 
@@ -70,110 +70,101 @@ onMounted(async () => {
       <!-- KPI Cards -->
       <v-row class="mb-4">
         <v-col cols="12" sm="6" lg="3">
-          <v-card class="kpi-card rounded-xl elevation-2 h-100 overflow-hidden">
-            <div class="bg-primary-lighten-5 pa-6 d-flex flex-column h-100">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="icon-box bg-white text-primary rounded-circle pa-3 elevation-1">
-                  <FolderKanban :size="24" />
-                </div>
+          <v-card class="kpi-card pa-6 d-flex flex-column">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="icon-box pa-3">
+                <FolderKanban :size="24" />
               </div>
-              <div class="text-h3 font-display font-weight-bold text-primary mb-1">
-                {{ admin.tableauDeBord.dossiers.total }}
-              </div>
-              <div class="text-body-2 font-weight-bold text-primary-darken-1 text-uppercase tracking-wider mb-2">
-                Dossiers KYC
-              </div>
-              <div class="text-caption font-weight-medium bg-white rounded-lg px-3 py-1 d-inline-flex align-center mt-auto align-self-start text-primary shadow-sm">
-                <Activity :size="14" class="mr-1" />
-                +{{ admin.tableauDeBord.dossiers.soumis_aujourd_hui }} aujourd'hui
-              </div>
+            </div>
+            <div class="text-h3 font-display font-weight-bold text-primary mb-1">
+              {{ admin.tableauDeBord.dossiers.total }}
+            </div>
+            <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mb-2">
+              Dossiers KYC
+            </div>
+            <div class="text-caption font-weight-medium text-primary mt-auto align-self-start">
+              <Activity :size="14" class="mr-1" />
+              +{{ admin.tableauDeBord.dossiers.soumis_aujourd_hui }} aujourd'hui
             </div>
           </v-card>
         </v-col>
         
         <v-col cols="12" sm="6" lg="3">
-          <v-card class="kpi-card rounded-xl elevation-2 h-100 overflow-hidden">
-            <div class="bg-indigo-lighten-5 pa-6 d-flex flex-column h-100">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="icon-box bg-white text-indigo rounded-circle pa-3 elevation-1">
-                  <Landmark :size="24" />
-                </div>
+          <v-card class="kpi-card pa-6 d-flex flex-column">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="icon-box icon-box-info pa-3">
+                <Landmark :size="24" />
               </div>
-              <div class="text-h3 font-display font-weight-bold text-indigo mb-1 d-flex align-end">
-                {{ admin.tableauDeBord.sgi.actives }}
-                <span class="text-h5 text-indigo-lighten-2 ml-1 pb-1">/ {{ admin.tableauDeBord.sgi.total }}</span>
+            </div>
+            <div class="text-h3 font-display font-weight-bold text-info mb-1 d-flex align-end">
+              {{ admin.tableauDeBord.sgi.actives }}
+              <span class="text-h5 text-info ml-1 pb-1">/ {{ admin.tableauDeBord.sgi.total }}</span>
+            </div>
+            <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mb-2">
+              SGI Partenaires
+            </div>
+            <div 
+              v-if="admin.tableauDeBord.sgi.sans_convention_publiee"
+              class="text-caption font-weight-bold text-warning mt-auto align-self-start"
+            >
+              {{ admin.tableauDeBord.sgi.sans_convention_publiee }} SGI sans convention
+            </div>
+            <div v-else class="text-caption font-weight-medium text-info mt-auto align-self-start">
+              Toutes ont une convention
+            </div>
+          </v-card>
+        </v-col>
+        
+        <v-col cols="12" sm="6" lg="3">
+          <v-card class="kpi-card pa-6 d-flex flex-column">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="icon-box icon-box-success pa-3">
+                <Users :size="24" />
               </div>
-              <div class="text-body-2 font-weight-bold text-indigo-darken-1 text-uppercase tracking-wider mb-2">
-                SGI Partenaires
-              </div>
-              <div 
-                v-if="admin.tableauDeBord.sgi.sans_convention_publiee"
-                class="text-caption font-weight-bold bg-warning-lighten-5 text-warning-darken-2 border border-warning-lighten-3 rounded-lg px-3 py-1 mt-auto align-self-start"
+            </div>
+            <div class="text-h3 font-display font-weight-bold text-success mb-1 d-flex align-end">
+              {{ admin.tableauDeBord.utilisateurs.actifs }}
+              <span class="text-h5 text-success ml-1 pb-1">/ {{ admin.tableauDeBord.utilisateurs.total }}</span>
+            </div>
+            <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mb-3">
+              Comptes Internes
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-auto">
+              <v-chip
+                v-for="(effectif, role) in admin.tableauDeBord.utilisateurs.par_role"
+                :key="role"
+                size="small"
+                variant="tonal"
+                class="font-weight-bold"
               >
-                {{ admin.tableauDeBord.sgi.sans_convention_publiee }} SGI sans convention
-              </div>
-              <div v-else class="text-caption font-weight-medium bg-white text-indigo rounded-lg px-3 py-1 mt-auto align-self-start shadow-sm">
-                Toutes ont une convention
-              </div>
+                {{ roleLibelle(role) }} ({{ effectif }})
+              </v-chip>
             </div>
           </v-card>
         </v-col>
         
         <v-col cols="12" sm="6" lg="3">
-          <v-card class="kpi-card rounded-xl elevation-2 h-100 overflow-hidden">
-            <div class="bg-success-lighten-5 pa-6 d-flex flex-column h-100">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="icon-box bg-white text-success rounded-circle pa-3 elevation-1">
-                  <Users :size="24" />
-                </div>
-              </div>
-              <div class="text-h3 font-display font-weight-bold text-success mb-1 d-flex align-end">
-                {{ admin.tableauDeBord.utilisateurs.actifs }}
-                <span class="text-h5 text-success-lighten-2 ml-1 pb-1">/ {{ admin.tableauDeBord.utilisateurs.total }}</span>
-              </div>
-              <div class="text-body-2 font-weight-bold text-success-darken-1 text-uppercase tracking-wider mb-3">
-                Comptes Internes
-              </div>
-              <div class="d-flex flex-wrap gap-2 mt-auto">
-                <v-chip
-                  v-for="(effectif, role) in admin.tableauDeBord.utilisateurs.par_role"
-                  :key="role"
-                  size="small"
-                  variant="flat"
-                  color="white"
-                  class="font-weight-bold text-success-darken-2 shadow-sm"
-                >
-                  {{ roleLibelle(role) }} ({{ effectif }})
-                </v-chip>
+          <v-card class="kpi-card pa-6 d-flex flex-column">
+            <div class="d-flex align-center justify-space-between mb-4">
+              <div class="icon-box pa-3" :class="notifications.compteNonLues ? 'icon-box-error' : 'icon-box-success'">
+                <Bell :size="24" :class="{'pulse-animation': notifications.compteNonLues}" />
               </div>
             </div>
-          </v-card>
-        </v-col>
-        
-        <v-col cols="12" sm="6" lg="3">
-          <v-card class="kpi-card rounded-xl elevation-2 h-100 overflow-hidden">
-            <div class="pa-6 d-flex flex-column h-100" :class="notifications.compteNonLues ? 'bg-error-lighten-5' : 'bg-surface-variant'">
-              <div class="d-flex align-center justify-space-between mb-4">
-                <div class="icon-box bg-white rounded-circle pa-3 elevation-1" :class="notifications.compteNonLues ? 'text-error' : 'text-medium-emphasis'">
-                  <Bell :size="24" :class="{'pulse-animation': notifications.compteNonLues}" />
-                </div>
-              </div>
-              <div class="text-h3 font-display font-weight-bold mb-1" :class="notifications.compteNonLues ? 'text-error' : 'text-medium-emphasis'">
-                {{ notifications.compteNonLues }}
-              </div>
-              <div class="text-body-2 font-weight-bold text-uppercase tracking-wider mb-2" :class="notifications.compteNonLues ? 'text-error-darken-1' : 'text-medium-emphasis'">
-                Alertes Non Lues
-              </div>
-              <v-btn 
-                variant="flat" 
-                size="small" 
-                class="mt-auto align-self-start font-weight-bold shadow-sm bg-white"
-                :class="notifications.compteNonLues ? 'text-error' : 'text-medium-emphasis'"
-                :to="{ name: 'admin-general-notifications' }"
-              >
-                Boîte de réception <ArrowRight :size="14" class="ml-1" />
-              </v-btn>
+            <div class="text-h3 font-display font-weight-bold mb-1" :class="notifications.compteNonLues ? 'text-error' : 'text-success'">
+              {{ notifications.compteNonLues }}
             </div>
+            <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mb-2">
+              Alertes Non Lues
+            </div>
+            <v-btn 
+              variant="text" 
+              size="small" 
+              color="primary"
+              class="mt-auto align-self-start font-weight-bold"
+              :to="{ name: 'admin-general-notifications' }"
+            >
+              Boîte de réception <ArrowRight :size="14" class="ml-1" />
+            </v-btn>
           </v-card>
         </v-col>
       </v-row>
@@ -181,7 +172,7 @@ onMounted(async () => {
       <v-row class="mt-4">
         <!-- Ventilation par statut -->
         <v-col :cols="FEATURES.JOURNAL_AUDIT ? 5 : 12">
-          <v-card class="rounded-xl elevation-2 h-100 d-flex flex-column">
+          <v-card class="glass-panel h-100 d-flex flex-column">
             <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center font-weight-bold">
               <FolderKanban :size="20" class="text-primary mr-3" />
               Répartition des dossiers
@@ -213,19 +204,19 @@ onMounted(async () => {
         <!-- Activité Récente (Audit) -->
         <template v-if="FEATURES.JOURNAL_AUDIT">
           <v-col cols="7">
-            <v-card class="rounded-xl elevation-2 h-100 d-flex flex-column">
+            <v-card class="glass-panel h-100 d-flex flex-column">
               <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
                 <History :size="20" class="text-primary mr-3" />
                 <span class="font-weight-bold">Activité récente (Audit)</span>
                 <v-spacer />
-                <v-btn variant="text" color="primary" class="font-weight-bold text-caption tracking-wider hover-lift" :to="{ name: 'admin-general-journal' }">
+                <v-btn variant="text" color="primary" class="font-weight-bold text-caption tracking-wider" :to="{ name: 'admin-general-journal' }">
                   Journal complet <ArrowRight :size="16" class="ml-1" />
                 </v-btn>
               </v-card-title>
               
               <v-card-text class="pa-0 flex-grow-1">
                 <div v-if="!admin.tableauDeBord.activite_recente.length" class="pa-8 text-center h-100 d-flex flex-column justify-center align-center">
-                  <Clock :size="48" class="text-grey-lighten-1 mb-4" />
+                  <Clock :size="48" class="text-medium-emphasis mb-4" />
                   <div class="text-body-1 text-medium-emphasis">Aucune activité récente enregistrée.</div>
                 </div>
                 
@@ -234,7 +225,7 @@ onMounted(async () => {
                     <v-divider v-if="index > 0" />
                     <v-list-item class="px-6 py-4 hover-row">
                       <template #prepend>
-                        <v-avatar color="info-lighten-4" class="mr-4 text-info">
+                        <v-avatar color="info" variant="tonal" class="mr-4">
                           <Activity :size="20" />
                         </v-avatar>
                       </template>
@@ -288,42 +279,8 @@ onMounted(async () => {
   border-bottom: 1px solid rgb(var(--v-theme-outline));
 }
 
-.border-l-4 {
-  border-left-width: 4px !important;
-}
-
-.tracking-wider {
-  letter-spacing: 0.05em !important;
-}
-
-.kpi-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.kpi-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px -8px rgba(0,0,0,0.15) !important;
-}
-
-.shadow-sm {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
-}
-
 .gap-2 {
   gap: 8px;
-}
-
-.hover-row {
-  transition: background-color 0.2s ease;
-}
-.hover-row:hover {
-  background-color: rgba(var(--v-theme-primary), 0.02);
-}
-
-.hover-lift {
-  transition: transform 0.2s ease;
-}
-.hover-lift:hover {
-  transform: translateX(4px);
 }
 
 @keyframes pulse {
@@ -334,5 +291,11 @@ onMounted(async () => {
 
 .pulse-animation {
   animation: pulse 2s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-animation {
+    animation: none;
+  }
 }
 </style>

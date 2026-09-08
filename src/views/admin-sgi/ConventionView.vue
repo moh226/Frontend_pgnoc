@@ -77,7 +77,7 @@ function clearFile() {
   <v-container fluid class="page-container pa-6 pa-md-8">
     <div class="d-flex flex-column mb-8">
       <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
           <BookOpen :size="28" />
         </div>
         Convention Tarifaire
@@ -96,7 +96,7 @@ function clearFile() {
 
     <v-row>
       <v-col cols="12" lg="7">
-        <v-card class="rounded-xl elevation-2 h-100">
+        <v-card class="glass-panel h-100">
           <v-card-title class="pa-6 border-b bg-surface-variant font-weight-bold">
             Nouvelle publication
           </v-card-title>
@@ -133,14 +133,14 @@ function clearFile() {
                 @drop.prevent="onFileDrop"
               >
                 <template v-if="!fichier">
-                  <div class="bg-primary-lighten-5 rounded-circle pa-4 mb-3">
+                  <div class="icon-box pa-4 mb-3 rounded-circle">
                     <CloudUpload :size="28" class="text-primary" />
                   </div>
                   <div class="text-body-1 font-weight-medium mb-1">Glissez ou sélectionnez un PDF</div>
                   <div class="text-caption text-medium-emphasis">Taille maximale : 10 Mo</div>
                 </template>
                 <template v-else>
-                  <div class="bg-success-lighten-5 rounded-circle pa-4 mb-3">
+                  <div class="icon-box icon-box-success pa-4 mb-3 rounded-circle">
                     <File :size="28" class="text-success" />
                   </div>
                   <div class="text-body-1 font-weight-medium mb-1">{{ fichier.name }}</div>
@@ -176,7 +176,7 @@ function clearFile() {
       </v-col>
 
       <v-col cols="12" lg="5">
-        <v-card class="rounded-xl elevation-2 h-100">
+        <v-card class="glass-panel h-100">
           <v-card-title class="pa-6 border-b bg-surface-variant font-weight-bold">
             Statut Actuel
           </v-card-title>
@@ -193,9 +193,9 @@ function clearFile() {
               </div>
               
               <div v-else-if="convention" class="current-file-card bg-surface border rounded-xl overflow-hidden">
-                <div class="bg-success-lighten-5 pa-6 d-flex flex-column align-center text-center border-b">
+                <div class="pa-6 d-flex flex-column align-center text-center border-b" style="background: rgba(var(--v-theme-success), 0.08);">
                   <CheckCircle2 :size="48" class="text-success mb-3" />
-                  <div class="text-h6 font-weight-bold text-success-darken-1 mb-1">Convention Active</div>
+                  <div class="text-h6 font-weight-bold text-success mb-1">Convention Active</div>
                   <div class="text-caption text-success">
                     Publiée le {{ formaterDate(convention.date_publication) }}
                   </div>

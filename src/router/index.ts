@@ -249,4 +249,20 @@ router.beforeEach(async (vers) => {
   return true
 })
 
+router.onError((erreur, to) => {
+  const message = erreur instanceof Error ? erreur.message : String(erreur)
+  const estImportPerime = message.includes('Failed to fetch dynamically imported module') ||
+    message.includes('Outdated Optimize Dep')
+  const cleRechargement = 'pgnoc_route_reload'
+
+  if (estImportPerime && !sessionStorage.getItem(cleRechargement)) {
+    sessionStorage.setItem(cleRechargement, '1')
+    window.location.assign(to.fullPath)
+    return
+  }
+
+  if (estImportPerime) sessionStorage.removeItem(cleRechargement)
+  console.error('Erreur de navigation', erreur)
+})
+
 export default router

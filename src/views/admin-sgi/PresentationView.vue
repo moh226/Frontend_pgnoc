@@ -78,7 +78,7 @@ function ouvrirApercu(mode?: DeviceMode) {
   <v-container fluid class="page-container pa-6 pa-md-8">
     <div class="d-flex flex-column mb-8">
       <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-        <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
           <Building2 :size="28" />
         </div>
         Présentation SGI
@@ -88,10 +88,10 @@ function ouvrirApercu(mode?: DeviceMode) {
       </p>
     </div>
 
-    <v-alert v-if="erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
+    <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}
     </v-alert>
-    <v-alert v-if="succes" type="success" variant="tonal" class="mb-6 rounded-lg border-l-4">
+    <v-alert v-if="succes" type="success" variant="tonal" border="start" class="mb-6">
       {{ succes }}
     </v-alert>
 
@@ -100,7 +100,7 @@ function ouvrirApercu(mode?: DeviceMode) {
     <template v-else>
       <v-row no-gutters>
         <v-col cols="12" lg="7">
-          <v-card class="rounded-xl elevation-2 overflow-hidden mb-6 mb-lg-0">
+          <v-card class="glass-panel overflow-hidden mb-6 mb-lg-0">
             <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
               <span class="font-weight-bold">Présentation de votre SGI</span>
               <v-spacer />
@@ -331,7 +331,7 @@ function ouvrirApercu(mode?: DeviceMode) {
         </v-col>
 
         <v-col cols="12" lg="5" class="d-none d-lg-block pl-lg-5">
-          <v-card class="rounded-xl elevation-2 overflow-hidden apercu-en-direct">
+          <v-card class="glass-panel overflow-hidden apercu-en-direct">
             <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center">
               <span class="font-weight-bold d-flex align-center">
                 <span class="dot-vert mr-2" />

@@ -131,7 +131,7 @@ const emit = defineEmits<{
 }
 
 .step-item.completed .step-connector {
-  background-color: rgb(var(--v-theme-primary));
+  background-color: rgba(var(--v-theme-secondary), 0.5);
 }
 
 .step-circle {
@@ -150,14 +150,14 @@ const emit = defineEmits<{
 
 .step-item.active .step-circle {
   background-color: transparent;
-  border-color: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-primary));
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.1);
+  border-color: rgb(var(--v-theme-secondary));
+  color: rgb(var(--v-theme-secondary));
+  box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), 0.15);
 }
 
 .step-item.completed .step-circle {
-  background-color: rgb(var(--v-theme-primary));
-  color: white;
+  background-color: rgb(var(--v-theme-secondary));
+  color: rgb(var(--v-theme-on-secondary));
 }
 
 .step-subtitle {
@@ -169,7 +169,7 @@ const emit = defineEmits<{
 }
 
 .step-item.active .step-subtitle {
-  color: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-secondary));
 }
 
 .step-title {

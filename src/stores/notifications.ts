@@ -53,15 +53,25 @@ export const useNotificationsStore = defineStore('notifications', {
         const reponse = await compteNonLues()
         this.compteNonLues = reponse.compte
       } catch {
-        this.compteNonLues = 0
+        // Erreur réseau : on garde le dernier compte connu plutôt que
+        // d'afficher un « tout est lu » mensonger.
       }
     },
 
     async marquerCommeLue(id: string) {
-      await marquerLue(id)
+      try {
+        await marquerLue(id)
+      } catch (cause) {
+        // L'échec est exposé via `erreur` : l'UI ne doit pas décaler
+        // son état local (lue) par rapport au serveur en silence.
+        this.erreur = extraireMessageErreur(cause)
+        return
+      }
       const notification = this.notifications.find((n) => n.id === id)
-      if (notification) notification.lue = true
-      if (this.compteNonLues > 0) this.compteNonLues -= 1
+      if (notification && !notification.lue) {
+        notification.lue = true
+        if (this.compteNonLues > 0) this.compteNonLues -= 1
+      }
     },
   },
 })

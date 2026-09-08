@@ -30,9 +30,7 @@ defineProps<{
 
 <style scoped>
 .zone-chiffres {
-  background:
-    radial-gradient(circle at 12% 90%, rgba(var(--v-theme-accent), 0.06) 0%, transparent 42%),
-    rgb(var(--v-theme-surface));
+  background: rgb(var(--v-theme-surface-variant));
 }
 
 .bande-chiffres {
@@ -42,10 +40,10 @@ defineProps<{
   max-width: 1080px;
   margin: 0 auto;
   padding: 44px 48px;
-  border-radius: 24px;
-  background: rgb(var(--v-theme-background));
+  border-radius: 16px;
+  background: rgb(var(--v-theme-surface));
   border: 1px solid rgb(var(--v-theme-outline));
-  box-shadow: inset 0 2px 0 rgba(var(--v-theme-surface), 0.8), 0 14px 40px rgba(var(--v-theme-primary), 0.07);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   position: relative;
 }
 
@@ -65,7 +63,7 @@ defineProps<{
   top: 15%;
   bottom: 15%;
   width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(var(--v-theme-primary), 0.25), transparent);
+  background: rgb(var(--v-theme-outline-variant));
 }
 
 .valeur-chiffre {
@@ -73,18 +71,7 @@ defineProps<{
   font-weight: 800;
   letter-spacing: -0.03em;
   line-height: 1;
-  /* Rechute solide : chiffres toujours visibles */
-  color: rgb(var(--v-theme-primary-darken-1, 10 46 124));
-}
-
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .valeur-chiffre {
-    background: linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1, 10 46 124)) 0%, rgb(var(--v-theme-primary, 12 60 148)) 55%, rgb(var(--v-theme-accent, 0 150 57)) 130%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
+  color: rgb(var(--v-theme-primary));
 }
 
 .libelle-chiffre {

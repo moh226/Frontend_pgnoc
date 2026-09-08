@@ -28,23 +28,20 @@ defineProps<{
 .zone-reassurance {
   display: flex;
   justify-content: center;
-  padding: 0 32px;
+  padding: 32px 32px 96px;
   position: relative;
   z-index: 10;
-  margin-top: -58px; /* Chevauche le bas du hero */
+  background: rgb(var(--v-theme-surface));
 }
 
 .bande-nuit {
   width: 100%;
   max-width: 1080px;
   padding: 26px 36px;
-  border-radius: 26px;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(var(--v-theme-secondary), 0.16) 0%, transparent 40%),
-    linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1)) 0%, rgb(var(--v-theme-primary)) 100%);
-  box-shadow: 0 26px 54px rgba(var(--v-theme-primary), 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border-radius: 16px;
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 10px 24px rgba(var(--v-theme-primary), 0.25);
+  color: rgb(var(--v-theme-on-primary));
 }
 
 .reveal-up-delay {
@@ -77,11 +74,7 @@ defineProps<{
   width: 26px;
   height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgb(var(--v-theme-secondary)));
-}
-
-.etiquette-bande::after {
-  background: linear-gradient(90deg, rgb(var(--v-theme-secondary)), transparent);
+  background: rgba(var(--v-theme-secondary), 0.6);
 }
 
 .puces-reassurance {
@@ -101,17 +94,15 @@ defineProps<{
   font-weight: 600;
   letter-spacing: 0.01em;
   color: rgba(255, 255, 255, 0.92);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: background-color 0.25s, border-color 0.25s, transform 0.25s ease;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: background-color 0.18s, border-color 0.18s, transform 0.18s ease;
 }
 
 .puce-item:hover {
-  background: rgba(255, 255, 255, 0.11);
-  border-color: rgba(var(--v-theme-secondary), 0.5);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(var(--v-theme-secondary), 0.6);
   transform: translateY(-2px);
 }
 

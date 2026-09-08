@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { Shield, ShieldAlert, UserPlus, Search, Power, PowerOff } from '@lucide/vue'
+import { useDebounceFn } from '@vueuse/core'
 
 import { LIBELLES_ROLE } from '@/config/navigation'
 import { ROLES_ADMIN } from '@/config/audit'
@@ -12,6 +13,10 @@ const admin = useAdminStore()
 const filtreRole = ref('')
 const filtreActif = ref<'actif' | 'inactif' | ''>('')
 const rechercheEmail = ref('')
+
+// Numéro de séquence : les réponses tardives d'une recherche précédente
+// ne doivent pas écraser la plus récente (course frappe par frappe).
+let sequenceChargement = 0
 
 const dialogCreation = ref(false)
 const envoiEnCours = ref(false)
@@ -28,13 +33,22 @@ const formule = ref({
 const sgiActives = computed(() => admin.sgi.filter((s) => s.est_active))
 
 async function charger() {
-  await admin.chargerSgi()
+  const sequence = ++sequenceChargement
+  // Les SGI ne dépendent pas des filtres : chargées une seule fois.
+  if (!admin.sgi.length) {
+    await admin.chargerSgi()
+    if (sequence !== sequenceChargement) return
+  }
   await admin.chargerUtilisateurs({
     role: filtreRole.value || undefined,
     actif: filtreActif.value ? filtreActif.value === 'actif' : undefined,
     email: rechercheEmail.value || undefined,
   })
 }
+
+// La recherche texte est debouncée : une requête par frappe saturerait
+// l'API et exposerait des courses de réponses.
+const chargerDebounce = useDebounceFn(() => void charger(), 350)
 
 async function creer() {
   if (!formule.value.email.trim() || !formule.value.mot_de_passe) {
@@ -69,7 +83,10 @@ async function basculer(utilisateurId: string, actif: boolean) {
   }
 }
 
-watch([filtreRole, filtreActif, rechercheEmail], () => void charger())
+// Les filtres à bascule rechargent immédiatement ; la recherche texte
+// passe par le debounce.
+watch([filtreRole, filtreActif], () => void charger())
+watch(rechercheEmail, () => chargerDebounce())
 
 onMounted(() => void charger())
 </script>
@@ -81,7 +98,7 @@ onMounted(() => void charger())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <Shield :size="28" />
           </div>
           Comptes Internes
@@ -98,7 +115,7 @@ onMounted(() => void charger())
     </div>
 
     <!-- Barre de filtres -->
-    <v-card class="rounded-xl elevation-2 mb-8 border bg-surface-variant">
+    <v-card class="glass-panel mb-8">
       <v-card-text class="pa-4 pa-md-6 d-flex flex-wrap align-center gap-4">
         <v-select
           v-model="filtreRole"
@@ -147,7 +164,7 @@ onMounted(() => void charger())
     </v-alert>
 
     <!-- Tableau -->
-    <v-card class="rounded-xl elevation-2 overflow-hidden border">
+    <v-card class="glass-panel overflow-hidden">
       <v-progress-linear v-if="admin.chargement" indeterminate color="primary" />
       
       <v-alert
@@ -173,7 +190,7 @@ onMounted(() => void charger())
           <tr v-for="utilisateur in admin.utilisateurs" :key="utilisateur.id" class="table-row">
             <td class="px-6 py-4">
               <div class="d-flex align-center">
-                <v-avatar :color="utilisateur.role === 'ADMIN_GENERAL' ? 'warning-lighten-4' : 'primary-lighten-4'" size="40" class="mr-3 font-weight-bold" :class="utilisateur.role === 'ADMIN_GENERAL' ? 'text-warning-darken-2' : 'text-primary'">
+                <v-avatar :color="utilisateur.role === 'ADMIN_GENERAL' ? 'warning' : 'primary'" variant="tonal" size="40" class="mr-3 font-weight-bold">
                   {{ (utilisateur.prenom?.[0] || '') + (utilisateur.nom?.[0] || utilisateur.email[0]).toUpperCase() }}
                 </v-avatar>
                 <div>
@@ -228,7 +245,7 @@ onMounted(() => void charger())
 
     <!-- Modale Création Compte Interne -->
     <v-dialog v-model="dialogCreation" max-width="600">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
           <ShieldAlert :size="24" class="text-warning mr-3" />
           Nouveau compte interne
@@ -304,7 +321,7 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-4 border-t">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogCreation = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogCreation = false">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"

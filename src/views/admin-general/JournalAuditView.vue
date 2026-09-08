@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { ClipboardList, Download, Search, History } from '@lucide/vue'
+import { useDebounceFn } from '@vueuse/core'
 
 import { exporterJournal, journalAudit } from '@/api/admin'
 import { extraireMessageErreur } from '@/api/client'
@@ -19,7 +20,12 @@ const exportEnCours = ref(false)
 const filtreAction = ref('')
 const filtreEmail = ref('')
 
+// Séquence anti-course : une réponse tardive d'une recherche précédente
+// ne doit pas écraser la plus récente.
+let sequenceChargement = 0
+
 async function charger() {
+  const sequence = ++sequenceChargement
   chargement.value = true
   erreur.value = ''
   try {
@@ -29,13 +35,31 @@ async function charger() {
       page: page.value,
       page_size: parPage,
     })
+    if (sequence !== sequenceChargement) return
     entrees.value = reponse.results
     pages.value = Math.max(1, Math.ceil(reponse.count / parPage))
   } catch (cause) {
+    if (sequence !== sequenceChargement) return
     erreur.value = extraireMessageErreur(cause)
   } finally {
-    chargement.value = false
+    if (sequence === sequenceChargement) {
+      chargement.value = false
+    }
   }
+}
+
+// La recherche email est debouncée : une requête par frappe saturerait
+// l'API et exposerait des courses de réponses.
+const chargerDebounce = useDebounceFn(() => void charger(), 350)
+
+function surFiltreActionChange() {
+  page.value = 1
+  void charger()
+}
+
+function surRechercheEmailChange() {
+  page.value = 1
+  chargerDebounce()
 }
 
 async function exporter() {
@@ -70,7 +94,7 @@ onMounted(() => void charger())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <ClipboardList :size="28" />
           </div>
           Journal d'Audit
@@ -87,7 +111,7 @@ onMounted(() => void charger())
     </div>
 
     <!-- Barre de recherche -->
-    <v-card class="rounded-xl elevation-2 mb-8 border bg-surface-variant">
+    <v-card class="glass-panel mb-8">
       <v-card-text class="pa-4 pa-md-6 d-flex flex-wrap align-center gap-4">
         <v-select
           v-model="filtreAction"
@@ -99,13 +123,13 @@ onMounted(() => void charger())
           bg-color="surface"
           hide-details
           class="premium-input filtre-item"
-          @update:model-value="page = 1; charger()"
+          @update:model-value="surFiltreActionChange"
         >
           <template #prepend-inner>
             <History :size="18" class="text-medium-emphasis mr-2" />
           </template>
         </v-select>
-        
+
         <v-text-field
           v-model="filtreEmail"
           label="Rechercher un auteur par email..."
@@ -115,7 +139,7 @@ onMounted(() => void charger())
           bg-color="surface"
           hide-details
           class="premium-input flex-grow-1 min-w-200"
-          @update:model-value="page = 1; charger()"
+          @update:model-value="surRechercheEmailChange"
         >
           <template #prepend-inner>
             <Search :size="18" class="text-medium-emphasis mr-2" />
@@ -129,7 +153,7 @@ onMounted(() => void charger())
     </v-alert>
 
     <!-- Tableau des logs -->
-    <v-card class="rounded-xl elevation-2 overflow-hidden border">
+    <v-card class="glass-panel overflow-hidden">
       <v-progress-linear v-if="chargement" indeterminate color="primary" />
       
       <v-alert

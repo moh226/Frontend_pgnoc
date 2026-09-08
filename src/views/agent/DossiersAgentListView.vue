@@ -54,13 +54,21 @@ function basculerFiltre(statut: StatutDossier) {
   page.value = 1
 }
 
+const priseEnChargeEnCours = ref<string | null>(null)
+
 async function prendreEnChargeDossier(id: string) {
+  // Garde anti double-clic : le second POST échouerait (409) sans
+  // explication pour l'utilisateur.
+  if (priseEnChargeEnCours.value) return
+  priseEnChargeEnCours.value = id
   erreur.value = ''
   try {
     await prendreEnCharge(id)
     await charger()
   } catch (cause) {
     erreur.value = extraireMessageErreur(cause)
+  } finally {
+    priseEnChargeEnCours.value = null
   }
 }
 
@@ -74,7 +82,7 @@ onMounted(() => void charger())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <FileText :size="28" />
           </div>
           Base des Dossiers
@@ -85,12 +93,12 @@ onMounted(() => void charger())
       </div>
     </div>
 
-    <v-alert v-if="erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
+    <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}
     </v-alert>
 
     <!-- Barre de filtres stylisée -->
-    <v-card class="rounded-xl elevation-2 mb-8 border bg-surface-variant">
+    <v-card class="glass-panel mb-8">
       <v-card-text class="pa-4 pa-md-6 d-flex flex-wrap align-center gap-3">
         <div class="d-flex align-center mr-4 text-medium-emphasis">
           <Filter :size="18" class="mr-2" />
@@ -100,9 +108,9 @@ onMounted(() => void charger())
         <v-chip
           v-for="statut in statutsAffiches"
           :key="statut"
-          class="font-weight-bold px-4 hover-lift"
-          :color="filtresStatut.includes(statut) ? COULEURS_STATUT[statut] : 'grey-darken-1'"
-          :variant="filtresStatut.includes(statut) ? 'flat' : 'outlined'"
+          class="font-weight-bold px-4"
+          :color="filtresStatut.includes(statut) ? COULEURS_STATUT[statut] : 'default'"
+          :variant="filtresStatut.includes(statut) ? 'flat' : 'tonal'"
           @click="basculerFiltre(statut)"
         >
           <v-icon v-if="filtresStatut.includes(statut)" icon="mdi-check" size="14" class="mr-1" />
@@ -111,7 +119,7 @@ onMounted(() => void charger())
       </v-card-text>
     </v-card>
 
-    <v-card class="rounded-xl elevation-2 overflow-hidden border">
+    <v-card class="glass-panel overflow-hidden">
       <v-progress-linear v-if="chargement" indeterminate color="primary" />
       
       <v-alert
@@ -131,8 +139,8 @@ onMounted(() => void charger())
             @click="router.push({ name: props.routeDetail, params: { id: dossier.id } })"
           >
             <template #prepend>
-              <v-avatar :color="COULEURS_STATUT[dossier.statut] + '-lighten-4'" class="mr-4 text-center">
-                <FileText :size="20" :class="`text-${COULEURS_STATUT[dossier.statut]}-darken-2`" />
+              <v-avatar :color="COULEURS_STATUT[dossier.statut]" variant="tonal" class="mr-4">
+                <FileText :size="20" />
               </v-avatar>
             </template>
 
@@ -153,8 +161,8 @@ onMounted(() => void charger())
                 <v-chip 
                   size="small" 
                   :color="COULEURS_STATUT[dossier.statut]" 
-                  variant="flat"
-                  class="font-weight-bold shadow-sm"
+                  variant="tonal"
+                  class="font-weight-bold"
                 >
                   {{ LIBELLES_STATUT[dossier.statut] }}
                 </v-chip>
@@ -165,12 +173,14 @@ onMounted(() => void charger())
                   color="primary"
                   variant="tonal"
                   class="font-weight-bold"
+                  :loading="priseEnChargeEnCours === dossier.id"
+                  :disabled="priseEnChargeEnCours !== null"
                   @click.stop="prendreEnChargeDossier(dossier.id)"
                 >
                   <Hand :size="14" class="mr-1" /> Assigner
                 </v-btn>
                 
-                <ArrowRight :size="18" class="text-grey-lighten-1 ml-2 d-none d-sm-block" />
+                <ArrowRight :size="18" class="text-medium-emphasis ml-2 d-none d-sm-block" />
               </div>
             </template>
           </v-list-item>
@@ -198,33 +208,7 @@ onMounted(() => void charger())
   margin: 0 auto;
 }
 
-.border-l-4 {
-  border-left-width: 4px !important;
-}
-
-.tracking-wider {
-  letter-spacing: 0.05em !important;
-}
-
 .gap-3 {
   gap: 12px;
-}
-
-.hover-row {
-  transition: background-color 0.2s ease;
-}
-.hover-row:hover {
-  background-color: rgba(var(--v-theme-primary), 0.02);
-}
-
-.hover-lift {
-  transition: transform 0.2s ease;
-}
-.hover-lift:hover {
-  transform: translateY(-2px);
-}
-
-.shadow-sm {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
 }
 </style>

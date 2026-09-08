@@ -44,7 +44,11 @@ onMounted(async () => {
       return
     }
 
+    auth.reouvrirSession()
     auth.fixerJetons(jetons.access, jetons.refresh)
+    // Le JWT ne contient pas le profil : on le charge explicitement,
+    // sinon la session reste sans nom/email (menu, initiales, agent).
+    await auth.chargerProfil()
     await router.replace(redirectionPourRole(auth.roleActuel))
   } catch (cause) {
     console.error('Retour Google : erreur inattendue', cause)

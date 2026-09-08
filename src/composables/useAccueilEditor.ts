@@ -59,6 +59,7 @@ export function useAccueilEditor() {
   const nouvelleMention = ref('')
 
   const hero = reactive({
+    slogan: '',
     cta_principal: '',
     lien_principal: '',
     cta_secondaire: '',
@@ -147,6 +148,7 @@ export function useAccueilEditor() {
     brouillonTitre.value = bloc?.titre ?? ''
     nouveauFichier.value = null
     nouvelleMention.value = ''
+    hero.slogan = contenu.slogan ?? ''
     hero.cta_principal = contenu.cta_principal ?? ''
     hero.lien_principal = contenu.lien_principal ?? ''
     hero.cta_secondaire = contenu.cta_secondaire ?? ''
@@ -166,6 +168,7 @@ export function useAccueilEditor() {
     switch (blocSelectionne.value) {
       case 'HERO':
         return {
+          slogan: hero.slogan,
           cta_principal: hero.cta_principal,
           lien_principal: hero.lien_principal,
           cta_secondaire: hero.cta_secondaire,

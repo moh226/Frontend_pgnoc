@@ -82,6 +82,7 @@ export interface DossierDetail extends DossierListeItem {
   version: number
   motif_rejet: string
   convention_acceptee: boolean
+  convention_version: string
   type_signature: string
   date_signature: string | null
   date_instruction: string | null
@@ -122,6 +123,7 @@ export interface ConventionInfo {
   titre: string
   signe_requis: boolean
   fichier_url: string | null
+  version: string
 }
 
 export interface PresentationActivite {

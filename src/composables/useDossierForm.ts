@@ -30,6 +30,14 @@ export function useDossierForm(dossierId: string) {
   const etapeGlobaleActive = ref(0)
 
   const conventionPubliee = computed(() => Boolean(fiche.value?.convention.titre))
+  // La convention doit être (re)lue et acceptée si la SGI en a publié
+  // une nouvelle version depuis la dernière acceptation.
+  const conventionAJour = computed(
+    () =>
+      !conventionPubliee.value ||
+      (detail.value?.convention_acceptee &&
+        detail.value.convention_version === fiche.value?.convention.version),
+  )
   const progression = computed(() => detail.value?.progression_pct ?? 0)
   const estModifiable = computed(() => detail.value?.statut === 'BROUILLON' || detail.value?.statut === 'REJETE')
   const tousChamps = computed(() => etapes.value.flatMap((e) => e.champs))
@@ -134,7 +142,7 @@ export function useDossierForm(dossierId: string) {
       const etapesGlobalesLength = etapes.value.length + (conventionPubliee.value ? 1 : 0) + 1 // +1 for validation
       let currentGlobalIndex = 0
       
-      if (conventionPubliee.value && !detailCharge.convention_acceptee) {
+      if (conventionPubliee.value && !conventionAJour.value) {
         currentGlobalIndex = 0
       } else {
         let kycIndex = 0
@@ -161,7 +169,15 @@ export function useDossierForm(dossierId: string) {
 
   // --- Helpers ---
   function champVerrouille(champ: ChampKyc): boolean {
-    return detail.value?.statut === 'REJETE' && !valeurs.value[champ.id]?.commentaire_agent
+    if (detail.value?.statut !== 'REJETE') return false
+    const valeur = valeurs.value[champ.id]
+    // Champs signalés par l'agent : corrigeables.
+    if (valeur?.commentaire_agent) return false
+    // Champ obligatoire sans valeur (ex. ajouté par la SGI après le
+    // rejet) : saisie autorisée — sinon le dossier ne pourrait jamais
+    // atteindre 100 % de progression (même règle que le backend).
+    if (!valeur && champ.obligatoire) return false
+    return true
   }
 
   async function rafraichirProgression() {
@@ -189,8 +205,14 @@ export function useDossierForm(dossierId: string) {
   function inscrireSauvegarde(champId: string) {
     const champ = tousChamps.value.find((c) => c.id === champId)
     if (champ && champVerrouille(champ)) return
-    
-    etatsSauvegarde.value[champId] = 'attente'
+
+    // Pas de retour à 'attente' pendant une sauvegarde en vol : la
+    // garde `en_cours` de executerSauvegardeValeur resterait contournée
+    // (deux POST concurrents pour le même champ). Le re-trigger post-
+    // sauvegarde relancera si la valeur a rechangé entre-temps.
+    if (etatsSauvegarde.value[champId] !== 'en_cours') {
+      etatsSauvegarde.value[champId] = 'attente'
+    }
     const debouncedSave = getDebounceFn(champId)
     debouncedSave()
   }
@@ -225,18 +247,26 @@ export function useDossierForm(dossierId: string) {
     return tache
   }
 
-  async function viderSauvegardes() {
-    // Forcer toutes les sauvegardes en attente
+  async function viderSauvegardes(): Promise<boolean> {
+    // Annule les debounces en attente : leurs POST différés ne doivent
+    // pas tirer APRÈS la soumission (erreur zombie sur dossier SOUMIS).
+    for (const annuler of debounceFns.values()) annuler.cancel()
+
+    // Force l'exécution immédiate des sauvegardes en attente.
     for (const champId of debounceFns.keys()) {
-       if (etatsSauvegarde.value[champId] === 'attente') {
-         await executerSauvegardeValeur(champId)
-       }
+      if (etatsSauvegarde.value[champId] === 'attente') {
+        await executerSauvegardeValeur(champId)
+      }
     }
-    
-    // Attendre que tout finisse
+
+    // Attend que tout finisse.
     for (let essai = 0; essai < 30 && sauvegardesEnCours.size > 0; essai++) {
       await Promise.allSettled([...sauvegardesEnCours])
     }
+
+    // Une sauvegarde en échec bloque la soumission : le dossier ne doit
+    // pas partir avec des données partielles.
+    return Object.values(etatsSauvegarde.value).every((etat) => etat !== 'erreur')
   }
 
   // --- Upload Fichier ---
@@ -304,6 +334,7 @@ export function useDossierForm(dossierId: string) {
     envoiEnCours,
     etapeGlobaleActive,
     conventionPubliee,
+    conventionAJour,
     progression,
     estModifiable,
     tousChamps,

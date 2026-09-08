@@ -43,24 +43,35 @@ function estMasque(type: TypeBlocAccueil): boolean {
   <div class="accueil">
     <!-- Barre de navigation -->
     <header class="barre-accueil">
-      <router-link class="logo-accueil" :to="{ name: 'accueil' }">
-        <span class="logo-picto">
-          <Landmark :size="20" />
-        </span>
-        <span class="font-display">PGNOC-TI</span>
-      </router-link>
-
-      <nav class="liens-barre">
-        <router-link v-if="!auth.estConnecte" :to="{ name: 'inscription' }">S'inscrire</router-link>
-        <router-link v-if="!auth.estConnecte" :to="{ name: 'login' }">Se connecter</router-link>
-        <router-link
-          v-if="auth.estConnecte"
-          class="bouton-espace"
-          :to="redirectionPourRole(auth.roleActuel)"
-        >
-          Mon espace <ArrowRight :size="16" />
+      <div class="conteneur-barre">
+        <router-link class="logo-accueil" :to="{ name: 'accueil' }">
+          <span class="logo-picto">
+            <Landmark :size="20" />
+          </span>
+          <span class="logo-bloc">
+            <span class="font-display logo-nom">PGNOC-TI</span>
+            <span class="logo-sous-titre">Marché financier régional</span>
+          </span>
         </router-link>
-      </nav>
+
+        <nav class="liens-barre">
+          <router-link v-if="!auth.estConnecte" class="lien-texte" :to="{ name: 'login' }">Se connecter</router-link>
+          <router-link
+            v-if="!auth.estConnecte"
+            class="bouton-inscription"
+            :to="{ name: 'inscription' }"
+          >
+            S'inscrire
+          </router-link>
+          <router-link
+            v-if="auth.estConnecte"
+            class="bouton-espace"
+            :to="redirectionPourRole(auth.roleActuel)"
+          >
+            Mon espace <ArrowRight :size="16" />
+          </router-link>
+        </nav>
+      </div>
     </header>
 
     <main>
@@ -151,23 +162,22 @@ function estMasque(type: TypeBlocAccueil): boolean {
 
 .barre-accueil {
   position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
+  background-color: rgb(var(--v-theme-surface));
+  border-bottom: 1px solid rgb(var(--v-theme-outline));
+}
+
+.conteneur-barre {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: calc(100% - 32px);
   max-width: 1200px;
-  padding: 10px 12px 10px 24px;
-  background-color: rgba(var(--v-theme-surface), 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgb(var(--v-theme-outline));
-  border-radius: 99px;
-  box-shadow: 0 10px 34px rgba(var(--v-theme-primary), 0.08);
-  transition: all 0.3s ease;
+  margin: 0 auto;
+  min-height: 68px;
+  padding: 0 24px;
 }
 
 .logo-accueil {
@@ -175,10 +185,27 @@ function estMasque(type: TypeBlocAccueil): boolean {
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  font-size: 20px;
+}
+
+.logo-bloc {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-nom {
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: rgb(var(--v-theme-primary-darken-1));
+  color: rgb(var(--v-theme-primary));
+  line-height: 1.15;
+}
+
+.logo-sous-titre {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: rgb(var(--v-theme-on-surface-variant));
 }
 
 .logo-picto {
@@ -187,10 +214,9 @@ function estMasque(type: TypeBlocAccueil): boolean {
   justify-content: center;
   width: 38px;
   height: 38px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-primary-darken-1)));
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(var(--v-theme-primary), 0.3);
+  border-radius: 10px;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
 }
 
 .liens-barre {
@@ -199,49 +225,64 @@ function estMasque(type: TypeBlocAccueil): boolean {
   gap: 8px;
 }
 
-.liens-barre a {
+.lien-texte {
   text-decoration: none;
   color: rgb(var(--v-theme-on-surface-variant));
   font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.01em;
   padding: 10px 16px;
-  border-radius: 99px;
-  transition: color 0.2s, background-color 0.2s;
+  border-radius: 8px;
+  transition: color 0.18s, background-color 0.18s;
 }
 
-.liens-barre a:hover {
+.lien-texte:hover {
   color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-primary), 0.06);
+}
+
+.bouton-inscription {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 22px;
+  border-radius: 8px;
+  color: rgb(var(--v-theme-on-primary));
+  background: rgb(var(--v-theme-primary));
+  transition: box-shadow 0.18s ease;
+}
+
+.bouton-inscription:hover {
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
 }
 
 .bouton-espace {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
   color: rgb(var(--v-theme-on-primary)) !important;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-primary-darken-1))) !important;
-  border-radius: 99px;
+  background: rgb(var(--v-theme-primary)) !important;
+  border-radius: 8px;
   padding: 10px 20px !important;
-  box-shadow: 0 6px 16px rgba(var(--v-theme-primary), 0.25) !important;
-  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  transition: box-shadow 0.18s ease !important;
 }
 
 .bouton-espace:hover {
   color: rgb(var(--v-theme-on-primary)) !important;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-primary-darken-1))) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(var(--v-theme-primary), 0.35) !important;
+  background: rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3) !important;
 }
 
 /* ----------------- Footer ----------------- */
 
 .pied-accueil {
   margin-top: auto;
-  background:
-    radial-gradient(circle at 85% 0%, rgba(var(--v-theme-accent), 0.14) 0%, transparent 40%),
-    rgb(var(--v-theme-primary-darken-1));
-  color: #fff;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
 }
 
 .pied-contenu {
@@ -270,8 +311,7 @@ function estMasque(type: TypeBlocAccueil): boolean {
   height: 46px;
   border-radius: 14px;
   background: rgb(var(--v-theme-secondary));
-  color: rgb(var(--v-theme-primary-darken-1));
-  box-shadow: 0 8px 20px rgba(var(--v-theme-secondary), 0.3);
+  color: rgb(var(--v-theme-on-secondary));
   flex-shrink: 0;
 }
 
@@ -337,15 +377,22 @@ function estMasque(type: TypeBlocAccueil): boolean {
     padding-top: 0;
   }
 
-  .barre-accueil {
-    top: 8px;
-    width: calc(100% - 16px);
-    padding: 8px 8px 8px 16px;
+  .conteneur-barre {
+    min-height: 60px;
+    padding: 0 16px;
   }
 
-  .liens-barre a {
+  .logo-sous-titre {
+    display: none;
+  }
+
+  .lien-texte {
     padding: 8px 10px;
     font-size: 13px;
+  }
+
+  .bouton-inscription {
+    padding: 8px 16px;
   }
 
   .pied-contenu {

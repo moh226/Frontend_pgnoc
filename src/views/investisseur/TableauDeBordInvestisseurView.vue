@@ -107,6 +107,14 @@ onMounted(async () => {
       </div>
     </v-alert>
 
+    <!-- Échec du chargement des SGI : visible même si le dialog n'a pas pu s'ouvrir -->
+    <v-alert v-if="erreurCreation && !dialogNouveauDossier" type="error" variant="tonal" border="start" class="mb-4" closable>
+      <div class="d-flex align-center flex-wrap ga-3">
+        <span>Impossible de charger la liste des SGI — {{ erreurCreation }}</span>
+        <v-btn variant="tonal" size="small" @click="ouvrirCreation">Réessayer</v-btn>
+      </div>
+    </v-alert>
+
     <header class="mb-8">
       <h1 class="font-display text-h4 font-weight-bold mb-2">
         Bonjour{{ nomInvestisseur ? `, ${nomInvestisseur}` : '' }}
@@ -114,7 +122,7 @@ onMounted(async () => {
       <p class="text-muted">Suivez vos demandes d'ouverture de compte-titres et les prochaines actions à effectuer.</p>
     </header>
 
-    <v-card v-if="dossierAvecAction" class="action-prioritaire mb-6" variant="tonal">
+    <v-card v-if="dossierAvecAction" color="warning" variant="tonal" class="mb-6">
       <v-card-text class="d-flex align-center flex-wrap ga-4 pa-5">
         <v-avatar color="warning" variant="tonal" size="44">
           <AlertCircle :size="22" />
@@ -137,65 +145,63 @@ onMounted(async () => {
 
     <v-row class="mb-6">
       <v-col cols="12" sm="6" lg="3">
-        <v-card class="kpi-card glass-panel pa-5 hover-lift">
-          <v-card-text class="pa-0 d-flex flex-column h-100">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-caption text-uppercase font-weight-bold text-primary tracking-widest">Total Dossiers</span>
-              <Briefcase class="text-primary" :size="20" />
+        <v-card class="kpi-card pa-6 hover-lift">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div class="icon-box pa-3">
+              <Briefcase :size="24" />
             </div>
-            <div class="text-h3 font-display font-weight-bold mt-auto">{{ dashboard?.total_dossiers ?? dossiers.total }}</div>
-          </v-card-text>
+          </div>
+          <div class="text-h3 font-display font-weight-bold text-primary mb-1">{{ dashboard?.total_dossiers ?? 0 }}</div>
+          <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mt-auto">Total Dossiers</div>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" lg="3">
-        <v-card class="kpi-card glass-panel pa-5 hover-lift stat-progression">
-          <v-card-text class="pa-0 d-flex flex-column h-100">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-caption text-uppercase font-weight-bold text-primary tracking-widest">Progression moyenne</span>
-              <v-progress-circular :model-value="dashboard?.progression_moyenne ?? dossiers.progressionMoyenne" color="primary" size="22" width="3" />
-            </div>
-            <div class="text-h3 font-display font-weight-bold mt-auto">{{ dashboard?.progression_moyenne ?? dossiers.progressionMoyenne }}%</div>
-          </v-card-text>
+        <v-card class="kpi-card pa-6 hover-lift">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <v-progress-circular :model-value="dashboard?.progression_moyenne ?? 0" color="primary" size="30" width="3" />
+          </div>
+          <div class="text-h3 font-display font-weight-bold text-primary mb-1">{{ dashboard?.progression_moyenne ?? 0 }}%</div>
+          <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mt-auto">Progression moyenne</div>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" lg="3">
-        <v-card class="kpi-card glass-panel pa-5 hover-lift stat-encours">
-          <v-card-text class="pa-0 d-flex flex-column h-100">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-caption text-uppercase font-weight-bold text-info tracking-widest">En Instruction</span>
-              <Clock class="text-info" :size="20" />
+        <v-card class="kpi-card pa-6 hover-lift">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div class="icon-box icon-box-info pa-3">
+              <Clock :size="24" />
             </div>
-            <div class="text-h3 font-display font-weight-bold mt-auto">{{ dashboard?.par_statut.EN_INSTRUCTION ?? dossiers.parStatut.EN_INSTRUCTION }}</div>
-          </v-card-text>
+          </div>
+          <div class="text-h3 font-display font-weight-bold text-info mb-1">{{ dashboard?.par_statut.EN_INSTRUCTION ?? 0 }}</div>
+          <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mt-auto">En Instruction</div>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" lg="3">
-        <v-card class="kpi-card glass-panel pa-5 hover-lift stat-valide">
-          <v-card-text class="pa-0 d-flex flex-column h-100">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-caption text-uppercase font-weight-bold text-success tracking-widest">Validés</span>
-              <CheckCircle2 class="text-success" :size="20" />
+        <v-card class="kpi-card pa-6 hover-lift">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div class="icon-box icon-box-success pa-3">
+              <CheckCircle2 :size="24" />
             </div>
-            <div class="text-h3 font-display font-weight-bold mt-auto">{{ dashboard?.par_statut.VALIDE ?? dossiers.parStatut.VALIDE }}</div>
-          </v-card-text>
+          </div>
+          <div class="text-h3 font-display font-weight-bold text-success mb-1">{{ dashboard?.par_statut.VALIDE ?? 0 }}</div>
+          <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mt-auto">Validés</div>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" lg="3">
-        <v-card class="kpi-card glass-panel pa-5 hover-lift stat-rejete">
-          <v-card-text class="pa-0 d-flex flex-column h-100">
-            <div class="d-flex justify-space-between align-center mb-4">
-              <span class="text-caption text-uppercase font-weight-bold text-error tracking-widest">Rejetés</span>
-              <XCircle class="text-error" :size="20" />
+        <v-card class="kpi-card pa-6 hover-lift">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div class="icon-box icon-box-error pa-3">
+              <XCircle :size="24" />
             </div>
-            <div class="text-h3 font-display font-weight-bold mt-auto">{{ dashboard?.par_statut.REJETE ?? dossiers.parStatut.REJETE }}</div>
-          </v-card-text>
+          </div>
+          <div class="text-h3 font-display font-weight-bold text-error mb-1">{{ dashboard?.par_statut.REJETE ?? 0 }}</div>
+          <div class="text-caption font-weight-medium text-medium-emphasis text-uppercase tracking-wider mt-auto">Rejetés</div>
         </v-card>
       </v-col>
     </v-row>
 
     <v-row class="mt-2">
       <v-col cols="12" lg="8">
-        <v-card class="glass-panel main-panel">
+        <v-card class="glass-panel">
           <v-card-title class="d-flex align-center pt-6 px-6 font-display font-weight-bold">
             <div>
               <div class="text-h6">Mes dossiers</div>
@@ -409,55 +415,19 @@ onMounted(async () => {
   color: rgba(var(--v-theme-on-surface), 0.7);
 }
 
-.tracking-widest {
-  letter-spacing: 0.1em;
-}
-
-.kpi-card {
-  height: 120px;
-  border-radius: 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-.kpi-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
-  opacity: 0.5;
-}
-
-.stat-encours::before { background: linear-gradient(90deg, rgb(var(--v-theme-info)) 0%, transparent 100%); }
-.stat-valide::before { background: linear-gradient(90deg, rgb(var(--v-theme-success)) 0%, transparent 100%); }
-.stat-rejete::before { background: linear-gradient(90deg, rgb(var(--v-theme-error)) 0%, transparent 100%); }
-
-.main-panel {
-  border-radius: 16px;
-  height: 100%;
-}
-
-.action-prioritaire {
-  border: 1px solid rgba(var(--v-theme-warning), 0.35) !important;
-  background: rgba(var(--v-theme-warning), 0.08) !important;
-}
-
 .dossier-item {
   border-radius: 12px;
   cursor: pointer;
   background: rgb(var(--v-theme-surface-variant)) !important;
   border: 1px solid rgb(var(--v-theme-outline));
   padding: 16px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .dossier-item:hover {
-  border-color: rgb(var(--v-theme-primary));
+  border-color: rgba(var(--v-theme-primary), 0.6);
   transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1) !important;
 }
 
 .section-caption {
@@ -490,10 +460,6 @@ onMounted(async () => {
   font-weight: 700;
 }
 
-.jauge-geante :deep(.v-progress-circular__overlay) {
-  stroke-linecap: round;
-}
-
 .badge-geant {
   font-size: 14px;
   height: 36px;
@@ -501,31 +467,10 @@ onMounted(async () => {
   text-transform: uppercase;
 }
 
-.border-left-glass {
-  border-left: 1px solid rgba(var(--v-theme-outline), 0.1);
-}
-
-.btn-principal {
-  height: 48px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
-  text-transform: uppercase;
-  font-size: 13px;
-}
-
-.modal-luxe {
-  border-radius: 16px !important;
-}
-
 .select-luxe :deep(.v-field__input) {
   padding-top: 12px;
   padding-bottom: 12px;
   color: rgb(var(--v-theme-on-surface));
-}
-
-.border-radius-8 {
-  border-radius: 8px;
 }
 
 @media (max-width: 600px) {
@@ -539,29 +484,6 @@ onMounted(async () => {
 
   .dashboard-luxe header h1 {
     font-size: 1.7rem !important;
-  }
-
-  .action-prioritaire .v-btn {
-    width: 100%;
-  }
-
-  .dossier-jauge {
-    display: flex !important;
-    padding: 16px 0 0 !important;
-    width: 50%;
-    justify-content: flex-start !important;
-  }
-
-  .dossier-badge {
-    width: 50%;
-    padding: 16px 0 0 12px !important;
-    border-left: 0 !important;
-  }
-
-  .dossier-badge .v-chip {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 }
 </style>

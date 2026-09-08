@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { CheckCircle, AlertCircle } from '@lucide/vue'
+import { AlertCircle, RotateCcw } from '@lucide/vue'
 
 import { useDossierForm } from '@/composables/useDossierForm'
-import { soumettreDossier, ouvrirFichierValeur } from '@/api/dossiers'
+import { soumettreDossier, ouvrirFichierValeurSurf as ouvrirFichierValeur } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 
 import DossierSidebar from '@/components/dossier/DossierSidebar.vue'
@@ -31,7 +31,12 @@ async function soumettreFinal() {
   form.envoiEnCours.value = true
   form.erreur.value = ''
   try {
-    await form.viderSauvegardes()
+    const sauvegardesOk = await form.viderSauvegardes()
+    if (!sauvegardesOk) {
+      form.erreur.value =
+        "Certaines sauvegardes ont échoué : corrigez les champs en erreur avant de soumettre."
+      return
+    }
     await soumettreDossier(dossierId.value)
     router.push({ name: 'investisseur-dossier-detail', params: { id: dossierId.value } })
   } catch (cause) {
@@ -69,6 +74,25 @@ function estVisible(champId: string): boolean {
       <!-- Loading Overlay -->
       <div v-if="form.chargement.value" class="loading-overlay d-flex align-center justify-center">
         <v-progress-circular indeterminate color="primary" size="64" width="6" />
+      </div>
+
+      <!-- Échec de chargement : message visible + actions (plus jamais de page blanche) -->
+      <div v-else-if="!form.detail.value || !form.etapeCourante.value" class="flex-grow-1 d-flex align-center justify-center pa-8">
+        <div class="text-center" style="max-width: 460px;">
+          <v-avatar color="error" variant="tonal" size="64" class="mb-4">
+            <AlertCircle :size="32" />
+          </v-avatar>
+          <h2 class="text-h6 font-display font-weight-bold mb-2">Impossible de charger le dossier</h2>
+          <p class="text-body-2 text-medium-emphasis mb-6">
+            {{ form.erreur.value || 'Une erreur est survenue lors du chargement du dossier.' }}
+          </p>
+          <div class="d-flex justify-center ga-3">
+            <v-btn color="primary" variant="flat" @click="form.chargerDossier()">
+              <RotateCcw :size="16" class="mr-2" /> Réessayer
+            </v-btn>
+            <v-btn variant="text" @click="quitterFormulaire">Retour au dossier</v-btn>
+          </div>
+        </div>
       </div>
 
       <template v-else-if="form.detail.value && form.etapeCourante.value">

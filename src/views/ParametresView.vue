@@ -121,17 +121,25 @@ async function changerMotDePasse() {
 </script>
 
 <template>
-  <v-container fluid class="pa-6" style="max-width: 960px">
-    <div class="d-flex align-center mb-4">
-      <h1 class="font-display text-h6">Paramètres</h1>
+  <v-container fluid class="pa-6 pa-md-8" style="max-width: 960px">
+    <div class="d-flex flex-column mb-8">
+      <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
+        <div class="icon-box pa-2 mr-4">
+          <v-icon icon="mdi-cog-outline" :size="28" />
+        </div>
+        Paramètres
+      </h1>
+      <p class="text-body-1 text-medium-emphasis mb-0">
+        Gérez votre profil et la sécurité de votre compte.
+      </p>
     </div>
 
-    <v-alert v-if="erreurChargement" type="error" class="mb-4" variant="tonal">
+    <v-alert v-if="erreurChargement" type="error" class="mb-4" variant="tonal" border="start">
       {{ erreurChargement }}
     </v-alert>
 
     <template v-if="profil">
-      <v-card class="mb-6" variant="tonal">
+      <v-card class="glass-panel mb-6">
         <v-card-text class="d-flex align-center ga-4">
           <v-avatar color="primary" size="56">
             <span class="text-h6 font-weight-bold">{{ initiales }}</span>
@@ -163,7 +171,7 @@ async function changerMotDePasse() {
 
       <v-window v-model="ongletActif">
         <v-window-item value="profil">
-          <v-card variant="tonal">
+          <v-card class="glass-panel">
             <v-card-text>
               <v-alert v-if="messageSucces" type="success" class="mb-4" variant="tonal">
                 {{ messageSucces }}
@@ -238,7 +246,7 @@ async function changerMotDePasse() {
         </v-window-item>
 
         <v-window-item value="securite">
-          <v-card variant="tonal">
+          <v-card class="glass-panel">
             <v-card-text>
               <v-alert v-if="messageMotDePasse" type="success" class="mb-4" variant="tonal">
                 {{ messageMotDePasse }}

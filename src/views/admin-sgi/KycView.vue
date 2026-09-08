@@ -84,7 +84,7 @@ onMounted(() => void charger())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <Settings2 :size="28" />
           </div>
           Parcours KYC
@@ -133,14 +133,14 @@ onMounted(() => void charger())
           md="4"
         >
           <v-card
-            class="template-card rounded-xl elevation-1 h-100 d-flex flex-column"
+            class="template-card glass-panel h-100 d-flex flex-column"
             :class="{ 'template-card--active': estDejaActif(template.id) }"
           >
             <v-card-text class="pa-5 flex-grow-1 d-flex flex-column">
               <div class="d-flex align-center mb-3">
                 <div
                   class="icon-box rounded-lg pa-2 mr-3"
-                  :class="estDejaActif(template.id) ? 'bg-success-lighten-5 text-success' : 'bg-primary-lighten-5 text-primary'"
+                  :class="estDejaActif(template.id) ? 'icon-box icon-box-success' : 'icon-box'"
                 >
                   <component :is="TEMPLATE_ICONS[template.icon] ?? TrendingUp" :size="20" />
                 </div>
@@ -189,12 +189,12 @@ onMounted(() => void charger())
       <v-expansion-panel 
         v-for="etape in etapes" 
         :key="etape.id"
-        class="mb-4 rounded-xl elevation-2 overflow-hidden"
+        class="mb-4 glass-panel overflow-hidden"
       >
         <v-expansion-panel-title class="pa-4 pa-md-6" expand-icon="mdi-chevron-down">
           <div class="d-flex align-center flex-grow-1 w-100">
             <!-- Badge Numéro -->
-            <div class="step-badge mr-4 flex-shrink-0 d-flex align-center justify-center font-weight-bold" :class="etape.actif ? 'bg-primary text-white' : 'bg-grey-lighten-2 text-grey-darken-2'">
+            <div class="step-badge mr-4 flex-shrink-0 d-flex align-center justify-center font-weight-bold" :class="etape.actif ? 'bg-primary text-on-primary' : 'bg-surface-variant text-medium-emphasis'">
               {{ etape.ordre }}
             </div>
             
@@ -225,7 +225,7 @@ onMounted(() => void charger())
           <div class="d-flex align-center justify-space-between mb-4">
             <h3 class="text-subtitle-1 font-weight-bold">Champs de l'étape</h3>
             <div class="d-flex gap-2">
-              <v-btn size="small" variant="text" color="grey-darken-1" class="hover-lift font-weight-bold" @click="ouvrirEditionEtape(etape)">
+              <v-btn size="small" variant="text" class="hover-lift font-weight-bold" @click="ouvrirEditionEtape(etape)">
                 <Pencil :size="16" class="mr-1" /> Modifier
               </v-btn>
               <v-btn size="small" variant="text" color="error" class="hover-lift font-weight-bold" @click="ouvrirSuppressionEtape(etape)">
@@ -265,7 +265,7 @@ onMounted(() => void charger())
 
     <!-- Modale Création/Édition Étape -->
     <v-dialog v-model="dialogEtape" max-width="500">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5">
           {{ etapeEnEdition ? 'Modifier l\'étape' : 'Nouvelle étape KYC' }}
         </v-card-title>
@@ -295,7 +295,7 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-2">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogEtape = false; reinitialiserDialogEtape()">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogEtape = false; reinitialiserDialogEtape()">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"
@@ -312,7 +312,7 @@ onMounted(() => void charger())
 
     <!-- Modale Création/Édition Champ -->
     <v-dialog v-model="dialogChamp" max-width="600">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
           {{ champEnEdition ? 'Modifier le champ' : 'Nouveau champ' }}
         </v-card-title>
@@ -428,7 +428,7 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-4 border-t">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogChamp = false; reinitialiserDialogChamp()">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogChamp = false; reinitialiserDialogChamp()">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"
@@ -445,9 +445,9 @@ onMounted(() => void charger())
 
     <!-- Modale Confirmation Suppression Étape -->
     <v-dialog v-model="dialogSupprimerEtape" max-width="450">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
-          <div class="bg-error-lighten-5 rounded-lg pa-2 mr-3">
+          <div class="icon-box icon-box-error pa-2 mr-3">
             <Trash2 :size="24" class="text-error" />
           </div>
           Supprimer l'étape ?
@@ -462,7 +462,7 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-2">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogSupprimerEtape = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogSupprimerEtape = false">Annuler</v-btn>
           <v-btn
             color="error"
             variant="flat"
@@ -478,9 +478,9 @@ onMounted(() => void charger())
 
     <!-- Modale Confirmation Suppression Champ -->
     <v-dialog v-model="dialogSupprimerChamp" max-width="450">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
-          <div class="bg-error-lighten-5 rounded-lg pa-2 mr-3">
+          <div class="icon-box icon-box-error pa-2 mr-3">
             <Trash2 :size="24" class="text-error" />
           </div>
           Supprimer le champ ?
@@ -495,7 +495,7 @@ onMounted(() => void charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-2">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogSupprimerChamp = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogSupprimerChamp = false">Annuler</v-btn>
           <v-btn
             color="error"
             variant="flat"

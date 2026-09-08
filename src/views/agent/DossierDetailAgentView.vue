@@ -18,7 +18,7 @@ import {
   ArrowRightLeft,
 } from '@lucide/vue'
 
-import { ouvrirFichierValeur } from '@/api/dossiers'
+import { ouvrirFichierValeurSurf as ouvrirFichierValeur } from '@/api/dossiers'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { formaterDate } from '@/utils/format'
 import { useDossierAgent } from '@/composables/useDossierAgent'
@@ -65,20 +65,20 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <v-btn variant="text" color="primary" class="mb-6 font-weight-bold px-0 hover-lift-left" @click="router.back()">
+    <v-btn variant="text" color="primary" class="mb-6 font-weight-bold px-0" @click="router.back()">
       <ArrowLeft :size="20" class="mr-2" /> Retour à la liste
     </v-btn>
 
-    <v-alert v-if="dossiers.erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
+    <v-alert v-if="dossiers.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ dossiers.erreur }}
     </v-alert>
 
     <template v-if="dossiers.detail">
       <!-- En-tête du dossier -->
-      <v-card class="rounded-xl elevation-2 mb-6 border overflow-hidden">
+      <v-card class="glass-panel mb-6 overflow-hidden">
         <v-card-title class="pa-6 border-b bg-surface-variant d-flex align-center flex-wrap gap-4">
           <div class="d-flex align-center">
-            <div class="icon-box bg-white text-primary rounded-circle pa-2 mr-4 elevation-1">
+            <div class="icon-box bg-surface text-primary rounded-circle pa-2 mr-4 elevation-1">
               <FileText :size="24" />
             </div>
             <span class="font-display text-h5 font-weight-bold">{{ dossiers.detail.reference }}</span>
@@ -92,7 +92,7 @@ onMounted(async () => {
             {{ LIBELLES_STATUT[dossiers.detail.statut] }}
           </v-chip>
           
-          <v-chip variant="tonal" color="primary-darken-1" size="small" class="font-weight-bold text-uppercase">
+          <v-chip variant="tonal" color="primary" size="small" class="font-weight-bold text-uppercase">
             V {{ dossiers.detail.version }}
           </v-chip>
           
@@ -192,14 +192,14 @@ onMounted(async () => {
       </v-card>
 
       <!-- Données KYC -->
-      <v-card class="rounded-xl elevation-2 border overflow-hidden">
+      <v-card class="glass-panel overflow-hidden">
         <v-card-title class="pa-6 border-b bg-surface-variant font-weight-bold d-flex align-center">
           <FileText :size="20" class="text-primary mr-3" />
           Données soumises par l'investisseur
         </v-card-title>
         <v-card-text class="pa-0">
           <div v-if="!dossiers.detail.valeurs_champs.length" class="pa-8 text-center bg-surface-variant">
-            <FileText :size="48" class="text-grey-lighten-1 mb-4" />
+            <FileText :size="48" class="text-medium-emphasis mb-4" />
             <div class="text-body-1 text-medium-emphasis">Aucune donnée n'a été saisie dans ce dossier pour le moment.</div>
           </div>
           
@@ -240,9 +240,9 @@ onMounted(async () => {
                         <img
                           :src="valeur.fichier"
                           :alt="nomDuChamp(valeur.champ)"
-                          class="selfie-agent rounded-lg elevation-2 mb-3"
+                          class="selfie-agent rounded-lg mb-3"
                         />
-                        <div class="overlay-icon bg-surface rounded-circle elevation-2 pa-2 position-absolute">
+                        <div class="overlay-icon bg-surface rounded-circle shadow-sm pa-2 position-absolute">
                           <Camera :size="16" class="text-primary" />
                         </div>
                       </div>
@@ -292,7 +292,7 @@ onMounted(async () => {
                 </td>
                 
                 <td class="px-6 py-4">
-                  <div v-if="valeur.commentaire_agent" class="bg-warning-lighten-5 text-warning-darken-2 pa-3 rounded-lg border border-warning-lighten-3 text-body-2">
+                  <div v-if="valeur.commentaire_agent" class="encart-commentaire-agent pa-3 rounded-lg text-body-2">
                     <div class="font-weight-bold d-flex align-center mb-1">
                       <MessageSquare :size="14" class="mr-2" /> Note de correction :
                     </div>
@@ -405,25 +405,20 @@ onMounted(async () => {
 }
 
 .table-row {
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .table-row:hover {
-  background-color: rgba(var(--v-theme-primary), 0.015);
+  background-color: rgba(var(--v-theme-primary), 0.04);
 }
 
 .table-row td {
   border-bottom: 1px solid rgb(var(--v-theme-outline));
 }
 
-.hover-lift-left {
-  transition: transform 0.2s ease;
-}
-.hover-lift-left:hover {
-  transform: translateX(-4px);
-}
-
-.shadow-sm {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+.encart-commentaire-agent {
+  background: rgba(var(--v-theme-warning), 0.08);
+  border-left: 3px solid rgb(var(--v-theme-warning));
+  color: rgb(var(--v-theme-on-surface));
 }
 </style>

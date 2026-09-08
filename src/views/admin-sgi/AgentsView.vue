@@ -63,7 +63,7 @@ onMounted(() => void agents.charger())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <Users :size="28" />
           </div>
           Gestion des Agents
@@ -83,7 +83,7 @@ onMounted(() => void agents.charger())
       {{ agents.erreur }}
     </v-alert>
 
-    <v-card class="rounded-xl elevation-2 overflow-hidden border">
+    <v-card class="glass-panel overflow-hidden">
       <v-progress-linear v-if="agents.chargement" indeterminate color="primary" />
       
       <v-alert
@@ -109,7 +109,7 @@ onMounted(() => void agents.charger())
           <tr v-for="agent in agents.liste" :key="agent.id" class="table-row">
             <td class="px-6 py-4">
               <div class="d-flex align-center">
-                <v-avatar color="primary-lighten-4" size="40" class="mr-3 text-primary font-weight-bold">
+                <v-avatar color="primary" variant="tonal" size="40" class="mr-3 font-weight-bold">
                   {{ (agent.prenom?.[0] || '') + (agent.nom?.[0] || agent.email[0]).toUpperCase() }}
                 </v-avatar>
                 <div>
@@ -159,7 +159,7 @@ onMounted(() => void agents.charger())
 
     <!-- Modale Création Agent -->
     <v-dialog v-model="dialogCreation" max-width="500">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
           Nouveau collaborateur
         </v-card-title>
@@ -223,7 +223,7 @@ onMounted(() => void agents.charger())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-4 border-t">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogCreation = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogCreation = false">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"
@@ -240,11 +240,11 @@ onMounted(() => void agents.charger())
 
     <!-- Modale Résultat Création -->
     <v-dialog :model-value="compteCree !== null" max-width="450" @update:model-value="(v) => !v && (compteCree = null)" persistent>
-      <v-card class="rounded-xl elevation-24">
-        <div class="bg-success-lighten-5 pa-6 d-flex flex-column align-center text-center border-b">
+      <v-card class="glass-panel">
+        <div class="pa-6 d-flex flex-column align-center text-center border-b" style="background: rgba(var(--v-theme-success), 0.08);">
           <ShieldCheck :size="48" class="text-success mb-3" />
-          <h2 class="text-h5 font-weight-bold text-success-darken-1 mb-1">Accès Sécurisé Généré</h2>
-          <p class="text-caption text-success-darken-2 mb-0">
+          <h2 class="text-h5 font-weight-bold text-success mb-1">Accès Sécurisé Généré</h2>
+          <p class="text-caption text-success mb-0">
             Communiquez ces identifiants à l'agent de façon sécurisée.<br/>
             <strong>Le mot de passe ne sera plus jamais affiché.</strong>
           </p>

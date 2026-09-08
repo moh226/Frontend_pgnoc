@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { AlertCircle, AlertTriangle, ArrowLeft, BadgeCheck, Building2, Clock, Download, Edit3, FileSignature, FileText } from '@lucide/vue'
 
-import { etapesKyc, genererOtp, ouvrirFichierValeur, signerDossier } from '@/api/dossiers'
+import { etapesKyc, genererOtp, ouvrirFichierValeurSurf as ouvrirFichierValeur, signerDossier } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import { ficheSgi } from '@/api/sgi'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
@@ -104,6 +104,14 @@ onMounted(async () => {
 
     <v-alert v-if="dossiers.erreur" type="error" variant="tonal" class="mb-4">
       {{ dossiers.erreur }}
+    </v-alert>
+
+    <!-- Échec de génération du code OTP : visible même si le dialog n'a pas pu s'ouvrir -->
+    <v-alert v-if="erreurOtp && !dialogOtp" type="error" variant="tonal" border="start" class="mb-4" closable>
+      <div class="d-flex align-center flex-wrap ga-3">
+        <span>Code de signature non généré — {{ erreurOtp }}</span>
+        <v-btn variant="tonal" size="small" :loading="otpEnCours" @click="ouvrirOtp">Réessayer</v-btn>
+      </div>
     </v-alert>
 
     <template v-if="dossiers.detail">
@@ -303,9 +311,7 @@ onMounted(async () => {
                           color="primary"
                           size="small"
                           @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
-                          href="#"
-                          target="_blank"
-                          class="btn-sm hover-lift"
+                          class="btn-sm"
                         >
                           <Download :size="14" class="mr-1" /> Document
                         </v-btn>

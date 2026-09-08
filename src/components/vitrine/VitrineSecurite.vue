@@ -10,10 +10,7 @@ defineProps<{
 
 <template>
   <section v-reveal class="section-vitrine zone-securite" :class="{ 'apercu-masque': masque }">
-    <span class="securite-mesh mesh-un"></span>
-    <span class="securite-mesh mesh-deux"></span>
-    <span class="anneau-struct"></span>
-    <header class="en-tete-section">
+    <header class="en-tete-section en-tete-claire">
       <span class="sur-titre">Sécurité & conformité</span>
       <h2 class="font-display">{{ bloc.titre }}</h2>
       <span class="ornement-titre"></span>
@@ -32,45 +29,31 @@ defineProps<{
 
 <style scoped>
 .zone-securite {
-  background:
-    radial-gradient(circle at 85% 10%, rgba(var(--v-theme-secondary), 0.14) 0%, transparent 40%),
-    linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1)) 0%, rgb(var(--v-theme-primary)) 65%, rgb(var(--v-theme-accent)) 160%);
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-on-primary));
+}
+
+/* En-tête clair sur fond bleu */
+.en-tete-claire .sur-titre {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgb(var(--v-theme-secondary));
+}
+
+.en-tete-claire .sur-titre::before {
+  background: rgb(var(--v-theme-secondary));
+}
+
+.en-tete-claire h2 {
   color: #fff;
 }
 
-/* Meshes lumineux */
-.securite-mesh {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
+.en-tete-claire .ornement-titre {
+  background: rgb(var(--v-theme-secondary));
 }
 
-.mesh-un {
-  width: 46vw;
-  height: 46vw;
-  top: -18%;
-  left: -12%;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary-lighten-1), 0.22) 0%, transparent 65%);
-}
-
-.mesh-deux {
-  width: 40vw;
-  height: 40vw;
-  bottom: -22%;
-  right: -8%;
-  background: radial-gradient(circle, rgba(var(--v-theme-accent), 0.2) 0%, transparent 65%);
-}
-
-.anneau-struct {
-  position: absolute;
-  right: -120px;
-  top: -120px;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(255, 255, 255, 0.12);
-  pointer-events: none;
+.en-tete-claire .ornement-titre::after {
+  background: rgb(var(--v-theme-secondary));
 }
 
 .grille-cartes {
@@ -83,21 +66,19 @@ defineProps<{
   z-index: 2;
 }
 
+/* Cartes blanches sur fond bleu */
 .carte-securite {
   padding: 30px 26px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background-color 0.3s ease;
+  border-radius: 16px;
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-outline));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .carte-securite:hover {
-  transform: translateY(-6px);
-  border-color: rgba(var(--v-theme-secondary), 0.55);
-  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
 .icon-wrapper {
@@ -106,46 +87,44 @@ defineProps<{
   justify-content: center;
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: 14px;
   margin-bottom: 22px;
-  transition: transform 0.3s ease;
+  transition: transform 0.18s ease;
 }
 
 .carte-securite:hover .icon-wrapper {
   transform: scale(1.07) rotate(-4deg);
 }
 
+/* Teintes à plat : 12 % de la couleur de marque */
 .teinte-1 {
-  background: linear-gradient(135deg, rgba(var(--v-theme-accent), 0.4), rgba(var(--v-theme-accent), 0.1));
-  border: 1px solid rgba(var(--v-theme-accent), 0.4);
+  background: rgba(var(--v-theme-success), 0.12);
 }
 
-.teinte-1 .icone-securite { color: #7ef0b3; }
+.teinte-1 .icone-securite { color: rgb(var(--v-theme-success)); }
 
 .teinte-2 {
-  background: linear-gradient(135deg, rgba(var(--v-theme-secondary), 0.35), rgba(var(--v-theme-secondary), 0.08));
-  border: 1px solid rgba(var(--v-theme-secondary), 0.4);
+  background: rgba(var(--v-theme-secondary), 0.16);
 }
 
-.teinte-2 .icone-securite { color: rgb(var(--v-theme-secondary)); }
+.teinte-2 .icone-securite { color: rgb(var(--v-theme-on-secondary)); }
 
 .teinte-3 {
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary-lighten-1), 0.4), rgba(var(--v-theme-primary-lighten-1), 0.08));
-  border: 1px solid rgba(var(--v-theme-primary-lighten-1), 0.45);
+  background: rgba(var(--v-theme-primary), 0.12);
 }
 
-.teinte-3 .icone-securite { color: #cddfff; }
+.teinte-3 .icone-securite { color: rgb(var(--v-theme-primary)); }
 
 .carte-securite h3 {
   font-size: 19px;
   font-weight: 700;
   margin: 0 0 12px;
-  color: #fff;
+  color: rgb(var(--v-theme-on-surface));
   letter-spacing: -0.01em;
 }
 
 .carte-securite p {
-  color: rgba(255, 255, 255, 0.68);
+  color: rgb(var(--v-theme-on-surface-variant));
   line-height: 1.65;
   font-size: 15px;
   margin: 0;

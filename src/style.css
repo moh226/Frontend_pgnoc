@@ -1,15 +1,19 @@
+/* ============================================================
+   PGNOC-TI — SYSTÈME DE DESIGN « CLARTÉ UEMOA »
+   Plat et chaleureux. 4 couleurs de marque + neutres.
+   Bleu #0C3C94 · Or #F7C600 · Vert #009639 · Rouge #E4002B
+   Rayons : 8px (champs) · 12px (cartes, modals) · 999px (pastilles)
+   Ombres : repos 0 1px 2px · survol 0 6px 16px
+   ============================================================ */
+
+/* ---------- Base ---------- */
 html,
 body {
-  font-family:
-    'Inter',
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   background-color: rgb(var(--v-theme-background));
   color: rgb(var(--v-theme-on-surface));
-  transition: background-color 0.3s ease, color 0.3s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -22,17 +26,15 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* Améliorer la lisibilité du texte medium-emphasis */
+/* ---------- Lisibilité ---------- */
 .text-medium-emphasis {
   opacity: 0.82 !important;
 }
 
-/* Spacing et lisibilité pour les contenus de données */
 .text-body-1, .text-body-2 {
   line-height: 1.65;
 }
 
-/* Tableaux — améliorer la lisibilité des cellules */
 .v-table th {
   font-size: 0.8125rem !important;
   letter-spacing: 0.04em;
@@ -44,7 +46,6 @@ body {
   line-height: 1.55;
 }
 
-/* List items — meilleure hauteur de ligne */
 .v-list-item-title {
   line-height: 1.4;
 }
@@ -54,57 +55,148 @@ body {
   font-size: 0.875rem !important;
 }
 
-/* Alerts — meilleur line-height */
 .v-alert {
   line-height: 1.6;
 }
 
-/* Animations de transition pour Vuetify */
-.v-application {
-  transition: background-color 0.3s ease, color 0.3s ease !important;
-}
-.v-card, .v-sheet, .v-app-bar, .v-navigation-drawer {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+/* ---------- Focus clavier (accessibilité) ---------- */
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible,
+summary:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
 }
 
-/* -------------------------------------
-   UTILITIES PROFESSIONNELS & INSTITUTIONNELS
-   ------------------------------------- */
+/* ---------- Carte standard — une seule recette ---------- */
+.v-card.v-card {
+  border-radius: 12px;
+}
 
 .glass-panel {
-  /* On garde le nom de classe pour ne pas tout casser, mais on retire l'effet "verre" */
   background: rgb(var(--v-theme-surface)) !important;
   border: 1px solid rgb(var(--v-theme-outline)) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+/* ---------- Survol « coussin » ---------- */
+.hover-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.45);
+}
+
+/* ---------- Champs de formulaire ---------- */
+.premium-input .v-field,
+.glass-input .v-field {
+  border-radius: 8px;
+  background-color: rgb(var(--v-theme-surface));
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.premium-input .v-field:hover,
+.glass-input .v-field:hover {
+  border-color: rgb(var(--v-theme-primary));
+}
+
+.glass-input .v-field--focused {
+  border-color: rgb(var(--v-theme-primary));
+  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+  background: rgb(var(--v-theme-surface));
+}
+
+/* ---------- Carte KPI — fond neutre, couleur dans l'icône ---------- */
+.kpi-card {
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-outline));
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  height: 100%;
+}
+
+/* ---------- Icône encadrée — teinte pleine à 12 % ---------- */
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(var(--v-theme-primary), 0.12);
+  color: rgb(var(--v-theme-primary));
+}
+
+.icon-box-success {
+  background: rgba(var(--v-theme-success), 0.12);
+  color: rgb(var(--v-theme-success));
+}
+
+.icon-box-error {
+  background: rgba(var(--v-theme-error), 0.12);
+  color: rgb(var(--v-theme-error));
+}
+
+.icon-box-warning {
+  background: rgba(var(--v-theme-warning), 0.14);
+  color: rgb(var(--v-theme-warning));
+}
+
+.icon-box-info {
+  background: rgba(var(--v-theme-info), 0.12);
+  color: rgb(var(--v-theme-info));
+}
+
+/* ---------- Bouton principal ---------- */
+.btn-principal {
+  height: 44px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   border-radius: 8px;
 }
 
-.glass-input :deep(.v-field) {
-  /* Idem : on garde la classe mais avec un style input moderne plat */
-  background: rgb(var(--v-theme-surface-variant)) !important;
-  border: 1px solid rgb(var(--v-theme-outline)) !important;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+/* ---------- Ombres ---------- */
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 
-.glass-input :deep(.v-field--focused) {
-  border-color: rgb(var(--v-theme-primary)) !important;
-  box-shadow: 0 0 0 1px rgb(var(--v-theme-primary)) !important;
-  background: rgb(var(--v-theme-surface)) !important;
+.tracking-wider {
+  letter-spacing: 0.05em !important;
 }
 
-/* Micro-animations douces pour un rendu pro */
-.hover-lift {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
+/* ---------- Lignes cliquables ---------- */
+.hover-row,
+.ligne-cliquable {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05) !important;
+
+.hover-row:hover,
+.ligne-cliquable:hover {
+  background-color: rgba(var(--v-theme-primary), 0.045);
+}
+
+/* ---------- États vides ---------- */
+.empty-state {
+  text-align: center;
+  padding: 56px 24px;
+}
+
+.empty-state-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
 }
 
 /* -------------------------------------
    VITRINE PUBLIQUE (page d'accueil)
-   Sections partagées : en-tête, ornement, conteneur
    ------------------------------------- */
 
 .section-vitrine {
@@ -140,8 +232,7 @@ body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgb(var(--v-theme-accent));
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-accent), 0.12);
+  background: rgb(var(--v-theme-secondary));
 }
 
 .en-tete-section h2 {
@@ -160,7 +251,7 @@ body {
   height: 4px;
   margin: 0 auto;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-accent)));
+  background: rgb(var(--v-theme-primary));
   overflow: visible;
 }
 
@@ -174,7 +265,6 @@ body {
   height: 12px;
   border-radius: 3px;
   background: rgb(var(--v-theme-secondary));
-  box-shadow: 0 0 0 4px rgba(var(--v-theme-secondary), 0.18);
 }
 
 /* Apparition progressive des sections au défilement (directive v-reveal) */
@@ -197,6 +287,12 @@ body {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .hover-lift,
+  .hover-lift:hover {
+    transition: none;
+    transform: none;
   }
 }
 

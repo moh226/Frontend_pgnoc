@@ -209,7 +209,7 @@ function continuerAvecGoogle() {
 .auth-page {
   min-height: 100dvh;
   display: flex;
-  background: linear-gradient(135deg, #0C3C94 0%, #091E4D 35%, #D6DEE8 65%, rgb(var(--v-theme-surface)) 100%);
+  background: #0C3C94;
   color: #fff;
 }
 
@@ -318,8 +318,8 @@ function continuerAvecGoogle() {
   justify-content: center;
   padding: 48px;
   background: rgb(var(--v-theme-surface));
-  border-radius: 24px 0 0 24px;
-  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
+  border-radius: 12px 0 0 12px;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
 }
 
 .form-card {

@@ -112,7 +112,7 @@ async function validerSignature() {
         </v-card-title>
         
         <v-card-text class="px-6 py-6 text-center">
-          <div v-if="otpEnCours && !codeOtpGenere" class="py-8">
+          <div v-if="otpEnCours && !expirationOtp" class="py-8">
             <v-progress-circular indeterminate color="primary" size="48" class="mb-4" />
             <div class="text-body-2 text-medium-emphasis">Génération de votre code sécurisé...</div>
           </div>
@@ -120,24 +120,32 @@ async function validerSignature() {
             <v-alert v-if="erreurOtp" type="error" variant="tonal" class="mb-4 text-left border-l-4">
               {{ erreurOtp }}
             </v-alert>
-            <template v-if="codeOtpGenere">
-              <p class="text-body-2 mb-2">
-                Un code de vérification vient d'être généré. Dans un environnement de production, ce code serait envoyé par SMS/Email.
+            <template v-if="expirationOtp">
+              <template v-if="codeOtpGenere">
+                <p class="text-body-2 mb-2">
+                  Un code de vérification vient d'être généré (environnement de développement) :
+                </p>
+                <div class="glass-input pa-4 rounded-lg bg-surface-variant text-center my-4 code-box border">
+                  <span class="font-weight-black text-warning text-h4 font-display tracking-widest">{{ codeOtpGenere }}</span>
+                </div>
+              </template>
+              <p v-else class="text-body-2 mb-2">
+                Un code de vérification à 6 chiffres vient de vous être envoyé par email.
+                Saisissez-le ci-dessous pour confirmer votre signature.
               </p>
-              <div class="glass-input pa-4 rounded-lg bg-surface-variant text-center my-4 code-box border">
-                <span class="font-weight-black text-warning text-h4 font-display tracking-widest">{{ codeOtpGenere }}</span>
-              </div>
               <p v-if="expirationOtp" class="text-caption text-medium-emphasis mb-6">
                 Expire le : {{ new Date(expirationOtp).toLocaleString() }}
               </p>
-              
+
               <v-text-field
                 v-model="saisieOtp"
-                label="Saisissez le code OTP"
+                label="Saisissez le code reçu"
                 variant="outlined"
                 class="premium-input mt-2"
                 hide-details="auto"
-                autocomplete="off"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                maxlength="6"
                 @keyup.enter="validerSignature"
               />
             </template>
@@ -152,7 +160,7 @@ async function validerSignature() {
             variant="flat"
             class="px-6 font-weight-bold shadow-sm"
             :disabled="!saisieOtp.trim() || otpEnCours"
-            :loading="otpEnCours && !!codeOtpGenere"
+            :loading="otpEnCours"
             @click="validerSignature"
           >
             Confirmer et Signer

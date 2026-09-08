@@ -66,7 +66,7 @@ function etapesVisibles(): EtapeKycAdmin[] {
 
         <div v-for="etape in etapesVisibles()" :key="etape.id" class="mb-8 bg-surface rounded-xl border overflow-hidden">
           <div class="bg-surface-variant px-6 py-4 border-b d-flex align-center">
-            <div class="step-badge-small bg-primary text-white mr-3 font-weight-bold flex-shrink-0 d-flex align-center justify-center">
+            <div class="step-badge-small bg-primary text-on-primary mr-3 font-weight-bold flex-shrink-0 d-flex align-center justify-center">
               {{ etape.ordre }}
             </div>
             <div class="text-h6 font-display font-weight-bold">{{ etape.nom }}</div>

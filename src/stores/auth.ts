@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 import { connexion, inscription } from '@/api/auth'
 import { rafraichirJeton } from '@/api/client'
+import { recupererMonProfil } from '@/api/profil'
 import type { Identifiants, Jetons, PayloadInscription, RoleCode, UtilisateurPublic } from '@/types'
 import { jwtEstExpire, roleDepuisJwt } from '@/utils/jwt'
 
@@ -27,6 +28,22 @@ function lireStockage(): SessionStockee | null {
 }
 
 let promesseInit: Promise<void> | null = null
+
+// Anti-ressuscitation de session : un refresh token parti en vol AVANT
+// un deconnecter() ne doit jamais réécrire la session fermée à son
+// retour (sinon un logout sur un ordinateur partagé est silencieusement
+// annulé). `deconnecter` marque la fermeture ; `fixerJetons` (seul
+// chemin d'écriture du refresh) la respecte ; `seConnecter` la lève.
+let sessionFermee = false
+
+function ecrireStockage(session: SessionStockee): void {
+  try {
+    localStorage.setItem(CLE_STOCKAGE, JSON.stringify(session))
+  } catch {
+    // Stockage indisponible (quota, navigation privée) : la session
+    // reste en mémoire, on ne fait pas échouer la connexion.
+  }
+}
 
 export const useAuthStore = defineStore('auth', {
   state: (): SessionStockee => ({
@@ -68,23 +85,26 @@ export const useAuthStore = defineStore('auth', {
             this.deconnecter()
           }
         }
+        // Session sans profil persisté (ex. anciennes sessions Google) :
+        // on tente de le recharger silencieusement.
+        if (this.access && !this.utilisateur) {
+          await this.chargerProfil()
+        }
       }
     },
 
     persister() {
-      localStorage.setItem(
-        CLE_STOCKAGE,
-        JSON.stringify({
-          access: this.access,
-          refresh: this.refresh,
-          utilisateur: this.utilisateur,
-          role: this.role,
-        }),
-      )
+      ecrireStockage({
+        access: this.access,
+        refresh: this.refresh,
+        utilisateur: this.utilisateur,
+        role: this.role,
+      })
     },
 
     async seConnecter(identifiants: Identifiants) {
       const jetons: Jetons = await connexion(identifiants)
+      sessionFermee = false
       this.access = jetons.access
       this.refresh = jetons.refresh
       this.utilisateur = jetons.utilisateur ?? null
@@ -97,18 +117,52 @@ export const useAuthStore = defineStore('auth', {
     },
 
     fixerJetons(access: string, refresh: string | null) {
+      // Un refresh parti avant un deconnecter() ne doit jamais
+      // ressusciter la session fermée.
+      if (sessionFermee) return
       this.access = access
       this.refresh = refresh
       this.role = roleDepuisJwt(access) ?? this.role
       this.persister()
     },
 
+    /** Lève le verrou de fermeture (connexion OAuth après un logout). */
+    reouvrirSession() {
+      sessionFermee = false
+    },
+
+    /** Charge (ou recharge) le profil de l'utilisateur connecté depuis l'API. */
+    async chargerProfil() {
+      if (!this.access) return
+      try {
+        const profil = await recupererMonProfil()
+        this.utilisateur = {
+          id: profil.id,
+          email: profil.email,
+          prenom: profil.prenom,
+          nom: profil.nom,
+          role: profil.role,
+          date_joined: profil.date_joined,
+        }
+        this.role = profil.role ?? this.role
+        this.persister()
+      } catch {
+        // Profil indisponible : la session reste valide (rôle issu du JWT),
+        // on ne bloque pas la navigation.
+      }
+    },
+
     deconnecter() {
+      sessionFermee = true
       this.access = null
       this.refresh = null
       this.utilisateur = null
       this.role = null
-      localStorage.removeItem(CLE_STOCKAGE)
+      try {
+        localStorage.removeItem(CLE_STOCKAGE)
+      } catch {
+        // Stockage indisponible : rien à nettoyer.
+      }
     },
   },
 })

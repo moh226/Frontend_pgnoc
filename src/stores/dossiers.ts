@@ -23,6 +23,9 @@ export const useDossiersStore = defineStore('dossiers', {
     erreur: '',
     dashboard: null as DashboardInvestisseur | null,
     dashboardChargement: false,
+    // Numéro de séquence du dernier chargerDetail demandé : les
+    // réponses tardives d'un chargement précédent sont ignorées.
+    _sequenceDetail: 0,
   }),
 
   getters: {
@@ -104,22 +107,34 @@ export const useDossiersStore = defineStore('dossiers', {
     },
 
     async chargerDetail(id: string) {
+      const sequence = ++this._sequenceDetail
+      this.detail = null
       this.detailChargement = true
       this.erreur = ''
       try {
-        this.detail = await detailDossier(id)
+        const detail = await detailDossier(id)
+        // Navigation rapide A→B : seule la réponse du dernier chargement
+        // demandé fait foi (les réponses tardives sont ignorées).
+        if (sequence === this._sequenceDetail) {
+          this.detail = detail
+        }
       } catch (cause) {
-        this.erreur = extraireMessageErreur(cause)
+        if (sequence === this._sequenceDetail) {
+          this.erreur = extraireMessageErreur(cause)
+        }
       } finally {
-        this.detailChargement = false
+        if (sequence === this._sequenceDetail) {
+          this.detailChargement = false
+        }
       }
     },
 
     async prendreEnCharge(id: string) {
       this.erreur = ''
       try {
-        this.detail = await prendreEnCharge(id)
-        await this.chargerListe()
+        const detail = await prendreEnCharge(id)
+        this.detail = detail
+        this._rafraichirItemListe(detail)
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
         throw cause
@@ -146,8 +161,10 @@ export const useDossiersStore = defineStore('dossiers', {
     async deciderDossier(id: string, decision: 'valider' | 'rejeter', motif = '') {
       this.erreur = ''
       try {
-        this.detail = decision === 'valider' ? await validerDossier(id) : await rejeterDossier(id, motif)
-        await this.chargerListe()
+        const detail =
+          decision === 'valider' ? await validerDossier(id) : await rejeterDossier(id, motif)
+        this.detail = detail
+        this._rafraichirItemListe(detail)
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
         throw cause
@@ -157,11 +174,26 @@ export const useDossiersStore = defineStore('dossiers', {
     async soumettre(id: string) {
       this.erreur = ''
       try {
-        this.detail = await soumettreDossier(id)
-        await this.chargerListe()
+        const detail = await soumettreDossier(id)
+        this.detail = detail
+        this._rafraichirItemListe(detail)
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
         throw cause
+      }
+    },
+
+    /** Remplace l'élément de `liste` par le détail à jour (sans recharger
+     *  toutes les pages : une mutation = une requête, pas cinquante). */
+    _rafraichirItemListe(detail: DossierDetail) {
+      const index = this.liste.findIndex((d) => d.id === detail.id)
+      if (index !== -1) {
+        this.liste[index] = {
+          ...this.liste[index],
+          statut: detail.statut,
+          progression_pct: detail.progression_pct,
+          date_soumission: detail.date_soumission,
+        }
       }
     },
   },

@@ -69,9 +69,9 @@ const activePanel = ref<number | null>(0)
 .faq-panel {
   background: rgb(var(--v-theme-surface)) !important;
   border: 1px solid rgb(var(--v-theme-outline)) !important;
-  border-radius: 18px !important;
+  border-radius: 12px !important;
   overflow: hidden;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .faq-panel:hover {
@@ -80,7 +80,7 @@ const activePanel = ref<number | null>(0)
 
 .faq-panel--active {
   border-color: rgba(var(--v-theme-primary), 0.4) !important;
-  box-shadow: 0 12px 32px rgba(var(--v-theme-primary), 0.1);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .faq-titre {
@@ -99,13 +99,12 @@ const activePanel = ref<number | null>(0)
   justify-content: center;
   width: 34px;
   height: 34px;
-  border-radius: 12px;
+  border-radius: 10px;
   flex-shrink: 0;
   font-size: 15px;
   font-weight: 800;
   color: rgb(var(--v-theme-on-secondary));
-  background: linear-gradient(135deg, rgb(var(--v-theme-secondary)), rgb(var(--v-theme-secondary-darken-1)));
-  box-shadow: 0 6px 14px rgba(var(--v-theme-secondary), 0.3);
+  background: rgb(var(--v-theme-secondary));
 }
 
 .faq-texte {

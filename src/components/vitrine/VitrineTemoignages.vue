@@ -20,7 +20,6 @@ function initiales(nom: string): string {
 
 <template>
   <section v-reveal class="section-vitrine zone-temoignages" :class="{ 'apercu-masque': masque }">
-    <span class="bordure-halo"></span>
     <header class="en-tete-section">
       <span class="sur-titre">Ils nous font confiance</span>
       <h2 class="font-display">{{ bloc.titre }}</h2>
@@ -44,21 +43,7 @@ function initiales(nom: string): string {
 
 <style scoped>
 .zone-temoignages {
-  background:
-    radial-gradient(circle at 8% 20%, rgba(var(--v-theme-primary), 0.07) 0%, transparent 45%),
-    radial-gradient(circle at 92% 80%, rgba(var(--v-theme-accent), 0.06) 0%, transparent 45%),
-    rgb(var(--v-theme-background));
-}
-
-.bordure-halo {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
-  width: 70%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(var(--v-theme-primary), 0.3), transparent);
-  pointer-events: none;
+  background: rgb(var(--v-theme-surface));
 }
 
 .grille-temoignages {
@@ -71,31 +56,21 @@ function initiales(nom: string): string {
   z-index: 2;
 }
 
-/* Liseré dégradé autour des cartes */
 .carte-temoignage {
   position: relative;
   margin: 0;
   padding: 34px 30px 26px;
-  border-radius: 24px;
+  border-radius: 16px;
   background: rgb(var(--v-theme-surface));
-  background-clip: padding-box;
-  border: 1.5px solid transparent;
-  box-shadow: 0 14px 34px rgba(var(--v-theme-primary), 0.07);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-}
-
-.carte-temoignage::before {
-  content: '';
-  position: absolute;
-  inset: -1.5px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.5), rgba(var(--v-theme-secondary), 0.6), rgba(var(--v-theme-accent), 0.5));
-  z-index: -1;
+  border: 1px solid rgb(var(--v-theme-outline));
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .carte-temoignage:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 22px 46px rgba(var(--v-theme-primary), 0.14);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.35);
 }
 
 .guillemet {
@@ -105,19 +80,8 @@ function initiales(nom: string): string {
   font-size: 68px;
   line-height: 1;
   font-weight: 900;
-  /* Rechute solide : or si le dégradé de texte est indisponible */
-  color: rgb(var(--v-theme-secondary, 247 198 0));
+  color: rgb(var(--v-theme-secondary));
   pointer-events: none;
-}
-
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .guillemet {
-    background: linear-gradient(135deg, rgb(var(--v-theme-secondary, 247 198 0)), rgb(var(--v-theme-secondary-darken-1, 198 158 0)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
 }
 
 .carte-temoignage p {
@@ -146,9 +110,8 @@ function initiales(nom: string): string {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.02em;
-  color: #fff;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-accent)));
-  box-shadow: 0 8px 18px rgba(var(--v-theme-primary), 0.3);
+  color: rgb(var(--v-theme-on-primary));
+  background: rgb(var(--v-theme-primary));
   flex-shrink: 0;
 }
 

@@ -27,9 +27,7 @@ defineProps<{
 
 <style scoped>
 .zone-etapes {
-  background:
-    radial-gradient(circle at 90% 15%, rgba(var(--v-theme-secondary), 0.08) 0%, transparent 45%),
-    rgb(var(--v-theme-background));
+  background: rgb(var(--v-theme-surface));
 }
 
 .bento-etapes {
@@ -44,18 +42,18 @@ defineProps<{
 .carte-etape {
   position: relative;
   padding: 30px 26px 28px;
-  border-radius: 22px;
+  border-radius: 16px;
   background: rgb(var(--v-theme-surface));
   border: 1px solid rgb(var(--v-theme-outline));
-  box-shadow: 0 12px 30px rgba(var(--v-theme-primary), 0.06);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .carte-etape:hover {
-  transform: translateY(-6px);
-  border-color: rgba(var(--v-theme-primary), 0.3);
-  box-shadow: 0 20px 44px rgba(var(--v-theme-primary), 0.12);
+  transform: translateY(-4px);
+  border-color: rgba(var(--v-theme-primary), 0.4);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
 }
 
 /* Numéro fantôme en filigrane */
@@ -66,12 +64,9 @@ defineProps<{
   font-size: 120px;
   font-weight: 900;
   line-height: 1;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.09) 0%, rgba(var(--v-theme-accent), 0.05) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: rgba(var(--v-theme-primary), 0.07);
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.18s ease;
 }
 
 .carte-etape:hover .numero-fantome {
@@ -85,13 +80,12 @@ defineProps<{
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 12px;
   margin-bottom: 20px;
   font-size: 18px;
   font-weight: 800;
-  color: #fff;
-  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, rgb(var(--v-theme-accent)) 100%);
-  box-shadow: 0 10px 22px rgba(var(--v-theme-primary), 0.3);
+  color: rgb(var(--v-theme-on-primary));
+  background: rgb(var(--v-theme-primary));
 }
 
 .carte-etape h3 {

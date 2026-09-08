@@ -158,15 +158,46 @@ export async function rejeterDossier(id: string, motif: string): Promise<Dossier
   return data
 }
 
+/**
+ * Ouvre le justificatif d'une valeur dans un nouvel onglet.
+ *
+ * Version « fire-and-forget » sûre pour les templates : l'échec est
+ * loggé en console (pas de promesse non gérée), l'onglet vierge ouvert
+ * au clic est refermé.
+ */
+export function ouvrirFichierValeurSurf(
+  dossierId: string,
+  valeurId: string,
+): void {
+  void ouvrirFichierValeur(dossierId, valeurId).catch((cause: unknown) => {
+    // eslint-disable-next-line no-console
+    console.error('Ouverture du justificatif impossible', cause)
+  })
+}
+
 export async function ouvrirFichierValeur(dossierId: string, valeurId: string): Promise<void> {
   // L'endpoint exige l'authentification : on passe par axios (Bearer)
   // pour obtenir l'URL presignée, puis on l'ouvre dans un onglet.
   // Un `href` direct vers l'endpoint échouerait en 401 (onglet sans
   // en-tête Authorization).
-  const { data } = await api.get<{ url_signee: string }>(
-    `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`,
-  )
-  window.open(data.url_signee, '_blank', 'noopener')
+  //
+  // Bloqueurs de popups : `window.open` APRÈS un await perd le
+  // user-gesture et est bloqué par Safari/Firefox. On ouvre donc
+  // l'onglet immédiatement (vierge), puis on y navigue quand l'URL
+  // signée arrive ; en cas d'échec, l'onglet est refermé.
+  const onglet = window.open('about:blank', '_blank')
+  try {
+    const { data } = await api.get<{ url_signee: string }>(
+      `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`,
+    )
+    if (onglet) {
+      onglet.location.href = data.url_signee
+      onglet.opener = null
+    }
+  } catch (cause) {
+    onglet?.close()
+    throw cause
+  }
 }
 
 export interface VerificationPreuveVie {

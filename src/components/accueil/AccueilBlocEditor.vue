@@ -11,7 +11,7 @@ import type {
 
 defineProps<{
   blocSelectionne: TypeBlocAccueil
-  hero: { cta_principal: string; lien_principal: string; cta_secondaire: string; lien_secondaire: string }
+  hero: { slogan: string; cta_principal: string; lien_principal: string; cta_secondaire: string; lien_secondaire: string }
   mentions: string[]
   nouvelleMention: string
   chiffres: LigneChiffre[]
@@ -54,6 +54,18 @@ function clearFile() {
   <!-- eslint-disable vue/no-mutating-props -->
   <!-- HERO -->
   <template v-if="blocSelectionne === 'HERO'">
+    <div class="ligne-champ">
+      <label class="etiquette-champ">Sous-titre (accroche)</label>
+      <v-textarea
+        v-model="hero.slogan"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+        rows="3"
+        auto-grow
+        placeholder="Proposition de valeur affichée sous le titre principal."
+      />
+    </div>
     <div class="ligne-champ">
       <label class="etiquette-champ">Bouton principal</label>
       <v-text-field v-model="hero.cta_principal" density="comfortable" variant="outlined" hide-details />

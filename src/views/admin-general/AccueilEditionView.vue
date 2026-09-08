@@ -60,7 +60,7 @@ onMounted(charger)
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <Globe :size="28" />
           </div>
           Page d'accueil
@@ -92,7 +92,7 @@ onMounted(charger)
 
     <v-row v-if="!chargement" class="align-stretch">
       <v-col cols="12" md="4" lg="3">
-        <v-card class="rounded-xl elevation-2 overflow-hidden border h-100">
+        <v-card class="glass-panel overflow-hidden h-100">
           <v-card-title class="font-weight-bold text-body-1 bg-surface-variant">
             Ordre des blocs
           </v-card-title>
@@ -132,7 +132,7 @@ onMounted(charger)
       </v-col>
 
       <v-col cols="12" md="8" lg="9">
-        <v-card v-if="blocSelectionne && blocCourant" class="rounded-xl elevation-2 overflow-hidden border">
+        <v-card v-if="blocSelectionne && blocCourant" class="glass-panel overflow-hidden">
           <v-card-title class="font-weight-bold bg-surface-variant d-flex align-center justify-space-between">
             <span class="d-flex align-center">
               <PencilLine :size="18" class="mr-2 text-primary" />
@@ -178,7 +178,7 @@ onMounted(charger)
           </v-card-actions>
         </v-card>
 
-        <v-card v-else class="rounded-xl elevation-2 border d-flex align-center justify-center pa-12 text-center h-100">
+        <v-card v-else class="glass-panel d-flex align-center justify-center pa-12 text-center h-100">
           <div>
             <ImagePlus :size="40" class="mx-auto mb-3 text-primary" />
             <p class="text-medium-emphasis">Sélectionnez un bloc dans la liste pour l'éditer.</p>

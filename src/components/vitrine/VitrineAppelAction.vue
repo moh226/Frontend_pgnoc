@@ -11,8 +11,6 @@ defineProps<{
 <template>
   <section v-reveal class="section-vitrine zone-cta" :class="{ 'apercu-masque': masque }">
     <div class="bandeau-cta">
-      <span class="cta-anneau anneau-un"></span>
-      <span class="cta-anneau anneau-deux"></span>
       <span class="cta-ligne-doree"></span>
       <div class="conteneur-cta">
         <span class="sur-titre-cta">Prêt à commencer ?</span>
@@ -35,8 +33,9 @@ defineProps<{
 
 <style scoped>
 .zone-cta {
-  background: rgb(var(--v-theme-background));
+  background: rgb(var(--v-theme-surface));
   padding-top: 32px;
+  padding-bottom: 96px;
 }
 
 .bandeau-cta {
@@ -44,43 +43,12 @@ defineProps<{
   max-width: 1120px;
   margin: 0 auto;
   padding: 92px 48px;
-  border-radius: 32px;
-  background:
-    radial-gradient(circle at 15% 20%, rgba(var(--v-theme-secondary), 0.22) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(var(--v-theme-accent), 0.24) 0%, transparent 42%),
-    linear-gradient(135deg, rgb(var(--v-theme-primary-darken-1)) 0%, rgb(var(--v-theme-primary)) 55%, rgb(var(--v-theme-accent)) 150%);
-  box-shadow: 0 34px 70px rgba(var(--v-theme-primary), 0.32);
+  border-radius: 16px;
+  background: rgb(var(--v-theme-primary));
+  box-shadow: 0 10px 24px rgba(var(--v-theme-primary), 0.25);
   overflow: hidden;
   text-align: center;
-  color: #fff;
-}
-
-.cta-anneau {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.5px dashed rgba(255, 255, 255, 0.18);
-  pointer-events: none;
-}
-
-.anneau-un {
-  right: -90px;
-  top: -90px;
-  width: 300px;
-  height: 300px;
-  animation: virevolte 60s linear infinite;
-}
-
-.anneau-deux {
-  left: -60px;
-  bottom: -120px;
-  width: 240px;
-  height: 240px;
-  border-color: rgba(var(--v-theme-secondary), 0.3);
-  animation: virevolte 45s linear infinite reverse;
-}
-
-@keyframes virevolte {
-  to { transform: rotate(360deg); }
+  color: rgb(var(--v-theme-on-primary));
 }
 
 .cta-ligne-doree {
@@ -89,7 +57,7 @@ defineProps<{
   left: 0;
   right: 0;
   height: 6px;
-  background: linear-gradient(90deg, transparent, rgb(var(--v-theme-secondary)), transparent);
+  background: rgb(var(--v-theme-secondary));
   pointer-events: none;
 }
 
@@ -123,6 +91,7 @@ defineProps<{
   line-height: 1.12;
   margin-bottom: 20px;
   text-wrap: balance;
+  color: #fff;
 }
 
 .conteneur-cta p {
@@ -135,23 +104,23 @@ defineProps<{
 .btn-cta {
   font-weight: 700;
   letter-spacing: 0.01em;
-  border-radius: 18px;
+  border-radius: 12px;
   text-transform: none;
   padding: 0 44px;
   height: 62px;
   font-size: 17px;
-  color: rgb(var(--v-theme-primary-darken-1)) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   background: #fff !important;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
 .btn-cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25) !important;
 }
 
 .icone-cta {
-  transition: transform 0.3s ease;
+  transition: transform 0.18s ease;
 }
 
 .btn-cta:hover .icone-cta {
@@ -184,7 +153,7 @@ defineProps<{
 @media (max-width: 600px) {
   .bandeau-cta {
     padding: 64px 24px;
-    border-radius: 22px;
+    border-radius: 12px;
   }
 }
 </style>

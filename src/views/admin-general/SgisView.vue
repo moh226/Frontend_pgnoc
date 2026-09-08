@@ -50,7 +50,7 @@ onMounted(() => void admin.chargerSgi())
     <div class="d-flex flex-column flex-md-row align-md-center justify-space-between mb-8">
       <div>
         <h1 class="text-h4 font-display font-weight-bold d-flex align-center mb-2">
-          <div class="icon-box bg-primary-lighten-5 text-primary rounded-lg pa-2 mr-4">
+          <div class="icon-box pa-2 mr-4">
             <Landmark :size="28" />
           </div>
           SGI Partenaires
@@ -70,7 +70,7 @@ onMounted(() => void admin.chargerSgi())
       {{ admin.erreur }}
     </v-alert>
 
-    <v-card class="rounded-xl elevation-2 overflow-hidden border">
+    <v-card class="glass-panel overflow-hidden">
       <v-progress-linear v-if="admin.chargement" indeterminate color="primary" />
       
       <v-alert
@@ -97,17 +97,17 @@ onMounted(() => void admin.chargerSgi())
           <tr v-for="sgi in admin.sgi" :key="sgi.id" class="table-row">
             <td class="px-6 py-4">
               <div class="d-flex align-center">
-                <v-avatar v-if="sgi.logo" size="40" class="mr-4 elevation-1 bg-white">
+                <v-avatar v-if="sgi.logo" size="40" class="mr-4 elevation-1 bg-surface">
                   <v-img :src="sgi.logo" />
                 </v-avatar>
-                <div v-else class="bg-primary-lighten-5 text-primary rounded-circle d-flex align-center justify-center mr-4" style="width: 40px; height: 40px;">
+                <div v-else class="icon-box rounded-circle d-flex align-center justify-center mr-4" style="width: 40px; height: 40px;">
                   <Building2 :size="20" />
                 </div>
                 <span class="font-weight-bold text-body-1">{{ sgi.nom }}</span>
               </div>
             </td>
             <td class="px-6 py-4 font-weight-medium">
-              <v-chip size="small" variant="tonal" color="primary-darken-1" class="font-weight-bold text-uppercase">
+              <v-chip size="small" variant="tonal" color="primary" class="font-weight-bold text-uppercase">
                 {{ sgi.code_sgi }}
               </v-chip>
             </td>
@@ -141,7 +141,7 @@ onMounted(() => void admin.chargerSgi())
     </v-card>
 
     <v-dialog v-model="dialogCreation" max-width="500">
-      <v-card class="rounded-xl elevation-24">
+      <v-card class="glass-panel">
         <v-card-title class="pt-6 px-6 font-display font-weight-bold text-h5 d-flex align-center">
           <Building2 :size="24" class="text-primary mr-3" />
           Ajouter une SGI
@@ -175,7 +175,7 @@ onMounted(() => void admin.chargerSgi())
         </v-card-text>
         <v-card-actions class="px-6 pb-6 pt-4 border-t">
           <v-spacer />
-          <v-btn variant="text" class="font-weight-bold mr-2" color="grey-darken-1" @click="dialogCreation = false">Annuler</v-btn>
+          <v-btn variant="text" class="font-weight-bold mr-2" @click="dialogCreation = false">Annuler</v-btn>
           <v-btn
             color="primary"
             variant="flat"

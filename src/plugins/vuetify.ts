@@ -5,6 +5,7 @@ export default createVuetify({
     VBtn: {
       fontWeight: 600,
       letterSpacing: '0.01em',
+      rounded: 'lg',
     },
     VCardTitle: {
       class: 'font-display',
@@ -38,47 +39,61 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          primary: '#0C3C94', /* Bleu UEMOA */
+          /* Marque UEMOA : bleu, or, vert, rouge */
+          primary: '#0C3C94',
           'on-primary': '#FFFFFF',
-          secondary: '#F7C600', /* Or / Jaune */
-          'on-secondary': '#000000',
-          accent: '#009639', /* Vert UEMOA */
+          secondary: '#F7C600',
+          'on-secondary': '#0F172A',
+          accent: '#009639',
           'on-accent': '#FFFFFF',
-          background: '#F8FAFC', /* Gris très clair pour le fond global */
-          surface: '#FFFFFF', /* Blanc pur pour les cartes */
-          'surface-variant': '#F1F5F9', /* Gris clair pour les encarts */
-          'on-surface': '#0F172A', /* Slate 900 pour un texte bien lisible */
-          'on-surface-variant': '#475569', /* Texte secondaire */
-          error: '#E4002B', /* Rouge UEMOA */
-          warning: '#F59E0B',
-          success: '#009639', /* Vert UEMOA */
-          info: '#3B82F6',
-          outline: '#E2E8F0', /* Bordures légères */
+          /* Neutres */
+          background: '#F8FAFC',
+          surface: '#FFFFFF',
+          'surface-variant': '#F1F5F9',
+          'on-surface': '#0F172A',
+          'on-surface-variant': '#475569',
+          outline: '#E2E8F0',
           'outline-variant': '#CBD5E1',
+          /* Sémantique */
+          error: '#E4002B',
+          'on-error': '#FFFFFF',
+          warning: '#D97706',
+          'on-warning': '#FFFFFF',
+          success: '#009639',
+          'on-success': '#FFFFFF',
+          info: '#3B82F6',
+          'on-info': '#FFFFFF',
         },
       },
       dark: {
         dark: true,
         colors: {
-          primary: '#0C3C94', /* Bleu UEMOA */
-          'on-primary': '#FFFFFF',
-          secondary: '#F7C600', /* Or / Jaune */
-          'on-secondary': '#000000',
-          accent: '#009639', /* Vert UEMOA */
-          'on-accent': '#FFFFFF',
-          background: '#0F172A', /* Slate 900 pour le fond global */
-          surface: '#1E293B', /* Slate 800 pour les cartes */
-          'surface-variant': '#334155', /* Slate 700 pour les encarts */
-          'on-surface': '#F8FAFC', /* Texte clair */
-          'on-surface-variant': '#94A3B8', /* Texte secondaire clair */
-          error: '#E4002B', /* Rouge UEMOA */
-          warning: '#F59E0B',
-          success: '#009639', /* Vert UEMOA */
-          info: '#3B82F6',
-          outline: '#334155', /* Bordures foncées */
+          /* Marque éclaircie pour rester lisible sur fond sombre */
+          primary: '#5C8DFF',
+          'on-primary': '#0A1E4F',
+          secondary: '#F7C600',
+          'on-secondary': '#0F172A',
+          accent: '#34C77B',
+          'on-accent': '#06130C',
+          /* Neutres */
+          background: '#0F172A',
+          surface: '#1E293B',
+          'surface-variant': '#334155',
+          'on-surface': '#F8FAFC',
+          'on-surface-variant': '#94A3B8',
+          outline: '#334155',
           'outline-variant': '#475569',
+          /* Sémantique éclaircie */
+          error: '#FF6B6B',
+          'on-error': '#2A0508',
+          warning: '#FFB224',
+          'on-warning': '#241300',
+          success: '#34C77B',
+          'on-success': '#06130C',
+          info: '#7CB8FF',
+          'on-info': '#0A1E4F',
         },
-      }
+      },
     },
   },
 })

@@ -28,6 +28,16 @@ export const api: AxiosInstance = axios.create({
   },
 })
 
+// Instance dédiée aux appels publics (refresh) : même timeout que `api`
+// pour qu'un serveur qui ne répond pas ne bloque jamais la navigation.
+const clientPublic: AxiosInstance = axios.create({
+  baseURL: api.defaults.baseURL,
+  timeout: 15000,
+  headers: {
+    Accept: 'application/json',
+  },
+})
+
 api.interceptors.request.use((config) => {
   const url = config.url ?? ''
   const estAppelPublic = url.includes('/login') || url.includes('/register') || url.includes('/refresh')
@@ -45,11 +55,13 @@ export function rafraichirJeton(): Promise<string> {
   rafraichissement ??= (async () => {
     const refresh = gestionJwt.refreshCourant()
     if (!refresh) throw new Error('Aucun refresh token en session')
-    const reponse = await axios.post(`${api.defaults.baseURL}/comptes/login/refresh/`, {
+    const reponse = await clientPublic.post('/comptes/login/refresh/', {
       refresh,
     })
     const access: string = reponse.data.access
-    gestionJwt.appliquer(access, reponse.data.refresh ?? null)
+    // Si la réponse omet un nouveau refresh, on conserve le courant
+    // (sinon la session serait invalidée au prochain rafraîchissement).
+    gestionJwt.appliquer(access, typeof reponse.data.refresh === 'string' ? reponse.data.refresh : refresh)
     return access
   })()
 
