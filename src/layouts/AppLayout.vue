@@ -22,8 +22,10 @@ const navigation = computed(() =>
   (NAVIGATION_PAR_ROLE[auth.roleActuel ?? 'INVESTISSEUR'] ?? []).filter((item) => !item.cache),
 )
 
+const estSombre = computed(() => theme.current.value.dark)
+
 function toggleTheme() {
-  theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+  void theme.change(estSombre.value ? 'light' : 'dark')
 }
 
 function deconnecter() {
@@ -83,7 +85,7 @@ onMounted(() => {
       <v-badge v-if="notifications.compteNonLues" :content="notifications.compteNonLues" color="error" floating />
     </v-btn>
     <v-btn icon aria-label="Changer de thème" @click="toggleTheme" class="icone-barre mr-2" variant="text" color="on-surface">
-      <Sun v-if="theme.global.current.value.dark" :size="20" />
+      <Sun v-if="estSombre" :size="20" />
       <Moon v-else :size="20" />
     </v-btn>
     <v-chip v-if="auth.roleActuel" variant="tonal" color="primary" size="small" class="mr-2 d-none d-sm-flex font-weight-bold">
