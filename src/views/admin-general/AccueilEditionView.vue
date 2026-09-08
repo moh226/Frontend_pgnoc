@@ -145,12 +145,14 @@ onMounted(charger)
           </v-card-title>
 
           <v-card-text>
-            <div class="ligne-champ mb-4">
+            <div class="ligne-champ">
               <label class="etiquette-champ">
                 Titre de section
               </label>
-              <v-text-field v-model="brouillonTitre" density="comfortable" variant="outlined" hide-details placeholder="Titre affiché au-dessus du bloc" />
+              <v-text-field v-model="brouillonTitre" density="comfortable" variant="outlined" hide-details class="premium-input" placeholder="Titre affiché au-dessus du bloc" />
             </div>
+
+            <div class="separateur-editeur" />
 
             <AccueilBlocEditor
               :blocSelectionne="blocSelectionne"
@@ -215,6 +217,12 @@ onMounted(charger)
   align-items: center;
   gap: 20px;
   margin-bottom: 24px;
+}
+
+.separateur-editeur {
+  height: 1px;
+  background-color: rgb(var(--v-theme-outline));
+  margin: 4px 0 24px;
 }
 
 .etiquette-champ {
