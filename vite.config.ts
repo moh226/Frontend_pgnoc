@@ -33,19 +33,24 @@ export default defineConfig({
     // volée (composants Vuetify des vues lazy) sont pré-optimisées au
     // démarrage : sans cela, la première visite de chaque page
     // déclenchait une ré-optimisation et un RELOAD COMPLET de l'app.
+    // La liste correspond aux composants réellement utilisés dans src/
+    // (scanner : <v-…> dans les templates).
     include: [
       'vue',
       'vue-router',
       'pinia',
       'axios',
       '@vueuse/core',
+      'vuetify/components/VAutocomplete',
       'vuetify/components/VApp',
       'vuetify/components/VAlert',
       'vuetify/components/VAppBar',
       'vuetify/components/VAvatar',
       'vuetify/components/VBadge',
       'vuetify/components/VBtn',
+      'vuetify/components/VBtnToggle',
       'vuetify/components/VCard',
+      'vuetify/components/VCheckbox',
       'vuetify/components/VChip',
       'vuetify/components/VDialog',
       'vuetify/components/VDivider',
@@ -71,6 +76,7 @@ export default defineConfig({
       'vuetify/components/VTextarea',
       'vuetify/components/VTextField',
       'vuetify/components/VTooltip',
+      'vuetify/components/VWindow',
       'vuetify/components/transitions',
     ],
   },
