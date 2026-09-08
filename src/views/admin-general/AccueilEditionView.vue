@@ -144,7 +144,7 @@ onMounted(charger)
             <v-chip v-else color="warning" size="small" variant="flat">Brouillon</v-chip>
           </v-card-title>
 
-          <v-card-text>
+          <v-card-text class="contenu-editeur">
             <div class="ligne-champ">
               <label class="etiquette-champ">
                 Titre de section
@@ -217,6 +217,12 @@ onMounted(charger)
   align-items: center;
   gap: 20px;
   margin-bottom: 24px;
+}
+
+/* Respiration du contenu : le premier champ ne doit jamais coller au
+   bandeau d'en-tête (bg-surface-variant) ni aux actions du bas. */
+.contenu-editeur {
+  padding: 28px 24px 32px !important;
 }
 
 .separateur-editeur {
