@@ -80,7 +80,7 @@ onMounted(() => void charger())
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="FileText" titre="Base des Dossiers" sous-titre="Consultez et instruisez les demandes d'ouverture de compte." />
+    <EntetePage titre="Base des Dossiers" sous-titre="Consultez et instruisez les demandes d'ouverture de compte." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}

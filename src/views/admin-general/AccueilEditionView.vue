@@ -5,7 +5,6 @@ import {
   ArrowUp,
   Check,
   Eye,
-  Globe,
   ImagePlus,
   PencilLine,
   Send,
@@ -58,7 +57,7 @@ onMounted(charger)
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="Globe" titre="Page d'accueil" sous-titre="Personnalisez les huit blocs de la vitrine publique puis publiez vos changements.">
+    <EntetePage titre="Page d'accueil" sous-titre="Personnalisez les huit blocs de la vitrine publique puis publiez vos changements.">
       <template #actions>
         <v-chip :color="nbPublies === 8 ? 'success' : 'warning'" variant="flat" class="font-weight-bold">
           {{ nbPublies }}/8 blocs publiés

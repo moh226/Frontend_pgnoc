@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { Landmark, Plus, Power, PowerOff, Building2 } from '@lucide/vue'
+import { Plus, Power, PowerOff, Building2 } from '@lucide/vue'
 
 import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAdminStore } from '@/stores/admin'
@@ -48,7 +48,7 @@ onMounted(() => void admin.chargerSgi())
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
     <!-- En-tête -->
-    <EntetePage :icone="Landmark" titre="SGI Partenaires" sous-titre="Gérez la liste et le statut des Sociétés de Gestion et d'Intermédiation enregistrées.">
+    <EntetePage titre="SGI Partenaires" sous-titre="Gérez la liste et le statut des Sociétés de Gestion et d'Intermédiation enregistrées.">
       <template #actions>
         <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" @click="dialogCreation = true">
           <Plus :size="18" class="mr-2" /> Ajouter une SGI

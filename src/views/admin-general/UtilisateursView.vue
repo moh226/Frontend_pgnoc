@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { Shield, ShieldAlert, UserPlus, Search, Power, PowerOff } from '@lucide/vue'
+import { ShieldAlert, UserPlus, Search, Power, PowerOff } from '@lucide/vue'
 import { useDebounceFn } from '@vueuse/core'
 
 import { LIBELLES_ROLE } from '@/config/navigation'
@@ -96,7 +96,7 @@ onMounted(() => void charger())
   <v-container fluid class="page-container pa-6 pa-md-8">
     
     <!-- En-tête -->
-    <EntetePage :icone="Shield" titre="Utilisateurs" sous-titre="Supervisez l'ensemble des utilisateurs de la plateforme.">
+    <EntetePage titre="Utilisateurs" sous-titre="Supervisez l'ensemble des utilisateurs de la plateforme.">
       <template #actions>
         <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" @click="dialogCreation = true">
           <UserPlus :size="18" class="mr-2" /> Créer un compte

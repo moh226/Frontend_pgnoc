@@ -48,7 +48,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="FolderKanban" titre="Tableau de Bord" sous-titre="Vue d'ensemble de l'activité de votre SGI et des dossiers en attente." />
+    <EntetePage titre="Tableau de Bord" sous-titre="Vue d'ensemble de l'activité de votre SGI et des dossiers en attente." />
 
     <v-alert v-if="dossiers.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ dossiers.erreur }}

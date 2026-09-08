@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import {
-  Settings2,
   Eye,
   Plus,
   Layers,
@@ -82,7 +81,7 @@ onMounted(() => void charger())
     </v-alert>
 
     <!-- En-tête de page premium -->
-    <EntetePage :icone="Settings2" titre="Parcours KYC" sous-titre="Gérez les étapes et les informations requises pour l'ouverture de compte.">
+    <EntetePage titre="Parcours KYC" sous-titre="Gérez les étapes et les informations requises pour l'ouverture de compte.">
       <template #actions>
         <v-btn variant="outlined" color="primary" class="hover-lift" @click="apercuOuvert = true">
           <Eye :size="18" class="mr-2" /> Aperçu du formulaire

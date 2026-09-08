@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { BellRing, CheckCircle2 } from '@lucide/vue'
+import { CheckCircle2 } from '@lucide/vue'
 
 import { useNotificationsStore } from '@/stores/notifications'
 import EntetePage from '@/components/commun/EntetePage.vue'
@@ -30,7 +30,7 @@ onMounted(() => void notifications.charger())
 
 <template>
   <v-container fluid class="pa-6 pa-md-8">
-    <EntetePage :icone="BellRing" titre="Notifications" sous-titre="Vos alertes et messages liés à l'activité de vos dossiers." />
+    <EntetePage titre="Notifications" sous-titre="Vos alertes et messages liés à l'activité de vos dossiers." />
 
     <v-alert v-if="notifications.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ notifications.erreur }}

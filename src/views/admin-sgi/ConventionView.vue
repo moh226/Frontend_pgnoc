@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { BookOpen, CloudUpload, FileText, Download, CheckCircle2, AlertCircle, File } from '@lucide/vue'
+import { CloudUpload, FileText, Download, CheckCircle2, AlertCircle, File } from '@lucide/vue'
 
 import { conventionSgi, publierConvention } from '@/api/sgiAdmin'
 import { extraireMessageErreur } from '@/api/client'
@@ -76,7 +76,7 @@ function clearFile() {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="BookOpen" titre="Convention Tarifaire" sous-titre="Définissez le document officiel que les investisseurs devront lire et accepter." />
+    <EntetePage titre="Convention Tarifaire" sous-titre="Définissez le document officiel que les investisseurs devront lire et accepter." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" class="mb-6 rounded-lg border-l-4">
       {{ erreur }}

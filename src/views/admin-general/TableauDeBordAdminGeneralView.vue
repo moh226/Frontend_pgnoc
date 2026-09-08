@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  Landmark, 
-  Users, 
+import {
+  FolderKanban,
+  Landmark,
+  Users,
   Bell,
   ArrowRight,
   Clock,
@@ -51,7 +50,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="LayoutDashboard" titre="Supervision Globale" sous-titre="Vue d'ensemble de l'activité du système, des SGI partenaires et de la sécurité." />
+    <EntetePage titre="Supervision Globale" sous-titre="Vue d'ensemble de l'activité du système, des SGI partenaires et de la sécurité." />
 
     <v-alert v-if="admin.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ admin.erreur }}

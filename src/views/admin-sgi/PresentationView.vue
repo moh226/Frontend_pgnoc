@@ -77,7 +77,7 @@ function ouvrirApercu(mode?: DeviceMode) {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="Building2" titre="Présentation SGI" sous-titre="Personnalisez la page de présentation affichée aux investisseurs lors du choix de votre SGI." />
+    <EntetePage titre="Présentation SGI" sous-titre="Personnalisez la page de présentation affichée aux investisseurs lors du choix de votre SGI." />
 
     <v-alert v-if="erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ erreur }}

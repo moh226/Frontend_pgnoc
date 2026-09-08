@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { Users, UserPlus, ShieldAlert, Power, PowerOff, ShieldCheck } from '@lucide/vue'
+import { UserPlus, ShieldAlert, Power, PowerOff, ShieldCheck } from '@lucide/vue'
 
 import EntetePage from '@/components/commun/EntetePage.vue'
 import { useAgentsStore } from '@/stores/agents'
@@ -61,7 +61,7 @@ onMounted(() => void agents.charger())
   <v-container fluid class="page-container pa-6 pa-md-8">
     
     <!-- En-tête -->
-    <EntetePage :icone="Users" titre="Gestion des Agents" sous-titre="Gérez les accès et les statuts des collaborateurs de votre SGI.">
+    <EntetePage titre="Gestion des Agents" sous-titre="Gérez les accès et les statuts des collaborateurs de votre SGI.">
       <template #actions>
         <v-btn color="primary" variant="flat" class="font-weight-bold hover-lift" @click="dialogCreation = true">
           <UserPlus :size="18" class="mr-2" /> Ajouter un agent

@@ -55,7 +55,7 @@ onMounted(async () => {
 
 <template>
   <v-container fluid class="page-container pa-6 pa-md-8">
-    <EntetePage :icone="FolderKanban" titre="Espace Agent KYC" sous-titre="Traitez les dossiers d'ouverture de compte qui vous sont assignés." />
+    <EntetePage titre="Espace Agent KYC" sous-titre="Traitez les dossiers d'ouverture de compte qui vous sont assignés." />
 
     <v-alert v-if="dossiers.erreur" type="error" variant="tonal" border="start" class="mb-6">
       {{ dossiers.erreur }}

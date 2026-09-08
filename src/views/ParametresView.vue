@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Settings as IconeParametres } from '@lucide/vue'
 
 import { changerMonMotDePasse, mettreAJourMonProfil, recupererMonProfil } from '@/api/profil'
 import { extraireMessageErreur } from '@/api/client'
@@ -124,7 +123,7 @@ async function changerMotDePasse() {
 
 <template>
   <v-container fluid class="pa-6 pa-md-8" style="max-width: 960px">
-    <EntetePage :icone="IconeParametres" titre="Paramètres" sous-titre="Gérez votre profil et la sécurité de votre compte." />
+    <EntetePage titre="Paramètres" sous-titre="Gérez votre profil et la sécurité de votre compte." />
 
     <v-alert v-if="erreurChargement" type="error" class="mb-4" variant="tonal" border="start">
       {{ erreurChargement }}

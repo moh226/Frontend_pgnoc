@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { ClipboardList, Download, Search, History } from '@lucide/vue'
+import { Download, Search, History } from '@lucide/vue'
 import { useDebounceFn } from '@vueuse/core'
 
 import { exporterJournal, journalAudit } from '@/api/admin'
@@ -92,7 +92,7 @@ onMounted(() => void charger())
   <v-container fluid class="page-container pa-6 pa-md-8">
     
     <!-- En-tête -->
-    <EntetePage :icone="ClipboardList" titre="Journal d'Audit" sous-titre="Traçabilité complète des actions effectuées sur la plateforme.">
+    <EntetePage titre="Journal d'Audit" sous-titre="Traçabilité complète des actions effectuées sur la plateforme.">
       <template #actions>
         <v-btn color="primary" variant="tonal" class="font-weight-bold hover-lift" :loading="exportEnCours" @click="exporter">
           <Download :size="18" class="mr-2" /> Exporter en CSV
