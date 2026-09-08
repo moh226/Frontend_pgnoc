@@ -1,6 +1,12 @@
 import { createVuetify } from 'vuetify'
 
 export default createVuetify({
+  display: {
+    // Seuil « mobile » : sous 600px seulement (drawer temporaire).
+    // Le défaut de Vuetify ('lg' = 1264px) traitait les fenêtres de
+    // laptop comme mobiles — le sidebar permanent n'y apparaissait pas.
+    mobileBreakpoint: 'sm',
+  },
   defaults: {
     VBtn: {
       fontWeight: 600,
