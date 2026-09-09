@@ -4,11 +4,16 @@ import { FileText, Download } from '@lucide/vue'
 import type { FicheSgi } from '@/types'
 
 const props = defineProps<{
-  fiche: FicheSgi | null
+  fiche?: FicheSgi | null
+  url?: string | null
 }>()
 
+const fichierUrl = computed(
+  () => props.url?.trim() || props.fiche?.convention?.fichier_url || null,
+)
+
 const iframeSrc = computed(() => {
-  const url = props.fiche?.convention?.fichier_url
+  const url = fichierUrl.value
   if (!url) return null
   try {
     const parsed = new URL(url, window.location.origin)
@@ -19,7 +24,7 @@ const iframeSrc = computed(() => {
 })
 
 const downloadHref = computed(() => {
-  const url = props.fiche?.convention?.fichier_url
+  const url = fichierUrl.value
   if (!url) return '#'
   try {
     const parsed = new URL(url, window.location.origin)

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { CloudUpload, FileText, Download, CheckCircle2, AlertCircle, File } from '@lucide/vue'
+import { CloudUpload, FileText, CheckCircle2, AlertCircle, File } from '@lucide/vue'
 
 import { conventionSgi, publierConvention } from '@/api/sgiAdmin'
 import { extraireMessageErreur } from '@/api/client'
 import EntetePage from '@/components/commun/EntetePage.vue'
+import DossierConvention from '@/components/dossier/DossierConvention.vue'
 import type { ConventionSgi } from '@/types'
 import { formaterDate } from '@/utils/format'
 
@@ -183,7 +184,7 @@ function clearFile() {
                 </div>
               </div>
               
-              <div v-else-if="convention" class="current-file-card bg-surface border rounded-xl overflow-hidden">
+              <div v-else-if="convention" class="current-file-card">
                 <div class="pa-6 d-flex flex-column align-center text-center border-b" style="background: rgba(var(--v-theme-success), 0.08);">
                   <CheckCircle2 :size="48" class="text-success mb-3" />
                   <div class="text-h6 font-weight-bold text-success mb-1">Convention Active</div>
@@ -191,24 +192,15 @@ function clearFile() {
                     Publiée le {{ formaterDate(convention.date_publication) }}
                   </div>
                 </div>
-                <div class="pa-6">
-                  <div class="d-flex align-center mb-4">
-                    <FileText :size="24" class="text-primary mr-3 flex-shrink-0" />
-                    <div class="text-body-1 font-weight-medium text-truncate">
-                      {{ convention.titre || 'Convention tarifaire' }}
-                    </div>
+                <div class="pa-6 d-flex align-center border-b">
+                  <FileText :size="24" class="text-primary mr-3 flex-shrink-0" />
+                  <div class="text-body-1 font-weight-medium text-truncate">
+                    {{ convention.titre || 'Convention tarifaire' }}
                   </div>
-                  <v-btn
-                    v-if="convention.url_signee"
-                    color="primary"
-                    variant="tonal"
-                    block
-                    class="font-weight-bold"
-                    :href="convention.url_signee"
-                    target="_blank"
-                  >
-                    <Download :size="18" class="mr-2" /> Télécharger le PDF
-                  </v-btn>
+                </div>
+                <div class="pa-6">
+                  <div class="text-subtitle-2 text-uppercase text-primary font-weight-bold tracking-wider mb-3">Aperçu</div>
+                  <DossierConvention :url="convention.url_signee || null" />
                 </div>
               </div>
             </template>
