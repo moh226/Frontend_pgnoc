@@ -26,9 +26,10 @@ async function charger() {
   chargement.value = true
   erreur.value = ''
   try {
-    liste.value = await listeDepotsAgent(
+    const reponse = await listeDepotsAgent(
       filtresStatut.value.length ? { statut: filtresStatut.value } : {},
     )
+    liste.value = reponse.results
   } catch (cause) {
     erreur.value = extraireMessageErreur(cause)
   } finally {

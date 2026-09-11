@@ -8,7 +8,7 @@ import type {
 } from '@/types'
 
 export async function conventionSgi(): Promise<ConventionSgi> {
-  const { data } = await api.get<ConventionSgi>('/sgi/admin/convention/')
+  const { data } = await api.get<ConventionSgi>('/sgi/admin/conventions/')
   return data
 }
 
@@ -19,28 +19,28 @@ export async function publierConvention(parametres: {
   const formulaire = new FormData()
   if (parametres.titre !== undefined) formulaire.append('titre', parametres.titre)
   if (parametres.fichier_pdf) formulaire.append('fichier_pdf', parametres.fichier_pdf)
-  const { data } = await api.put<ConventionSgi>('/sgi/admin/convention/', formulaire)
+  const { data } = await api.put<ConventionSgi>('/sgi/admin/conventions/', formulaire)
   return data
 }
 
 export async function presentationSgi(): Promise<PresentationSgi> {
-  const { data } = await api.get<PresentationSgi>('/sgi/admin/presentation/')
+  const { data } = await api.get<PresentationSgi>('/sgi/admin/presentations/')
   return data
 }
 
 export async function publierPresentation(presentation: PresentationStructuree): Promise<PresentationSgi> {
-  const { data } = await api.put<PresentationSgi>('/sgi/admin/presentation/', presentation)
+  const { data } = await api.put<PresentationSgi>('/sgi/admin/presentations/', presentation)
   return data
 }
 
 export async function configDepotMinimum(): Promise<ConfigDepotMinimum> {
-  const { data } = await api.get<ConfigDepotMinimum>('/sgi/admin/depot/')
+  const { data } = await api.get<ConfigDepotMinimum>('/sgi/admin/depots/')
   return data
 }
 
 export async function publierConfigDepotMinimum(
   payload: PayloadConfigDepotMinimum,
 ): Promise<ConfigDepotMinimum> {
-  const { data } = await api.put<ConfigDepotMinimum>('/sgi/admin/depot/', payload)
+  const { data } = await api.put<ConfigDepotMinimum>('/sgi/admin/depots/', payload)
   return data
 }

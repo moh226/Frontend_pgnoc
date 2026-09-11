@@ -15,8 +15,8 @@ async function toutesLesPages<T>(chemin: string, params?: Record<string, string>
   return elements
 }
 
-export async function listetEtapesKycAdmin(): Promise<EtapeKycAdmin[]> {
-  return toutesLesPages<EtapeKycAdmin>('/dossiers/admin/etapes-kyc/')
+export async function listerEtapesKycAdmin(): Promise<EtapeKycAdmin[]> {
+  return toutesLesPages<EtapeKycAdmin>('/admin/kyc/etapes/')
 }
 
 export interface ParametresEtape {
@@ -26,7 +26,7 @@ export interface ParametresEtape {
 }
 
 export async function creerEtape(parametres: ParametresEtape): Promise<EtapeKycAdmin> {
-  const { data } = await api.post<EtapeKycAdmin>('/dossiers/admin/etapes-kyc/', parametres)
+  const { data } = await api.post<EtapeKycAdmin>('/admin/kyc/etapes/', parametres)
   return data
 }
 
@@ -34,12 +34,12 @@ export async function modifierEtape(
   id: string,
   parametres: Partial<ParametresEtape>,
 ): Promise<EtapeKycAdmin> {
-  const { data } = await api.patch<EtapeKycAdmin>(`/dossiers/admin/etapes-kyc/${id}/`, parametres)
+  const { data } = await api.patch<EtapeKycAdmin>(`/admin/kyc/etapes/${id}/`, parametres)
   return data
 }
 
-export async function listeChampsKycAdmin(etapeId: string): Promise<ChampKycAdmin[]> {
-  return toutesLesPages<ChampKycAdmin>('/dossiers/admin/champs-kyc/', { etape: etapeId })
+export async function listerChampsKycAdmin(etapeId: string): Promise<ChampKycAdmin[]> {
+  return toutesLesPages<ChampKycAdmin>('/admin/kyc/champs/', { etape: etapeId })
 }
 
 export interface ParametresChamp {
@@ -57,7 +57,7 @@ export interface ParametresChamp {
 }
 
 export async function creerChamp(parametres: ParametresChamp): Promise<ChampKycAdmin> {
-  const { data } = await api.post<ChampKycAdmin>('/dossiers/admin/champs-kyc/', parametres)
+  const { data } = await api.post<ChampKycAdmin>('/admin/kyc/champs/', parametres)
   return data
 }
 
@@ -65,14 +65,14 @@ export async function modifierChamp(
   id: string,
   parametres: Partial<ParametresChamp>,
 ): Promise<ChampKycAdmin> {
-  const { data } = await api.patch<ChampKycAdmin>(`/dossiers/admin/champs-kyc/${id}/`, parametres)
+  const { data } = await api.patch<ChampKycAdmin>(`/admin/kyc/champs/${id}/`, parametres)
   return data
 }
 
 export async function supprimerEtape(id: string): Promise<void> {
-  await api.delete(`/dossiers/admin/etapes-kyc/${id}/`)
+  await api.delete(`/admin/kyc/etapes/${id}/`)
 }
 
 export async function supprimerChamp(id: string): Promise<void> {
-  await api.delete(`/dossiers/admin/champs-kyc/${id}/`)
+  await api.delete(`/admin/kyc/champs/${id}/`)
 }

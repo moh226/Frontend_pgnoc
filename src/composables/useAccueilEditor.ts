@@ -1,5 +1,5 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { listeBlocsAccueilAdmin, modifierBlocAccueil, ordonnerBlocsAccueil } from '@/api/accueil'
+import { listerBlocsAccueilAdmin, modifierBlocAccueil, ordonnerBlocsAccueil } from '@/api/accueil'
 import { extraireMessageErreur } from '@/api/client'
 import type {
   BlocAccueilAdmin,
@@ -133,7 +133,7 @@ export function useAccueilEditor() {
     chargement.value = true
     erreur.value = ''
     try {
-      blocs.value = await listeBlocsAccueilAdmin()
+      blocs.value = await listerBlocsAccueilAdmin()
     } catch (cause) {
       erreur.value = extraireMessageErreur(cause)
     } finally {

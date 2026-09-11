@@ -8,12 +8,12 @@ import type {
 } from '@/types'
 
 export async function tableauDeBordAdmin(): Promise<DashboardAdmin> {
-  const { data } = await api.get<DashboardAdmin>('/admin-general/dashboard/')
+  const { data } = await api.get<DashboardAdmin>('/admin/dashboard/')
   return data
 }
 
-export async function listeSgiAdmin(): Promise<SgiAdmin[]> {
-  return toutesLesPages<SgiAdmin>('/admin-general/sgi/')
+export async function listerSgiAdmin(): Promise<SgiAdmin[]> {
+  return toutesLesPages<SgiAdmin>('/admin/sgi/')
 }
 
 export interface ParametresSgi {
@@ -22,7 +22,7 @@ export interface ParametresSgi {
 }
 
 export async function creerSgiAdmin(parametres: ParametresSgi): Promise<SgiAdmin> {
-  const { data } = await api.post<SgiAdmin>('/admin-general/sgi/', parametres)
+  const { data } = await api.post<SgiAdmin>('/admin/sgi/', parametres)
   return data
 }
 
@@ -30,7 +30,7 @@ export async function modifierSgiAdmin(
   id: string,
   parametres: Partial<Pick<SgiAdmin, 'nom' | 'code_sgi' | 'est_active'>>,
 ): Promise<SgiAdmin> {
-  const { data } = await api.patch<SgiAdmin>(`/admin-general/sgi/${id}/`, parametres)
+  const { data } = await api.patch<SgiAdmin>(`/admin/sgi/${id}/`, parametres)
   return data
 }
 
@@ -41,10 +41,10 @@ export interface ParametresFiltresUtilisateurs {
   sgi?: string
 }
 
-export async function listeUtilisateursAdmin(
+export async function listerUtilisateursAdmin(
   filtres: ParametresFiltresUtilisateurs = {},
 ): Promise<UtilisateurAdmin[]> {
-  return toutesLesPages<UtilisateurAdmin>('/admin-general/utilisateurs/', filtres)
+  return toutesLesPages<UtilisateurAdmin>('/admin/utilisateurs/', filtres)
 }
 
 export interface ParametresUtilisateur {
@@ -59,7 +59,7 @@ export interface ParametresUtilisateur {
 export async function creerUtilisateurAdmin(
   parametres: ParametresUtilisateur,
 ): Promise<UtilisateurAdmin> {
-  const { data } = await api.post<UtilisateurAdmin>('/admin-general/utilisateurs/', parametres)
+  const { data } = await api.post<UtilisateurAdmin>('/admin/utilisateurs/', parametres)
   return data
 }
 
@@ -69,7 +69,7 @@ export async function modifierUtilisateurAdmin(
     sgi?: string | null
   },
 ): Promise<UtilisateurAdmin> {
-  const { data } = await api.patch<UtilisateurAdmin>(`/admin-general/utilisateurs/${id}/`, parametres)
+  const { data } = await api.patch<UtilisateurAdmin>(`/admin/utilisateurs/${id}/`, parametres)
   return data
 }
 

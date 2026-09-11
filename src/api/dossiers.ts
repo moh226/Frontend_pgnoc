@@ -31,19 +31,19 @@ export async function listeDossiers(
   if (parametres.tri) p.append('tri', parametres.tri)
   if (parametres.page) p.append('page', String(parametres.page))
   if (parametres.page_size) p.append('page_size', String(parametres.page_size))
-  const { data } = await api.get<ResultatPagines<DossierListeItem>>('/dossiers/dossiers/', {
+  const { data } = await api.get<ResultatPagines<DossierListeItem>>('/kyc/dossiers/', {
     params: p,
   })
   return data
 }
 
 export async function detailDossier(id: string): Promise<DossierDetail> {
-  const { data } = await api.get<DossierDetail>(`/dossiers/dossiers/${id}/`)
+  const { data } = await api.get<DossierDetail>(`/kyc/dossiers/${id}/`)
   return data
 }
 
 export async function creerDossier(sgi: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>('/dossiers/dossiers/', { sgi })
+  const { data } = await api.post<DossierDetail>('/kyc/dossiers/', { sgi })
   return data
 }
 
@@ -53,7 +53,7 @@ export interface CodeOtp {
 }
 
 export async function genererOtp(dossierId: string): Promise<CodeOtp> {
-  const { data } = await api.post<CodeOtp>(`/dossiers/dossiers/${dossierId}/generer-otp/`)
+  const { data } = await api.post<CodeOtp>(`/kyc/dossiers/${dossierId}/generer-otp/`)
   return data
 }
 
@@ -61,7 +61,7 @@ export async function signerDossier(
   dossierId: string,
   otpCode: string,
 ): Promise<{ type_signature: string; donnee_signature: string }> {
-  const { data } = await api.post(`/dossiers/dossiers/${dossierId}/signer/`, {
+  const { data } = await api.post(`/kyc/dossiers/${dossierId}/signer/`, {
     otp_code: otpCode,
   })
   return data
@@ -78,7 +78,7 @@ export async function enregistrerValeur(
   champ: string,
   valeur: string,
 ): Promise<ReponseValeur> {
-  const { data } = await api.post<ReponseValeur>(`/dossiers/dossiers/${dossierId}/valeurs/`, {
+  const { data } = await api.post<ReponseValeur>(`/kyc/dossiers/${dossierId}/valeurs/`, {
     champ,
     valeur,
   })
@@ -102,7 +102,7 @@ export async function televerserFichier(
   formulaire.append('champ', champ)
   formulaire.append('fichier', fichier)
   const { data } = await api.post<ReponseFichier>(
-    `/dossiers/dossiers/${dossierId}/valeurs/fichier/`,
+    `/kyc/dossiers/${dossierId}/valeurs/fichier/`,
     formulaire,
   )
   return data
@@ -111,24 +111,24 @@ export async function televerserFichier(
 export async function accepterConvention(
   dossierId: string,
 ): Promise<{ detail: string; convention_acceptee: boolean }> {
-  const { data } = await api.post(`/dossiers/dossiers/${dossierId}/accepter-convention/`)
+  const { data } = await api.post(`/kyc/dossiers/${dossierId}/accepter-convention/`)
   return data
 }
 
 export async function soumettreDossier(dossierId: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${dossierId}/soumettre/`)
+  const { data } = await api.post<DossierDetail>(`/kyc/dossiers/${dossierId}/soumettre/`)
   return data
 }
 
 export async function etapesKyc(sgi: string): Promise<ResultatPagines<EtapeKyc>> {
-  const { data } = await api.get<ResultatPagines<EtapeKyc>>('/dossiers/etapes-kyc/', {
+  const { data } = await api.get<ResultatPagines<EtapeKyc>>('/kyc/etapes-kyc/', {
     params: { sgi },
   })
   return data
 }
 
 export async function prendreEnCharge(id: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/prendre-en-charge/`)
+  const { data } = await api.post<DossierDetail>(`/kyc/dossiers/${id}/prendre-en-charge/`)
   return data
 }
 
@@ -143,24 +143,24 @@ export async function commenterValeur(
   commentaire: string,
 ): Promise<CommentaireValeur> {
   const { data } = await api.post<CommentaireValeur>(
-    `/dossiers/dossiers/${dossierId}/commenter/`,
+    `/kyc/dossiers/${dossierId}/commenter/`,
     { valeur: valeurId, commentaire },
   )
   return data
 }
 
 export async function validerDossier(id: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/valider/`)
+  const { data } = await api.post<DossierDetail>(`/kyc/dossiers/${id}/valider/`)
   return data
 }
 
 export async function activerDossier(id: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/activer/`)
+  const { data } = await api.post<DossierDetail>(`/kyc/dossiers/${id}/activer/`)
   return data
 }
 
 export async function rejeterDossier(id: string, motif: string): Promise<DossierDetail> {
-  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/rejeter/`, {
+  const { data } = await api.post<DossierDetail>(`/kyc/dossiers/${id}/rejeter/`, {
     motif_rejet: motif,
   })
   return data
@@ -195,7 +195,7 @@ export async function ouvrirFichierValeur(dossierId: string, valeurId: string): 
   const onglet = window.open('about:blank', '_blank')
   try {
     const { data } = await api.get<{ url_signee: string }>(
-      `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/url/`,
+      `/kyc/dossiers/${dossierId}/valeurs/${valeurId}/url/`,
     )
     if (onglet) {
       onglet.location.href = data.url_signee
@@ -220,30 +220,30 @@ export async function verifierAuthenticiteSelfie(
   valeurId: string,
 ): Promise<VerificationPreuveVie> {
   const { data } = await api.get<VerificationPreuveVie>(
-    `/dossiers/dossiers/${dossierId}/valeurs/${valeurId}/authenticite/`,
+    `/kyc/dossiers/${dossierId}/valeurs/${valeurId}/authenticite/`,
   )
   return data
 }
 
-export async function transférerDossier(
+export async function transfererDossier(
   dossierId: string,
   agentId: string,
 ): Promise<DossierDetail> {
   const { data } = await api.post<DossierDetail>(
-    `/dossiers/dossiers/${dossierId}/transferer/`,
+    `/kyc/dossiers/${dossierId}/transferer/`,
     { agent_id: agentId },
   )
   return data
 }
 
 export async function dashboardInvestisseur(): Promise<DashboardInvestisseur> {
-  const { data } = await api.get<DashboardInvestisseur>('/dossiers/investisseur/dashboard/')
+  const { data } = await api.get<DashboardInvestisseur>('/kyc/investisseur/dashboard/')
   return data
 }
 
 export async function depotMinimumDossier(dossierId: string): Promise<DepotMinimumDetail> {
   const { data } = await api.get<DepotMinimumDetail>(
-    `/dossiers/dossiers/${dossierId}/depot-minimum/`,
+    `/kyc/dossiers/${dossierId}/depot-minimum/`,
   )
   return data
 }
@@ -258,7 +258,7 @@ export async function deposerPreuve(
   formulaire.append('reference_transaction', payload.reference_transaction)
   formulaire.append('preuve', payload.preuve)
   const { data } = await api.post<DepotMinimumDetail>(
-    `/dossiers/dossiers/${dossierId}/depot-minimum/`,
+    `/kyc/dossiers/${dossierId}/depot-minimum/`,
     formulaire,
   )
   return data
@@ -270,15 +270,15 @@ export interface ParametresListeDepotsAgent {
 
 export async function listeDepotsAgent(
   parametres: ParametresListeDepotsAgent = {},
-): Promise<DepotMinimumDetail[]> {
-  const { data } = await api.get<DepotMinimumDetail[]>('/dossiers/depots/', {
+): Promise<ResultatPagines<DepotMinimumDetail>> {
+  const { data } = await api.get<ResultatPagines<DepotMinimumDetail>>('/kyc/depots/', {
     params: parametres.statut?.length ? { statut: parametres.statut.join(',') } : {},
   })
   return data
 }
 
 export async function detailDepotAgent(id: string): Promise<DepotMinimumDetail> {
-  const { data } = await api.get<DepotMinimumDetail>(`/dossiers/depots/${id}/`)
+  const { data } = await api.get<DepotMinimumDetail>(`/kyc/depots/${id}/`)
   return data
 }
 
@@ -286,6 +286,6 @@ export async function verifierDepot(
   id: string,
   payload: PayloadVerificationDepot,
 ): Promise<DepotMinimumDetail> {
-  const { data } = await api.post<DepotMinimumDetail>(`/dossiers/depots/${id}/verifier/`, payload)
+  const { data } = await api.post<DepotMinimumDetail>(`/kyc/depots/${id}/verifier/`, payload)
   return data
 }

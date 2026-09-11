@@ -12,8 +12,8 @@ export async function accueilPublique(): Promise<BlocAccueilPublic[]> {
   return data
 }
 
-export async function listeBlocsAccueilAdmin(): Promise<BlocAccueilAdmin[]> {
-  const { data } = await api.get<BlocAccueilAdmin[]>('/admin-general/accueil/')
+export async function listerBlocsAccueilAdmin(): Promise<BlocAccueilAdmin[]> {
+  const { data } = await api.get<BlocAccueilAdmin[]>('/admin/accueil/')
   return data
 }
 
@@ -45,12 +45,12 @@ export async function modifierBlocAccueil(
     if (donnees.contenu) objet.contenu = donnees.contenu
   }
 
-  const { data } = await api.patch<BlocAccueilAdmin>(`/admin-general/accueil/${type}/`, corps)
+  const { data } = await api.patch<BlocAccueilAdmin>(`/admin/accueil/${type}/`, corps)
   return data
 }
 
 export async function ordonnerBlocsAccueil(
   payload: PayloadOrdreBlocAccueil,
 ): Promise<void> {
-  await api.post('/admin-general/accueil/ordre/', payload)
+  await api.post('/admin/accueil/ordre/', payload)
 }

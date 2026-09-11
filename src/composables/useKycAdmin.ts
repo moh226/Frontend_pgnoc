@@ -2,8 +2,8 @@ import { ref } from 'vue'
 import {
   creerChamp,
   creerEtape,
-  listeChampsKycAdmin,
-  listetEtapesKycAdmin,
+  listerChampsKycAdmin,
+  listerEtapesKycAdmin,
   modifierChamp,
   modifierEtape,
   supprimerEtape as apiSupprimerEtape,
@@ -59,12 +59,12 @@ export function useKycAdmin() {
     chargement.value = true
     erreur.value = ''
     try {
-      const etapesChargees = await listetEtapesKycAdmin()
+      const etapesChargees = await listerEtapesKycAdmin()
       etapes.value = [...etapesChargees].sort((a, b) => a.ordre - b.ordre)
       champsParEtape.value.clear()
       await Promise.all(
         etapes.value.map(async (e) => {
-          champsParEtape.value.set(e.id, await listeChampsKycAdmin(e.id))
+          champsParEtape.value.set(e.id, await listerChampsKycAdmin(e.id))
         }),
       )
     } catch (cause) {

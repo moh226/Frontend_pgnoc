@@ -3,7 +3,7 @@ import {
   activerDossier,
   etapesKyc, 
   verifierAuthenticiteSelfie, 
-  transférerDossier,
+  transfererDossier,
   type VerificationPreuveVie 
 } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
@@ -130,7 +130,7 @@ export function useDossierAgent(id: string) {
     if (!agentCible.value) return
     envoiEnCours.value = true
     try {
-      await transférerDossier(id, agentCible.value)
+      await transfererDossier(id, agentCible.value)
       await dossiers.chargerDetail(id)
       dialogTransfert.value = false
       agentCible.value = ''

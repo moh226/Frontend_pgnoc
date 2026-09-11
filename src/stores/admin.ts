@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 import {
   creerSgiAdmin,
   creerUtilisateurAdmin,
-  listeSgiAdmin,
-  listeUtilisateursAdmin,
+  listerSgiAdmin,
+  listerUtilisateursAdmin,
   modifierSgiAdmin,
   modifierUtilisateurAdmin,
   tableauDeBordAdmin,
@@ -35,7 +35,7 @@ export const useAdminStore = defineStore('adminGeneral', {
       this.chargement = true
       this.erreur = ''
       try {
-        this.sgi = await listeSgiAdmin()
+        this.sgi = await listerSgiAdmin()
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
       } finally {
@@ -73,7 +73,7 @@ export const useAdminStore = defineStore('adminGeneral', {
       this.chargement = true
       this.erreur = ''
       try {
-        this.utilisateurs = await listeUtilisateursAdmin(filtres)
+        this.utilisateurs = await listerUtilisateursAdmin(filtres)
       } catch (cause) {
         this.erreur = extraireMessageErreur(cause)
       } finally {
