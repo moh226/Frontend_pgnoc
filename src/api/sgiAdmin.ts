@@ -1,5 +1,11 @@
 import { api } from './client'
-import type { ConventionSgi, PresentationSgi, PresentationStructuree } from '@/types'
+import type {
+  ConfigDepotMinimum,
+  ConventionSgi,
+  PayloadConfigDepotMinimum,
+  PresentationSgi,
+  PresentationStructuree,
+} from '@/types'
 
 export async function conventionSgi(): Promise<ConventionSgi> {
   const { data } = await api.get<ConventionSgi>('/sgi/admin/convention/')
@@ -24,5 +30,17 @@ export async function presentationSgi(): Promise<PresentationSgi> {
 
 export async function publierPresentation(presentation: PresentationStructuree): Promise<PresentationSgi> {
   const { data } = await api.put<PresentationSgi>('/sgi/admin/presentation/', presentation)
+  return data
+}
+
+export async function configDepotMinimum(): Promise<ConfigDepotMinimum> {
+  const { data } = await api.get<ConfigDepotMinimum>('/sgi/admin/depot/')
+  return data
+}
+
+export async function publierConfigDepotMinimum(
+  payload: PayloadConfigDepotMinimum,
+): Promise<ConfigDepotMinimum> {
+  const { data } = await api.put<ConfigDepotMinimum>('/sgi/admin/depot/', payload)
   return data
 }

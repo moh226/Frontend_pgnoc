@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import VuetifyPlugin from 'vite-plugin-vuetify'
+import { VitePWA } from 'vite-plugin-pwa'
  
 import webfontDl from 'vite-plugin-webfont-dl'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,6 +16,50 @@ export default defineConfig({
     webfontDownload([
       'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap',
     ]),
+    VitePWA({
+      registerType: 'autoUpdate',
+      // Icônes générées depuis public/favicon.svg (générateur sharp),
+      // placées automatiquement dans public/ (pwa-64x64, pwa-192x192,
+      // pwa-512x512, maskable-icon-512x512, apple-touch-icon…).
+      pwaAssets: {
+        preset: 'minimal-2023',
+        image: 'public/favicon.svg',
+      },
+      includeAssets: ['favicon.svg'],
+      manifest: {
+        name: 'PGNOC-TI — Espace Investisseur',
+        short_name: 'PGNOC-TI',
+        description: 'Suivez vos demandes d’ouverture de compte-titres et déposez vos justificatifs.',
+        lang: 'fr',
+        theme_color: '#0C3C94',
+        background_color: '#FFFFFF',
+        display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/espace-investisseur',
+        icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
+          {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // L'API n'est JAMAIS mise en cache : réseau uniquement.
+        navigateFallbackDenylist: [/^\/api\//, /^\/media\//],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
+      },
+    }),
   ],
   resolve: {
     alias: {

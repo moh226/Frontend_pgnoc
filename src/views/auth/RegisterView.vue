@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowRight, Eye, EyeOff, Lock, Mail, User, UserPlus } from '@lucide/vue'
 
-import { extraireMessageErreur } from '@/api/client'
+import { extraireErreurApi, extraireMessageErreur } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -32,15 +32,14 @@ async function sInscrire() {
     })
     router.push({ name: 'login', query: { inscription: 'ok' } })
   } catch (cause) {
-    const data = (cause as { response?: { data?: unknown } })?.response?.data
-    if (data && typeof data === 'object') {
-      const messages = Object.fromEntries(
-        Object.entries(data as Record<string, unknown>).map(([cle, valeur]) => [
-          cle,
-          Array.isArray(valeur) ? String(valeur[0]) : String(valeur),
-        ]),
+    // Enveloppe unifiée : les erreurs par champ (email, password…)
+    // arrivent sous `champs` et se raccrochent directement aux inputs ;
+    // le `message` global couvre le reste (ex : SGI suspendue).
+    const apiErreur = extraireErreurApi(cause)
+    if (apiErreur?.champs && Object.keys(apiErreur.champs).length) {
+      erreurs.value = Object.fromEntries(
+        Object.entries(apiErreur.champs).map(([cle, messages]) => [cle, messages[0]]),
       )
-      erreurs.value = messages
     } else {
       erreurs.value = { global: extraireMessageErreur(cause) }
     }

@@ -35,7 +35,7 @@ export interface ResultatPagines<T> {
   results: T[]
 }
 
-export type StatutDossier = 'BROUILLON' | 'SOUMIS' | 'EN_INSTRUCTION' | 'VALIDE' | 'REJETE'
+export type StatutDossier = 'BROUILLON' | 'SOUMIS' | 'EN_INSTRUCTION' | 'VALIDE' | 'REJETE' | 'ACTIF'
 
 export interface DossierListeItem {
   id: string
@@ -72,6 +72,10 @@ export interface ValeurChamp {
   date_capture: string | null
   commentaire_agent: string | null
   est_corrige: boolean
+  /** Création de la valeur (ISO). Sert à distinguer une valeur saisie
+   *  APRÈS le rejet (jamais relue par l'agent → modifiable) d'une valeur
+   *  antérieure au rejet (relue → verrouillée sauf commentaire). */
+  date_creation: string
   date_maj: string
 }
 
@@ -98,7 +102,7 @@ export interface ChampKyc {
   obligatoire: boolean
   ordre: number
   justification: string
-  options_choix: string | null
+  options_choix: string[] | string | null
   champ_parent: string | null
   valeur_declencheur: string
   formats_acceptes: string
@@ -392,4 +396,70 @@ export interface ElementOrdreBlocAccueil {
 export interface PayloadOrdreBlocAccueil {
   blocs?: ElementOrdreBlocAccueil[]
   publier?: boolean
+}
+
+export type MethodePaiementCode =
+  | 'ORANGE_MONEY'
+  | 'MOOV_MONEY'
+  | 'WAVE'
+  | 'MTN_MONEY'
+  | 'VIREMENT'
+  | 'ESPECES'
+
+export type StatutDepot = 'EN_ATTENTE' | 'PREUVE_DEPOSEE' | 'APPROUVE' | 'REJETE'
+
+export interface MethodePaiement {
+  code: MethodePaiementCode
+  libelle: string
+}
+
+export interface DepotMinimumDetail {
+  id: string
+  dossier: string
+  dossier_reference: string
+  investisseur_email: string
+  sgi_nom: string
+  devise: string
+  montant_requis: string
+  instructions: string
+  methodes_acceptees: MethodePaiement[]
+  statut: StatutDepot
+  statut_libelle: string
+  montant_depose: string | null
+  methode_paiement: string | null
+  reference_transaction: string | null
+  preuve_url: string | null
+  commentaire_agent: string | null
+  date_creation: string
+  date_maj: string
+  date_depot: string | null
+  date_verification: string | null
+}
+
+export interface PayloadDepotPreuve {
+  montant_depose: string
+  methode_paiement: string
+  reference_transaction: string
+  preuve: File
+}
+
+export interface PayloadVerificationDepot {
+  approuver: boolean
+  commentaire_agent?: string
+}
+
+export interface ConfigDepotMinimum {
+  exige_depot: boolean
+  montant_depot_min: string
+  devise: string
+  instructions: string
+  methodes_acceptees: MethodePaiement[]
+  date_modification: string | null
+}
+
+export interface PayloadConfigDepotMinimum {
+  exige_depot?: boolean
+  montant_depot_min?: string
+  instructions?: string
+  methodes_acceptees?: MethodePaiementCode[]
 }

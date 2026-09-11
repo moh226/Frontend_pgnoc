@@ -36,6 +36,7 @@ export const useDossiersStore = defineStore('dossiers', {
         EN_INSTRUCTION: 0,
         VALIDE: 0,
         REJETE: 0,
+        ACTIF: 0,
       }
       for (const dossier of etat.liste) {
         compteurs[dossier.statut] += 1
@@ -53,8 +54,8 @@ export const useDossiersStore = defineStore('dossiers', {
       this.dashboardChargement = true
       this.erreur = ''
       try {
-        const reponse = await dashboardInvestisseur()
-        const statuts: StatutDossier[] = ['BROUILLON', 'SOUMIS', 'EN_INSTRUCTION', 'VALIDE', 'REJETE']
+const reponse = await dashboardInvestisseur()
+        const statuts: StatutDossier[] = ['BROUILLON', 'SOUMIS', 'EN_INSTRUCTION', 'VALIDE', 'REJETE', 'ACTIF']
         this.dashboard = {
           ...reponse,
           par_statut: Object.fromEntries(

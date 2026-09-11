@@ -6,6 +6,7 @@ export const LIBELLES_STATUT: Record<StatutDossier, string> = {
   EN_INSTRUCTION: 'En instruction',
   VALIDE: 'Validé',
   REJETE: 'Rejeté',
+  ACTIF: 'Compte actif',
 }
 
 export const COULEURS_STATUT: Record<StatutDossier, string> = {
@@ -14,6 +15,7 @@ export const COULEURS_STATUT: Record<StatutDossier, string> = {
   EN_INSTRUCTION: 'warning',
   VALIDE: 'success',
   REJETE: 'error',
+  ACTIF: 'primary',
 }
 
 export const STATUTS_DOSSIER: StatutDossier[] = [
@@ -22,4 +24,5 @@ export const STATUTS_DOSSIER: StatutDossier[] = [
   'EN_INSTRUCTION',
   'VALIDE',
   'REJETE',
+  'ACTIF',
 ]

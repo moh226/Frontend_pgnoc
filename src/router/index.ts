@@ -72,6 +72,11 @@ const router = createRouter({
           name: 'investisseur-dossier-detail',
           component: () => import('@/views/investisseur/DossierDetailView.vue'),
         },
+        {
+          path: 'dossiers/:id/depot-minimum',
+          name: 'investisseur-dossier-depot',
+          component: () => import('@/views/investisseur/DepotMinimumView.vue'),
+        },
 
         {
           path: 'notifications',
@@ -101,6 +106,16 @@ const router = createRouter({
           component: () => import('@/views/agent/DossierDetailAgentView.vue'),
         },
         {
+          path: 'depots',
+          name: 'agent-depots',
+          component: () => import('@/views/agent/DepotsAgentListView.vue'),
+        },
+        {
+          path: 'depots/:id',
+          name: 'agent-depot-detail',
+          component: () => import('@/views/agent/DepotDetailAgentView.vue'),
+        },
+        {
           path: 'notifications',
           name: 'agent-notifications',
           component: () => import('@/views/investisseur/NotificationsView.vue'),
@@ -127,6 +142,22 @@ const router = createRouter({
           path: 'dossiers/:id',
           name: 'admin-sgi-dossier-detail',
           component: () => import('@/views/agent/DossierDetailAgentView.vue'),
+        },
+        {
+          path: 'depots',
+          name: 'admin-sgi-depots',
+          component: () => import('@/views/agent/DepotsAgentListView.vue'),
+          props: { routeDetail: 'admin-sgi-depot-detail' },
+        },
+        {
+          path: 'depots/:id',
+          name: 'admin-sgi-depot-detail',
+          component: () => import('@/views/agent/DepotDetailAgentView.vue'),
+        },
+        {
+          path: 'config-depot',
+          name: 'admin-sgi-config-depot',
+          component: () => import('@/views/admin-sgi/ConfigDepotView.vue'),
         },
         {
           path: 'agents',

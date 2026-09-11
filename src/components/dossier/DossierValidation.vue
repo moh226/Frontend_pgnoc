@@ -6,14 +6,25 @@ import { genererOtp, signerDossier } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import type { FicheSgi } from '@/types'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dossierId: string
   fiche: FicheSgi | null
   progression: number
   estSigne: boolean
   peutSoumettre: boolean
   envoiEnCours: boolean
-}>()
+  /**
+   * Après un rejet, la signature n'est PAS redemandée : le dossier est
+   * re-scellé automatiquement à la résoumission (l'investisseur n'a
+   * signé qu'une fois). Faux en statut REJETE.
+   */
+  signatureObligatoire?: boolean
+  /**
+   * Vrai en statut REJETE : l'étape finale est une RESOUISSION (libellés
+   * « Résoumettre », pas une première transmission).
+   */
+  resoumission?: boolean
+}>(), { signatureObligatoire: true, resoumission: false })
 
 const emit = defineEmits<{
   (e: 'soumettre'): void
@@ -66,13 +77,19 @@ async function validerSignature() {
     <div class="bg-primary-lighten-5 text-primary rounded-circle pa-6 mb-6">
       <FileSignature :size="48" />
     </div>
-    <h2 class="text-h5 font-weight-bold mb-4">Prêt à soumettre votre dossier ?</h2>
-    <p class="text-body-1 text-medium-emphasis max-w-md mx-auto mb-8">
+    <h2 class="text-h5 font-weight-bold mb-4">{{ resoumission ? 'Prêt à renvoyer votre dossier corrigé ?' : 'Prêt à soumettre votre dossier ?' }}</h2>
+    <p v-if="signatureObligatoire" class="text-body-1 text-medium-emphasis max-w-md mx-auto mb-8">
       Vous avez complété à 100% les étapes requises. Afin de garantir l'authenticité de votre démarche, une signature électronique par code OTP est nécessaire avant la transmission à la SGI « {{ fiche?.nom }} ».
     </p>
-    
+    <!-- Résoumission : UNE phrase suffit (la signature initiale reste
+         valable) — le bouton dit le reste, et la relecture des
+         informations est le rôle de l'étape Récapitulatif précédente. -->
+    <p v-else class="text-body-1 text-medium-emphasis max-w-md mx-auto mb-8">
+      Votre signature initiale reste valable : la résoumission scelle automatiquement votre version corrigée.
+    </p>
+
     <v-btn
-      v-if="!estSigne"
+      v-if="!estSigne && signatureObligatoire"
       color="warning"
       variant="flat"
       size="x-large"
@@ -80,15 +97,18 @@ async function validerSignature() {
       :disabled="progression < 100"
       @click="ouvrirSignature"
     >
-      <KeyRound :size="20" class="mr-3" /> 
+      <KeyRound :size="20" class="mr-3" />
       Signer électroniquement
     </v-btn>
-    
+
     <div v-else class="text-center w-100 max-w-md">
-      <v-alert type="success" variant="tonal" class="mb-6 text-left border-l-4">
+      <v-alert v-if="estSigne" type="success" variant="tonal" class="mb-6 text-left border-l-4">
         <div class="font-weight-bold">Signature validée</div>
         Votre dossier est signé et prêt à être envoyé.
       </v-alert>
+      <!-- Résoumission sans nouvelle signature : aucune alerte — le
+         paragraphe au-dessus dit déjà que la signature initiale reste
+         valable. Le bouton suffit. -->
       <v-btn
         color="success"
         variant="flat"
@@ -99,7 +119,7 @@ async function validerSignature() {
         @click="emit('soumettre')"
         :loading="envoiEnCours"
       >
-        <Send :size="20" class="mr-3" /> Transmettre le dossier à la SGI
+        <Send :size="20" class="mr-3" /> {{ resoumission ? 'Résoumettre le dossier à la SGI' : 'Transmettre le dossier à la SGI' }}
       </v-btn>
     </div>
 

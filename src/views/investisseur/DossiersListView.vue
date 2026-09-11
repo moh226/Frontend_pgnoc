@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { Briefcase, Clock, ChevronRight, Search, FolderOpen } from '@lucide/vue'
+import { Briefcase, Clock, ChevronRight, FolderOpen } from '@lucide/vue'
 
 import { listeDossiers } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
@@ -82,7 +82,6 @@ onMounted(() => void charger())
 
     <div class="filtres-section mb-6">
       <div class="d-flex align-center flex-wrap ga-3">
-        <Search :size="18" class="text-medium-emphasis" />
         <v-chip
           v-for="statut in STATUTS_DOSSIER"
           :key="statut"

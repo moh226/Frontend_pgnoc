@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { 
+  activerDossier,
   etapesKyc, 
   verifierAuthenticiteSelfie, 
   transférerDossier,
@@ -32,6 +33,8 @@ export function useDossierAgent(id: string) {
 
   const dialogTransfert = ref(false)
   const agentCible = ref('')
+
+  const dialogActivation = ref(false)
 
   const champsParId = ref(new Map<string, ChampKyc>())
 
@@ -98,6 +101,19 @@ export function useDossierAgent(id: string) {
     try {
       await dossiers.deciderDossier(id, 'valider')
       dialogValidation.value = false
+    } catch (cause) {
+      dossiers.erreur = extraireMessageErreur(cause)
+    } finally {
+      envoiEnCours.value = false
+    }
+  }
+
+  async function activerCompte() {
+    envoiEnCours.value = true
+    try {
+      await activerDossier(id)
+      dialogActivation.value = false
+      await dossiers.chargerDetail(id)
     } catch (cause) {
       dossiers.erreur = extraireMessageErreur(cause)
     } finally {
@@ -181,6 +197,7 @@ export function useDossierAgent(id: string) {
     dialogValidation,
     dialogAuthenticite,
     dialogTransfert,
+    dialogActivation,
     agentCible,
     verificationPreuve,
     verificationEnCours,
@@ -193,6 +210,7 @@ export function useDossierAgent(id: string) {
     prendreEnCharge,
     rejeter,
     valider,
+    activerCompte,
     ouvrirTransfert,
     confirmerTransférer,
     nomDuChamp,

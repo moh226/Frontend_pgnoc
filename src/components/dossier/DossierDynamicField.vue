@@ -14,6 +14,11 @@ const props = defineProps<{
   commentaireAgent?: string | null
   estCorrige?: boolean
   verrouille: boolean
+  /** Pourquoi le champ est figé (fourni par le composable, qui connaît
+   *  le statut du dossier) — sans quoi « verrouillé » semble arbitraire. */
+  motifVerrouillage?: string | null
+  /** Note d'ouverture exceptionnelle (ex. nouveau champ exigé après rejet). */
+  noteEdition?: string | null
   dossierId: string
   valeurId?: string
 }>()
@@ -34,6 +39,10 @@ function getAccept(): string {
 
 function onFileDrop(e: DragEvent) {
   dragOver.value = false
+  // Champ verrouillé : le drop est ignoré côté UI dès ici — sinon la
+  // zone (visuellement figée) accepterait le fichier, afficherait un
+  // état « en cours » puis se ferait rejeter en 403 par le serveur.
+  if (props.verrouille) return
   const f = e.dataTransfer?.files?.[0]
   if (f) {
     fichierEnCours.value = f
@@ -70,9 +79,12 @@ function choixMultiples(): string[] {
 }
 
 const optionsChoix = computed(() => {
-  if (!props.champ.options_choix) return []
+  const brut = props.champ.options_choix
+  if (!brut) return []
+  // L'API renvoie une liste native ; on tolère une chaîne JSON (formats anciens).
+  if (Array.isArray(brut)) return brut
   try {
-    const liste = JSON.parse(props.champ.options_choix)
+    const liste = JSON.parse(brut)
     return Array.isArray(liste) ? liste : []
   } catch {
     return []
@@ -97,7 +109,7 @@ const optionsChoix = computed(() => {
       persistent-hint
       variant="outlined"
       density="comfortable"
-      class="premium-input"
+      :class="['premium-input', { 'premium-input--verrouille': verrouille }]"
       placeholder="Saisissez votre réponse"
       :readonly="verrouille"
       @update:model-value="(v: string) => emit('update:valeur', v)"
@@ -112,7 +124,7 @@ const optionsChoix = computed(() => {
       variant="outlined"
       density="comfortable"
       type="number"
-      class="premium-input"
+      :class="['premium-input', { 'premium-input--verrouille': verrouille }]"
       :readonly="verrouille"
       @update:model-value="(v: string) => emit('update:valeur', v)"
     />
@@ -126,7 +138,7 @@ const optionsChoix = computed(() => {
       variant="outlined"
       density="comfortable"
       type="date"
-      class="premium-input"
+      :class="['premium-input', { 'premium-input--verrouille': verrouille }]"
       :readonly="verrouille"
       @update:model-value="(v: string) => emit('update:valeur', v)"
     />
@@ -139,7 +151,7 @@ const optionsChoix = computed(() => {
       persistent-hint
       variant="outlined"
       rows="4"
-      class="premium-input"
+      :class="['premium-input', { 'premium-input--verrouille': verrouille }]"
       :readonly="verrouille"
       @update:model-value="(v: string) => emit('update:valeur', v)"
     />
@@ -153,7 +165,7 @@ const optionsChoix = computed(() => {
       persistent-hint
       variant="outlined"
       density="comfortable"
-      class="premium-input"
+      :class="['premium-input', { 'premium-input--verrouille': verrouille }]"
       :readonly="verrouille"
       @update:model-value="(v: string | null) => emit('update:valeur', v ?? '')"
     />
@@ -171,7 +183,11 @@ const optionsChoix = computed(() => {
     />
 
     <!-- Choix Multiple -->
-    <div v-else-if="champ.type === 'CHOIX_MULTIPLE'" class="premium-checkbox-group bg-surface-variant rounded-lg pa-4">
+    <div
+      v-else-if="champ.type === 'CHOIX_MULTIPLE'"
+      class="premium-checkbox-group bg-surface-variant rounded-lg pa-4"
+      :class="{ 'premium-checkbox-group--verrouille': verrouille }"
+    >
       <p v-if="champ.justification" class="text-caption text-medium-emphasis mb-3">{{ champ.justification }}</p>
       <v-checkbox
         v-for="option in optionsChoix"
@@ -304,13 +320,24 @@ const optionsChoix = computed(() => {
       {{ commentaireAgent }}
     </v-alert>
 
-    <!-- Champ verrouillé info -->
+    <!-- Champ verrouillé : motif contextuel (valeur conservée, dossier
+         transmis…) — un champ figé sans raison est vécu comme un bug. -->
     <div
       v-if="verrouille"
-      class="text-caption text-medium-emphasis mt-1 d-flex align-center"
+      class="text-caption text-medium-emphasis mt-1 d-flex align-center flex-wrap"
     >
       <v-icon icon="mdi-lock-outline" size="small" class="mr-1" />
-      Verrouillé — seuls les champs signalés par l'agent sont corrigeables après rejet.
+      {{ motifVerrouillage ?? 'Champ verrouillé : non modifiable.' }}
+    </div>
+
+    <!-- Ouverture exceptionnelle (ex. champ exigé par la SGI après le
+         rejet) : expliquée pour ne pas surprendre. -->
+    <div
+      v-else-if="noteEdition"
+      class="text-caption text-primary mt-1 d-flex align-center flex-wrap"
+    >
+      <v-icon icon="mdi-pencil-plus-outline" size="small" class="mr-1" />
+      {{ noteEdition }}
     </div>
   </div>
 </template>
@@ -332,6 +359,28 @@ const optionsChoix = computed(() => {
 
 .premium-input :deep(.v-field:hover) {
   border-color: rgb(var(--v-theme-primary));
+}
+
+/* Champ verrouillé : la valeur reste LISIBLE (readonly, pas disabled —
+   sinon le texte grisé serait illisible), mais le champ doit cesser
+   de paraître actif : fond neutre, pas d'effet hover, curseur
+   « interdit », icône verrou dans le label. */
+.premium-input--verrouille :deep(.v-field) {
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
+  cursor: not-allowed;
+}
+
+.premium-input--verrouille :deep(.v-field:hover) {
+  border-color: rgb(var(--v-theme-outline));
+}
+
+.premium-input--verrouille :deep(.v-field__input) {
+  cursor: not-allowed;
+}
+
+.premium-checkbox-group--verrouille {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .premium-checkbox-group {

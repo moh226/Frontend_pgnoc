@@ -25,3 +25,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Artefacts PWA en mode dev (vite-plugin-pwa devOptions)
+dev-dist

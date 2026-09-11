@@ -6,6 +6,7 @@ import { Bell, Menu, Moon, Sun } from '@lucide/vue'
 
 import { LIBELLES_ROLE, NAVIGATION_PAR_ROLE } from '@/config/navigation'
 import SidebarContenu from '@/components/commun/SidebarContenu.vue'
+import BottomNavInvestisseur from '@/components/investisseur/BottomNavInvestisseur.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationsStore } from '@/stores/notifications'
 
@@ -20,6 +21,15 @@ const drawerOuvert = ref(false)
 
 const navigation = computed(() =>
   (NAVIGATION_PAR_ROLE[auth.roleActuel ?? 'INVESTISSEUR'] ?? []).filter((item) => !item.cache),
+)
+
+// Mobile investisseur = bottom navigation dédiée (application « app »),
+// le drawer reste pour les autres rôles et les autres écrans mobiles.
+const afficherBarreMobileInvestisseur = computed(
+  () =>
+    mobile.value &&
+    auth.roleActuel === 'INVESTISSEUR' &&
+    (route.path.startsWith('/espace-investisseur') || route.path === '/parametres'),
 )
 
 const estSombre = computed(() => theme.current.value.dark)
@@ -75,10 +85,10 @@ onMounted(() => {
   </v-navigation-drawer>
 
   <v-app-bar flat color="surface" height="64" class="app-bar px-4 px-sm-6">
-    <v-btn v-if="mobile" icon variant="text" aria-label="Ouvrir le menu" class="icone-barre" @click="drawerOuvert = !drawerOuvert">
+    <v-btn v-if="mobile && !afficherBarreMobileInvestisseur" icon variant="text" aria-label="Ouvrir le menu" class="icone-barre" @click="drawerOuvert = !drawerOuvert">
       <Menu :size="22" />
     </v-btn>
-    <div v-if="mobile" class="marque-mobile ml-1">PGNOC<span>-TI</span></div>
+    <div v-if="mobile && !afficherBarreMobileInvestisseur" class="marque-mobile ml-1">PGNOC<span>-TI</span></div>
     <v-spacer />
     <v-btn icon aria-label="Notifications" variant="text" color="on-surface" class="icone-barre mr-1" @click="ouvrirNotifications">
       <Bell :size="19" />
@@ -93,9 +103,11 @@ onMounted(() => {
     </v-chip>
   </v-app-bar>
 
-  <v-main class="zone-contenu">
+  <v-main class="zone-contenu" :class="{ 'contenu-avec-barre-mobile': afficherBarreMobileInvestisseur }">
     <router-view />
   </v-main>
+
+  <BottomNavInvestisseur v-if="afficherBarreMobileInvestisseur" />
 </template>
 
 <style scoped>
@@ -112,6 +124,11 @@ onMounted(() => {
    naturellement, sans aucun trait. */
 .zone-contenu {
   background-color: rgb(var(--v-theme-background));
+}
+
+/* On laisse respirer le contenu au-dessus de la bottom navigation (fixée). */
+.contenu-avec-barre-mobile {
+  padding-bottom: 96px;
 }
 
 .app-bar {

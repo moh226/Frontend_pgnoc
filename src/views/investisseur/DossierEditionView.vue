@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AlertCircle, RotateCcw } from '@lucide/vue'
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, RotateCcw } from '@lucide/vue'
 
 import { useDossierForm } from '@/composables/useDossierForm'
 import { soumettreDossier, ouvrirFichierValeurSurf as ouvrirFichierValeur } from '@/api/dossiers'
-import { extraireMessageErreur } from '@/api/client'
+import { extraireErreurApi, extraireMessageErreur } from '@/api/client'
 
 import DossierSidebar from '@/components/dossier/DossierSidebar.vue'
 import DossierConvention from '@/components/dossier/DossierConvention.vue'
 import DossierValidation from '@/components/dossier/DossierValidation.vue'
 import DossierDynamicField from '@/components/dossier/DossierDynamicField.vue'
+import DossierRecapitulatif from '@/components/dossier/DossierRecapitulatif.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,8 +29,13 @@ function quitterFormulaire() {
 }
 
 async function soumettreFinal() {
+  // Garde anti-double-clic : si une soumission est déjà en cours,
+  // on ignore le second clic (évite le 409 « déjà soumis »).
+  if (form.envoiEnCours.value) return
+
   form.envoiEnCours.value = true
   form.erreur.value = ''
+  form.champsManquantsSoumission.value = []
   try {
     const sauvegardesOk = await form.viderSauvegardes()
     if (!sauvegardesOk) {
@@ -40,10 +46,32 @@ async function soumettreFinal() {
     await soumettreDossier(dossierId.value)
     router.push({ name: 'investisseur-dossier-detail', params: { id: dossierId.value } })
   } catch (cause) {
-    form.erreur.value = extraireMessageErreur(cause)
+    const apiErreur = extraireErreurApi(cause)
+    // Message plus clair si le dossier est déjà soumis (double-clic fréquent)
+    if (apiErreur?.code === 'DOSSIER_NON_SOUMETTABLE') {
+      const statut = apiErreur.statut_actuel
+      if (statut === 'SOUMIS') {
+        form.erreur.value = 'Ce dossier a déjà été soumis. Merci d\'attendre la réponse de la SGI.'
+      } else {
+        form.erreur.value = apiErreur.message
+      }
+      await form.rafraichirProgression()
+    } else {
+      form.erreur.value = apiErreur?.message ?? extraireMessageErreur(cause)
+    }
+    if (apiErreur?.champsManquants?.length) {
+      form.champsManquantsSoumission.value = apiErreur.champsManquants
+    }
   } finally {
     form.envoiEnCours.value = false
   }
+}
+
+// Navigation guidée depuis l'erreur de soumission : l'étape du premier
+// champ manquant. Retombe sur l'étape courante si le code est inconnu.
+function allerAuPremierChampManquant() {
+  const premier = form.champsManquantsSoumission.value[0]
+  if (premier) form.allerAuChamp(premier.code)
 }
 
 // Fonction utilitaire pour le layout des champs
@@ -58,6 +86,29 @@ function estVisible(champId: string): boolean {
   const parentVal = form.valeurs.value[champ.champ_parent]
   return parentVal?.valeur === champ.valeur_declencheur
 }
+
+const restantsObligatoires = computed(() =>
+  form.statistiquesEtapes.value.reduce((acc, s) => acc + (s.restants ?? 0), 0),
+)
+
+// État de l'étape KYC COURANTE (compteur + chip dans l'en-tête) : un
+// simple texte « 3/3 » passait inaperçu.
+const statsEtapeCourante = computed(() => {
+  const kycIndex = form.etapeCourante.value?.kycIndex
+  if (kycIndex === undefined) return null
+  return form.statistiquesEtapes.value[kycIndex] ?? null
+})
+
+// Libellé du bouton de continuation : court, orienté action.
+const libelleContinuer = computed(() => {
+  if (form.etapeCouranteIncomplete.value) return 'Complétez les champs requis'
+  const suivante = form.etapesGlobales.value[form.etapeGlobaleActive.value + 1]
+  if (suivante?.type === 'recapitulatif') return 'Suivant'
+  if (suivante?.type === 'validation') {
+    return form.detail.value?.statut === 'REJETE' ? 'Résoumettre' : 'Soumettre'
+  }
+  return 'Suivant'
+})
 </script>
 
 <template>
@@ -105,21 +156,39 @@ function estVisible(champId: string): boolean {
                 Veuillez prendre connaissance du document officiel lié à votre SGI.
               </template>
               <template v-else-if="form.etapeCourante.value.type === 'kyc'">
-                Veuillez renseigner ces informations avec exactitude pour garantir la fluidité de votre certification.
+              </template>
+              <template v-else-if="form.etapeCourante.value.type === 'recapitulatif'">
+                Parcourez vos réponses étape par étape, corrigez si besoin, puis confirmez pour
+                {{ form.detail.value.statut === 'REJETE' ? 'resoumettre' : 'signer' }} votre dossier.
               </template>
               <template v-else>
                 Finalisez votre demande en signant numériquement votre dossier.
               </template>
             </p>
-            <div v-if="form.etapeCourante.value.type === 'kyc' && form.etapeCourante.value.kycIndex !== undefined" class="step-progress mt-3">
-              <span class="text-caption font-weight-bold">
-                {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].completes }}
-                / {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].total }} champs renseignés
-              </span>
-              <span v-if="form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].restants" class="text-caption text-warning font-weight-bold">
-                {{ form.statistiquesEtapes.value[form.etapeCourante.value.kycIndex].restants }} obligatoire(s) restant(s)
-              </span>
-              <span v-else class="text-caption text-success font-weight-bold">Étape complète</span>
+            <!-- État de l'étape courante : compteur + chip (la barre est
+                 inutile — la complétion globale est déjà en haut à
+                 droite, et le chip dit l'essentiel). -->
+            <div v-if="statsEtapeCourante" class="step-progress mt-3">
+              <div class="d-flex align-center flex-wrap ga-3 step-progress-inner">
+                <span class="text-body-2 font-weight-bold text-nowrap">
+                  {{ statsEtapeCourante.completes }} / {{ statsEtapeCourante.total }} champs renseignés
+                </span>
+                <v-chip
+                  v-if="!statsEtapeCourante.restants"
+                  size="small"
+                  color="success"
+                  variant="tonal"
+                  class="font-weight-bold"
+                >
+                  <CheckCircle :size="16" class="mr-1" />
+                  Étape complète
+                </v-chip>
+                <v-chip v-else size="small" color="warning" variant="tonal" class="font-weight-bold">
+                  <AlertCircle :size="16" class="mr-1" />
+                  {{ statsEtapeCourante.restants }}
+                  obligatoire{{ statsEtapeCourante.restants > 1 ? 's' : '' }} restant{{ statsEtapeCourante.restants > 1 ? 's' : '' }}
+                </v-chip>
+              </div>
             </div>
           </div>
           <v-spacer />
@@ -139,17 +208,61 @@ function estVisible(champId: string): boolean {
         </header>
 
         <!-- Alertes Globales -->
-        <div class="px-8 pt-6" v-if="form.erreur.value || (form.detail.value.statut === 'REJETE' && form.detail.value.motif_rejet)">
+        <div class="px-8 pt-6" v-if="form.erreur.value || (form.detail.value.statut === 'REJETE' && form.champsCommentes.value.length)">
           <v-alert v-if="form.erreur.value" type="error" variant="tonal" class="mb-0">
-            {{ form.erreur.value }}
-          </v-alert>
-          <v-alert v-if="form.detail.value.statut === 'REJETE' && form.detail.value.motif_rejet" type="error" variant="tonal" class="mb-0 mt-4 border-l-4">
-            <div class="font-weight-bold mb-1">Dossier rejeté — corrections demandées</div>
-            {{ form.detail.value.motif_rejet }}
-            <div class="text-body-2 mt-2">
-              Seuls les champs accompagnés d'un retour de l'agent sont modifiables ;
-              les autres sont verrouillés.
+            <div class="d-flex align-center flex-wrap ga-2">
+              <div class="flex-grow-1">{{ form.erreur.value }}</div>
+              <v-btn
+                v-if="form.champsManquantsSoumission.value.length"
+                size="small"
+                color="error"
+                variant="tonal"
+                class="text-none font-weight-bold"
+                @click="allerAuPremierChampManquant"
+              >
+                <ArrowRight :size="16" class="mr-1" />
+                Aller au champ manquant
+              </v-btn>
             </div>
+          </v-alert>
+
+          <!-- Rejet : la demande de correction de l'agent, champ par champ.
+               Chaque entrée est cliquable et mène directement à l'étape
+               concernée — l'investisseur voit QUOI corriger et POURQUOI
+               sans parcourir tout le formulaire. -->
+          <v-alert
+            v-if="form.detail.value.statut === 'REJETE' && form.champsCommentes.value.length"
+            type="warning"
+            variant="tonal"
+            class="mb-0 mt-4 border-l-4"
+          >
+            <div class="font-weight-bold mb-1">
+              <v-icon icon="mdi-comment-processing-outline" size="small" class="mr-1" />
+              {{
+                form.champsCommentes.value.length === 1
+                  ? '1 correction demandée par la SGI'
+                  : `${form.champsCommentes.value.length} corrections demandées par la SGI`
+              }}
+            </div>
+            <div v-if="form.detail.value.motif_rejet" class="text-body-2 mb-2">
+              {{ form.detail.value.motif_rejet }}
+            </div>
+            <v-list density="compact" class="bg-transparent pa-0" lines="two">
+              <v-list-item
+                v-for="champ in form.champsCommentes.value"
+                :key="champ.id"
+                class="px-2 rounded-lg pointer"
+                @click="form.allerAuChamp(champ.code)"
+              >
+                <template #prepend>
+                  <v-icon icon="mdi-arrow-right-circle-outline" size="small" color="warning" class="mr-2" />
+                </template>
+                <v-list-item-title class="text-body-2 font-weight-bold">{{ champ.nom }}</v-list-item-title>
+                <v-list-item-subtitle class="text-wrap">
+                  « {{ form.valeurs.value[champ.id]?.commentaire_agent }} »
+                </v-list-item-subtitle>
+              </v-list-item>
+            </v-list>
           </v-alert>
         </div>
 
@@ -166,7 +279,7 @@ function estVisible(champId: string): boolean {
             <v-row>
               <template v-for="champ in form.etapes.value[form.etapeCourante.value.kycIndex].champs" :key="champ.id">
                 <v-col v-if="estVisible(champ.id)" cols="12" :md="getColSpan(champ.type)">
-                  <DossierDynamicField 
+                  <DossierDynamicField
                     :champ="champ"
                     :valeur="form.valeurs.value[champ.id]?.valeur ?? ''"
                     :fichier-url="form.valeurs.value[champ.id]?.fichier"
@@ -175,9 +288,11 @@ function estVisible(champId: string): boolean {
                     :commentaire-agent="form.valeurs.value[champ.id]?.commentaire_agent"
                     :est-corrige="form.valeurs.value[champ.id]?.est_corrige"
                     :verrouille="form.champVerrouille(champ)"
+                    :motif-verrouillage="form.motifVerrouillage(champ)"
+                    :note-edition="form.noteEdition(champ)"
                     :dossier-id="dossierId"
                     :valeur-id="form.valeurs.value[champ.id]?.id"
-                    @update:valeur="(v) => { form.valeurs.value[champ.id] = { ...form.valeurs.value[champ.id], champ: champ.id, valeur: v }; form.inscrireSauvegarde(champ.id) }"
+                    @update:valeur="(v) => { if (form.champVerrouille(champ)) return; const existing = form.valeurs.value[champ.id] || { champ: champ.id }; form.valeurs.value[champ.id] = { ...existing, champ: champ.id, valeur: v }; form.inscrireSauvegarde(champ.id) }"
                     @upload-fichier="(f) => form.surFichierSelectionne(champ, f)"
                     @ouvrir-fichier="ouvrirFichierValeur"
                   />
@@ -186,14 +301,46 @@ function estVisible(champId: string): boolean {
             </v-row>
           </template>
 
+          <!-- CONTENU : RÉCAPITULATIF (relecture structurée avant transmission) -->
+          <template v-else-if="form.etapeCourante.value.type === 'recapitulatif'">
+            <DossierRecapitulatif
+              :etapes="form.etapes.value"
+              :valeurs="form.valeurs.value"
+              :champ-verrouille="form.champVerrouille"
+              @corriger="(champ) => form.allerAuChamp(champ.code)"
+            />
+          </template>
+
           <!-- CONTENU : VALIDATION FINALE -->
           <template v-else-if="form.etapeCourante.value.type === 'validation'">
-            <DossierValidation 
+            <v-alert
+              v-if="form.detail.value.statut === 'REJETE' && (form.progression.value < 100 || !form.conventionAJour.value)"
+              type="warning"
+              variant="tonal"
+              class="mb-6 border-l-4"
+            >
+              <div class="font-weight-bold">Le bouton « Résoumettre » s'activera une fois que :</div>
+              <ul class="mb-0 mt-2 pl-4">
+                <li v-if="form.progression.value < 100">
+                  tous les champs obligatoires sont renseignés — il en reste
+                  {{ restantsObligatoires }} dans les étapes KYC. Les champs verrouillés déjà
+                  remplis restent affichés, sans modification possible.
+                </li>
+                <li v-if="!form.conventionAJour.value">
+                  la convention tarifaire est (de nouveau) acceptée dans sa version actuelle —
+                  revenez à l'étape « Convention Tarifaire » et acceptez-la.
+                </li>
+              </ul>
+            </v-alert>
+
+            <DossierValidation
               :dossier-id="dossierId"
               :fiche="form.fiche.value"
               :progression="form.progression.value"
               :est-signe="Boolean(form.detail.value.type_signature && form.detail.value.date_signature)"
-              :peut-soumettre="form.estModifiable.value && form.progression.value >= 100 && Boolean(form.detail.value.type_signature && form.detail.value.date_signature) && (!form.conventionPubliee.value || form.detail.value.convention_acceptee)"
+              :signature-obligatoire="form.detail.value.statut !== 'REJETE'"
+              :resoumission="form.detail.value.statut === 'REJETE'"
+              :peut-soumettre="form.estModifiable.value && form.progression.value >= 100 && (form.detail.value.statut === 'REJETE' || Boolean(form.detail.value.type_signature && form.detail.value.date_signature)) && form.conventionAJour.value"
               :envoi-en-cours="form.envoiEnCours.value"
               @soumettre="soumettreFinal"
               @rafraichir-progression="form.rafraichirProgression"
@@ -206,10 +353,15 @@ function estVisible(champId: string): boolean {
         <footer class="content-footer bg-surface border-t px-8 py-4 d-flex align-center">
           <template v-if="form.etapeCourante.value.type === 'convention'">
             <div class="text-body-2 text-medium-emphasis flex-grow-1">
-              La convention tarifaire doit être acceptée pour continuer.
+              <template v-if="!form.conventionAJour.value">
+                La convention tarifaire doit être (ré)acceptée pour continuer — la SGI en a publié une nouvelle version.
+              </template>
+              <template v-else>
+                La convention a été acceptée : vous pouvez poursuivre la saisie.
+              </template>
             </div>
             <v-btn
-              v-if="!form.detail.value.convention_acceptee"
+              v-if="!form.conventionAJour.value"
               color="primary"
               variant="flat"
               class="btn-principal px-6"
@@ -228,7 +380,7 @@ function estVisible(champId: string): boolean {
               Étape suivante
             </v-btn>
           </template>
-          
+
           <template v-else-if="form.etapeCourante.value.type === 'kyc'">
             <!-- Status Indicators for Saving -->
             <div class="d-flex align-center flex-grow-1 mr-4">
@@ -245,16 +397,50 @@ function estVisible(champId: string): boolean {
                 <span class="text-body-2 text-success font-weight-medium">Toutes les modifications sont enregistrées</span>
               </template>
             </div>
-            
+
+            <div class="d-flex align-center justify-between gap-3">
               <v-btn
-               color="primary"
-              variant="flat"
-              class="btn-principal px-6 shadow-sm"
-               :disabled="form.etapeCouranteIncomplete.value"
-               @click="form.continuerEtape"
-             >
-               {{ form.etapeCouranteIncomplete.value ? 'Complétez les champs requis' : `Continuer vers ${form.etapeGlobaleActive.value === form.etapesGlobales.value.length - 2 ? 'la signature' : 'l\'étape suivante'}` }}
-             </v-btn>
+                v-if="form.etapeGlobaleActive.value > (form.conventionPubliee.value ? 1 : 0)"
+                variant="text"
+                class="text-primary font-weight-bold"
+                @click="form.etapeGlobaleActive.value--"
+              >
+                <ArrowLeft :size="16" class="mr-1" /> Précédent
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                class="btn-principal px-6 shadow-sm"
+                :disabled="form.etapeCouranteIncomplete.value"
+                @click="form.continuerEtape"
+              >
+                {{ libelleContinuer }}
+              </v-btn>
+            </div>
+          </template>
+
+          <!-- Récapitulatif : confirmation explicite avant signature /
+               résoumission — le flux demandé : vérifier → confirmer →
+               transmettre. -->
+          <template v-else-if="form.etapeCourante.value.type === 'recapitulatif'">
+            <div class="d-flex align-center justify-between gap-3">
+              <v-btn
+                variant="text"
+                class="text-primary font-weight-bold"
+                @click="form.etapeGlobaleActive.value--"
+              >
+                <ArrowLeft :size="16" class="mr-1" /> Précédent
+              </v-btn>
+              <v-btn
+                color="primary"
+                variant="flat"
+                class="btn-principal px-6 shadow-sm"
+                @click="form.etapeGlobaleActive.value++"
+              >
+                <CheckCircle :size="16" class="mr-2" />
+                {{ form.detail.value.statut === 'REJETE' ? 'Résoumettre' : 'Soumettre' }}
+              </v-btn>
+            </div>
           </template>
         </footer>
       </template>
@@ -295,8 +481,10 @@ function estVisible(champId: string): boolean {
 
 .step-progress {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+}
+
+.step-progress-inner {
+  row-gap: 8px;
 }
 
 .content-footer {
@@ -323,6 +511,10 @@ function estVisible(champId: string): boolean {
   text-transform: none;
   letter-spacing: 0;
   font-weight: 600;
+}
+
+.pointer {
+  cursor: pointer;
 }
 
 .shadow-sm {
@@ -373,6 +565,30 @@ function estVisible(champId: string): boolean {
   
   :deep(.step-connector) {
     display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .content-header {
+    min-height: 0 !important;
+    padding: 16px !important;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .content-header h1 {
+    font-size: 1.25rem !important;
+  }
+
+  .content-body {
+    padding: 16px !important;
+  }
+
+  .content-footer {
+    min-height: 0 !important;
+    padding: 12px 16px !important;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 }
 </style>

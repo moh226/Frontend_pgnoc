@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AlertCircle, AlertTriangle, ArrowLeft, BadgeCheck, Building2, Clock, Download, Edit3, FileSignature, FileText } from '@lucide/vue'
+import { AlertCircle, AlertTriangle, ArrowLeft, BadgeCheck, Banknote, Building2, Clock, Download, Edit3, FileSignature, FileText } from '@lucide/vue'
 
 import { etapesKyc, genererOtp, ouvrirFichierValeurSurf as ouvrirFichierValeur, signerDossier } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import { ficheSgi } from '@/api/sgi'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { useDossiersStore } from '@/stores/dossiers'
+import { useMobile } from '@/composables/useMobile'
 import type { ChampKyc, FicheSgi } from '@/types'
 import { formaterDate } from '@/utils/format'
 
 const route = useRoute()
 const router = useRouter()
 const dossiers = useDossiersStore()
+const { estMobile } = useMobile()
 
 const id = computed(() => String(route.params.id))
 
@@ -32,6 +34,23 @@ const signaturePosee = ref(false)
 const estEditable = computed(() => {
   const statut = dossiers.detail?.statut
   return statut === 'BROUILLON' || statut === 'REJETE'
+})
+
+const depotDisponible = computed(
+  () => dossiers.detail?.statut === 'VALIDE' || dossiers.detail?.statut === 'ACTIF',
+)
+
+// Actions affichées dans la barre sticky (mobile uniquement) : elle reprend
+// exactement les boutons du header desktop.
+const actionsMobile = computed(() => {
+  if (estMobile.value && dossiers.detail) {
+    const actions = []
+    if (estEditable.value) actions.push('edition')
+    if (estEditable.value && dossiers.detail.convention_acceptee) actions.push('signature')
+    if (depotDisponible.value) actions.push('depot')
+    return actions
+  }
+  return []
 })
 
 async function chargerComplement() {
@@ -97,7 +116,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-container fluid class="page-detail pa-6">
+  <v-container fluid class="page-detail pa-6" :class="{ 'avec-barre-actions': actionsMobile.length }">
     <v-btn variant="text" color="primary" class="mb-4 hover-lift" @click="router.back()">
       <ArrowLeft :size="18" class="mr-2" /> Retour
     </v-btn>
@@ -132,7 +151,7 @@ onMounted(async () => {
             v-if="estEditable"
             color="primary"
             variant="flat"
-            class="ml-3 btn-principal hover-lift"
+            class="ml-3 btn-principal hover-lift d-none d-md-inline-flex"
             @click="router.push({ name: 'investisseur-dossier-edition', params: { id: id } })"
           >
             <Edit3 :size="16" class="mr-2" /> Modifier le dossier
@@ -141,10 +160,19 @@ onMounted(async () => {
             v-if="estEditable && dossiers.detail.convention_acceptee"
             variant="flat"
             color="warning"
-            class="ml-3 btn-principal hover-lift"
+            class="ml-3 btn-principal hover-lift d-none d-md-inline-flex"
             @click="ouvrirOtp"
           >
             <FileSignature :size="16" class="mr-2" /> Signer
+          </v-btn>
+          <v-btn
+            v-if="depotDisponible"
+            color="primary"
+            variant="outlined"
+            class="ml-3 btn-principal hover-lift font-weight-bold d-none d-md-inline-flex"
+            @click="router.push({ name: 'investisseur-dossier-depot', params: { id } })"
+          >
+            <Banknote :size="16" class="mr-2" /> Dépôt minimum
           </v-btn>
           <span class="text-caption text-muted ml-4 d-none d-md-flex">
             {{ dossiers.detail.investisseur_email }}
@@ -285,49 +313,119 @@ onMounted(async () => {
               >
                 Aucune valeur saisie pour le moment.
               </v-alert>
-              <v-table v-else>
-                <thead>
-                  <tr>
-                    <th>Champ</th>
-                    <th>Valeur</th>
-                    <th>Commentaire agent</th>
-                    <th>Maj</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="valeur in dossiers.detail.valeurs_champs" :key="valeur.id">
-                    <td>
-                      {{ nomDuChamp(valeur.champ) }}
-                      <v-tooltip v-if="valeur.est_corrige" text="Corrigé après demande de l'agent">
-                        <template #activator="{ props }">
-                          <AlertTriangle v-bind="props" :size="16" class="text-warning ml-2 d-inline" />
+              <template v-else>
+                <v-table class="d-none d-md-table">
+                  <thead>
+                    <tr>
+                      <th>Champ</th>
+                      <th>Valeur</th>
+                      <th>Commentaire agent</th>
+                      <th>Maj</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="valeur in dossiers.detail.valeurs_champs" :key="valeur.id">
+                      <td>
+                        {{ nomDuChamp(valeur.champ) }}
+                        <v-tooltip v-if="valeur.est_corrige" text="Corrigé après demande de l'agent">
+                          <template #activator="{ props }">
+                            <AlertTriangle v-bind="props" :size="16" class="text-warning ml-2 d-inline" />
+                          </template>
+                        </v-tooltip>
+                      </td>
+                      <td>
+                        <template v-if="valeur.fichier">
+                          <v-btn
+                            variant="text"
+                            color="primary"
+                            size="small"
+                            @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
+                            class="btn-sm"
+                          >
+                            <Download :size="14" class="mr-1" /> Document
+                          </v-btn>
                         </template>
-                      </v-tooltip>
-                    </td>
-                    <td>
-                      <template v-if="valeur.fichier">
-                        <v-btn
-                          variant="text"
-                          color="primary"
-                          size="small"
-                          @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
-                          class="btn-sm"
-                        >
-                          <Download :size="14" class="mr-1" /> Document
-                        </v-btn>
-                      </template>
-                      <template v-else>{{ valeur.valeur || '—' }}</template>
-                    </td>
-                    <td>{{ valeur.commentaire_agent || '—' }}</td>
-                    <td>{{ formaterDate(valeur.date_maj) }}</td>
-                  </tr>
-                </tbody>
-              </v-table>
+                        <template v-else>{{ valeur.valeur || '—' }}</template>
+                      </td>
+                      <td>{{ valeur.commentaire_agent || '—' }}</td>
+                      <td>{{ formaterDate(valeur.date_maj) }}</td>
+                    </tr>
+                  </tbody>
+                </v-table>
+
+                <!-- Mobile : liste en cartes (une ligne par champ, lisible) -->
+                <div class="d-md-none d-flex flex-column ga-3">
+                  <v-card
+                    v-for="valeur in dossiers.detail.valeurs_champs"
+                    :key="valeur.id"
+                    variant="tonal"
+                    class="valeur-mobile"
+                  >
+                    <v-card-text class="pa-4">
+                      <div class="d-flex align-center justify-space-between mb-1">
+                        <div class="font-weight-bold text-body-2">
+                          {{ nomDuChamp(valeur.champ) }}
+                          <AlertTriangle v-if="valeur.est_corrige" :size="14" class="text-warning ml-2 d-inline" />
+                        </div>
+                        <span class="text-caption text-medium-emphasis">{{ formaterDate(valeur.date_maj) }}</span>
+                      </div>
+                      <div class="text-body-2">
+                        <template v-if="valeur.fichier">
+                          <v-btn
+                            variant="text"
+                            color="primary"
+                            size="small"
+                            class="px-0 font-weight-bold"
+                            @click="ouvrirFichierValeur(dossiers.detail!.id, valeur.id)"
+                          >
+                            <Download :size="14" class="mr-1" /> Document
+                          </v-btn>
+                        </template>
+                        <template v-else>{{ valeur.valeur || '—' }}</template>
+                      </div>
+                      <div v-if="valeur.commentaire_agent" class="text-caption text-warning mt-2">
+                        Agent : {{ valeur.commentaire_agent }}
+                      </div>
+                    </v-card-text>
+                </v-card>
+                </div>
+              </template>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
     </template>
+
+    <!-- Barre d'actions mobile sticky : visible uniquement quand des actions existent -->
+    <div v-if="actionsMobile.length" class="barre-actions-mobile">
+      <v-btn
+        v-if="actionsMobile.includes('edition')"
+        color="primary"
+        variant="flat"
+        class="btn-barre-action font-weight-bold"
+        @click="router.push({ name: 'investisseur-dossier-edition', params: { id } })"
+      >
+        <Edit3 :size="16" class="mr-1" /> Modifier
+      </v-btn>
+      <v-btn
+        v-if="actionsMobile.includes('signature')"
+        color="warning"
+        variant="flat"
+        class="btn-barre-action font-weight-bold"
+        @click="ouvrirOtp"
+      >
+        <FileSignature :size="16" class="mr-1" /> Signer
+      </v-btn>
+      <v-btn
+        v-if="actionsMobile.includes('depot')"
+        color="primary"
+        variant="outlined"
+        class="btn-barre-action font-weight-bold"
+        @click="router.push({ name: 'investisseur-dossier-depot', params: { id } })"
+      >
+        <Banknote :size="16" class="mr-1" /> Dépôt
+      </v-btn>
+    </div>
 
     <v-progress-linear v-else-if="dossiers.detailChargement" indeterminate class="mt-4" />
 
@@ -451,6 +549,36 @@ onMounted(async () => {
 .code-box {
   background: rgba(var(--v-theme-warning), 0.1) !important;
   border: 1px dashed rgba(var(--v-theme-warning), 0.3) !important;
+}
+
+.valeur-mobile {
+  background: rgb(var(--v-theme-surface-variant)) !important;
+  border: 1px solid rgb(var(--v-theme-outline));
+}
+
+.barre-actions-mobile {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom));
+  z-index: 190;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: rgb(var(--v-theme-surface));
+  border-top: 1px solid rgb(var(--v-theme-outline));
+  box-shadow: 0 -2px 12px rgba(15, 23, 42, 0.08);
+}
+
+.btn-barre-action {
+  flex: 1;
+  height: 44px;
+  letter-spacing: 0.02em;
+}
+
+/* Dégagement du contenu sous la barre d'actions + la bottom navigation. */
+.avec-barre-actions {
+  padding-bottom: calc(44px + 64px + env(safe-area-inset-bottom) + 32px) !important;
 }
 
 :deep(.v-table) {

@@ -97,13 +97,92 @@ api.interceptors.response.use(
   },
 )
 
+// ─────────────────────────────────────────────────────────────
+// Enveloppe d'erreur unifiée du backend (voir pgnoc/erreurs.py) :
+// toute erreur API sort au format { code, message, detail, champs? }.
+//   - `message` : phrase française complète, affichable telle quelle ;
+//   - `code`    : identifiant stable pour brancher de la logique UI
+//                 (navigation guidée, retry, déconnexion…) ;
+//   - `champs`  : erreurs par champ de formulaire, pour surligner les
+//                 inputs fautifs ;
+//   - contexte métier additionnel selon le code (`champs_manquants`,
+//     `champs_a_corriger`, `attente_secondes`…).
+// ─────────────────────────────────────────────────────────────
+export interface ErreurChampManquant {
+  etape: string
+  champ: string
+  code: string
+}
+
+export interface ErreurChampACorriger {
+  champ: string
+  code: string
+  commentaire_agent: string
+}
+
+export interface ErreurApi {
+  code: string
+  message: string
+  /** Erreurs par champ de formulaire (ex: { email: ['…'] }). */
+  champs?: Record<string, string[]>
+  /** Contexte DOSSIER_INCOMPLET : champs à renseigner, avec leur étape. */
+  champsManquants?: ErreurChampManquant[]
+  /** Contexte CHAMP_VERROUILLE : champs signalés par l'agent. */
+  champsACorriger?: ErreurChampACorriger[]
+  /** Contexte LIMITE_ATTEINTE : délai d'attente conseillé. */
+  attenteSecondes?: number
+  statut?: number
+  /** Statut actuel du dossier (ex: SOUMIS) dans les erreurs DOSSIER_NON_SOUMETTABLE. */
+  statut_actuel?: string
+}
+
+/** Extrait l'enveloppe d'erreur unifiée, ou null si la réponse n'en est pas une. */
+export function extraireErreurApi(erreur: unknown): ErreurApi | null {
+  const axiosErr = erreur as AxiosError
+  const data = axiosErr?.response?.data
+  if (!data || typeof data !== 'object') return null
+  const corps = data as Record<string, unknown>
+  if (typeof corps.code !== 'string' || typeof corps.message !== 'string') return null
+
+  const apiErreur: ErreurApi = {
+    code: corps.code,
+    message: corps.message,
+    statut: axiosErr.response?.status,
+  }
+
+  if (corps.champs && typeof corps.champs === 'object') {
+    const champs: Record<string, string[]> = {}
+    for (const [cle, valeur] of Object.entries(corps.champs)) {
+      if (Array.isArray(valeur)) champs[cle] = valeur.map(String)
+      else if (typeof valeur === 'string') champs[cle] = [valeur]
+    }
+    if (Object.keys(champs).length) apiErreur.champs = champs
+  }
+  if (Array.isArray(corps.champs_manquants)) {
+    apiErreur.champsManquants = corps.champs_manquants as ErreurChampManquant[]
+  }
+  if (Array.isArray(corps.champs_a_corriger)) {
+    apiErreur.champsACorriger = corps.champs_a_corriger as ErreurChampACorriger[]
+  }
+  if (typeof corps.attente_secondes === 'number') {
+    apiErreur.attenteSecondes = corps.attente_secondes
+  }
+  return apiErreur
+}
+
 export function extraireMessageErreur(
   erreur: unknown,
   fallback = 'Une erreur est survenue. Réessayez.',
 ): string {
   const axiosErr = erreur as AxiosError
-  const status = axiosErr?.response?.status
   const data = axiosErr?.response?.data
+
+  // Enveloppe unifiée : `message` est une phrase française complète,
+  // prête à afficher. On ne JAMAIS remonter `code` (identifiant
+  // technique) et on n'ajoute pas de préfixe [403] — c'est du bruit
+  // pour l'utilisateur final, le code HTTP ne l'aide pas à agir.
+  const apiErreur = extraireErreurApi(erreur)
+  if (apiErreur) return apiErreur.message
 
   function messageDepuis(donnees: unknown): string | null {
     if (typeof donnees === 'string') return donnees
@@ -116,12 +195,6 @@ export function extraireMessageErreur(
       if (imbrique) return imbrique
     }
     return null
-  }
-
-  if (status) {
-    const message = messageDepuis(data)
-    if (message) return `[${status}] ${message}`
-    return `[${status}] ${fallback}`
   }
 
   const message = messageDepuis(data)

@@ -1,9 +1,12 @@
 import { api } from './client'
 import type {
   DashboardInvestisseur,
+  DepotMinimumDetail,
   DossierDetail,
   DossierListeItem,
   EtapeKyc,
+  PayloadDepotPreuve,
+  PayloadVerificationDepot,
   ResultatPagines,
 } from '@/types'
 
@@ -151,6 +154,11 @@ export async function validerDossier(id: string): Promise<DossierDetail> {
   return data
 }
 
+export async function activerDossier(id: string): Promise<DossierDetail> {
+  const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/activer/`)
+  return data
+}
+
 export async function rejeterDossier(id: string, motif: string): Promise<DossierDetail> {
   const { data } = await api.post<DossierDetail>(`/dossiers/dossiers/${id}/rejeter/`, {
     motif_rejet: motif,
@@ -170,7 +178,6 @@ export function ouvrirFichierValeurSurf(
   valeurId: string,
 ): void {
   void ouvrirFichierValeur(dossierId, valeurId).catch((cause: unknown) => {
-    // eslint-disable-next-line no-console
     console.error('Ouverture du justificatif impossible', cause)
   })
 }
@@ -231,5 +238,54 @@ export async function transférerDossier(
 
 export async function dashboardInvestisseur(): Promise<DashboardInvestisseur> {
   const { data } = await api.get<DashboardInvestisseur>('/dossiers/investisseur/dashboard/')
+  return data
+}
+
+export async function depotMinimumDossier(dossierId: string): Promise<DepotMinimumDetail> {
+  const { data } = await api.get<DepotMinimumDetail>(
+    `/dossiers/dossiers/${dossierId}/depot-minimum/`,
+  )
+  return data
+}
+
+export async function deposerPreuve(
+  dossierId: string,
+  payload: PayloadDepotPreuve,
+): Promise<DepotMinimumDetail> {
+  const formulaire = new FormData()
+  formulaire.append('montant_depose', payload.montant_depose)
+  formulaire.append('methode_paiement', payload.methode_paiement)
+  formulaire.append('reference_transaction', payload.reference_transaction)
+  formulaire.append('preuve', payload.preuve)
+  const { data } = await api.post<DepotMinimumDetail>(
+    `/dossiers/dossiers/${dossierId}/depot-minimum/`,
+    formulaire,
+  )
+  return data
+}
+
+export interface ParametresListeDepotsAgent {
+  statut?: string[]
+}
+
+export async function listeDepotsAgent(
+  parametres: ParametresListeDepotsAgent = {},
+): Promise<DepotMinimumDetail[]> {
+  const { data } = await api.get<DepotMinimumDetail[]>('/dossiers/depots/', {
+    params: parametres.statut?.length ? { statut: parametres.statut.join(',') } : {},
+  })
+  return data
+}
+
+export async function detailDepotAgent(id: string): Promise<DepotMinimumDetail> {
+  const { data } = await api.get<DepotMinimumDetail>(`/dossiers/depots/${id}/`)
+  return data
+}
+
+export async function verifierDepot(
+  id: string,
+  payload: PayloadVerificationDepot,
+): Promise<DepotMinimumDetail> {
+  const { data } = await api.post<DepotMinimumDetail>(`/dossiers/depots/${id}/verifier/`, payload)
   return data
 }

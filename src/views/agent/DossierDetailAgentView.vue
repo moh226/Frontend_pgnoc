@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { 
   ArrowLeft, 
+  BadgeCheck,
   Hand, 
   CheckCircle2, 
   XCircle, 
@@ -38,6 +39,7 @@ const {
   dialogValidation,
   dialogAuthenticite,
   dialogTransfert,
+  dialogActivation,
   agentCible,
   verificationPreuve,
   verificationEnCours,
@@ -49,6 +51,7 @@ const {
   prendreEnCharge,
   rejeter,
   valider,
+  activerCompte,
   ouvrirTransfert,
   confirmerTransférer,
   nomDuChamp,
@@ -132,6 +135,12 @@ onMounted(async () => {
               
               <v-btn color="success" variant="flat" size="large" class="font-weight-bold shadow-sm" @click="dialogValidation = true">
                 <CheckCircle2 :size="18" class="mr-2" /> Valider le dossier
+              </v-btn>
+            </template>
+
+            <template v-else-if="dossiers.detail.statut === 'VALIDE'">
+              <v-btn color="primary" variant="flat" size="large" class="font-weight-bold shadow-sm" @click="dialogActivation = true">
+                <BadgeCheck :size="18" class="mr-2" /> Activer le compte
               </v-btn>
             </template>
           </div>
@@ -345,6 +354,36 @@ onMounted(async () => {
       @valider="valider"
       @confirmer-transfert="confirmerTransférer"
     />
+
+    <v-dialog v-model="dialogActivation" max-width="560">
+      <v-card class="rounded-xl">
+        <v-card-title class="pa-6 border-b bg-surface-variant font-weight-bold d-flex align-center">
+          <BadgeCheck :size="20" class="text-primary mr-3" /> Activer le compte-titres
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <v-alert type="info" variant="tonal" class="mb-2">
+            Ouvrez le compte-titres de l'investisseur. L'action sera journalisée dans l'audit.
+          </v-alert>
+          <v-alert v-if="dossiers.erreur" type="error" variant="tonal">
+            {{ dossiers.erreur }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0 d-flex justify-end gap-3">
+          <v-btn variant="text" color="medium-emphasis" class="font-weight-bold" @click="dialogActivation = false">
+            Annuler
+          </v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            class="font-weight-bold"
+            :loading="envoiEnCours"
+            @click="activerCompte"
+          >
+            <BadgeCheck :size="18" class="mr-2" /> Confirmer l'activation
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 

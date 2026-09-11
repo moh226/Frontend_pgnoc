@@ -39,15 +39,18 @@ export const NAVIGATION_PAR_ROLE: Record<RoleCode, ItemNavigation[]> = {
   AGENT_SGI: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/espace-agent' },
     { titre: 'Dossiers à instruire', icone: 'mdi-folder-multiple-outline', vers: '/espace-agent/dossiers' },
+    { titre: 'Dépôts à vérifier', icone: 'mdi-wallet-outline', vers: '/espace-agent/depots' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/espace-agent/notifications' },
     { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },
   ],
   ADMIN_SGI: [
     { titre: 'Tableau de bord', icone: 'mdi-view-dashboard', vers: '/admin-sgi' },
     { titre: 'Dossiers', icone: 'mdi-folder-multiple-outline', vers: '/admin-sgi/dossiers' },
+    { titre: 'Dépôts', icone: 'mdi-wallet-outline', vers: '/admin-sgi/depots' },
     { titre: 'Agents', icone: 'mdi-account-group-outline', vers: '/admin-sgi/agents' },
     { titre: 'Parcours KYC', icone: 'mdi-form-select', vers: '/admin-sgi/kyc' },
     { titre: 'Convention', icone: 'mdi-file-pdf-box', vers: '/admin-sgi/convention' },
+    { titre: 'Dépôt minimum', icone: 'mdi-bank-transfer-in', vers: '/admin-sgi/config-depot' },
     { titre: 'Présentation', icone: 'mdi-text-box-outline', vers: '/admin-sgi/presentation' },
     { titre: 'Notifications', icone: 'mdi-bell-outline', vers: '/admin-sgi/notifications' },
     { titre: 'Paramètres', icone: 'mdi-cog-outline', vers: '/parametres' },

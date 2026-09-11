@@ -27,7 +27,7 @@ const dialogAuthenticite = defineModel<boolean>('dialogAuthenticite', { required
 const dialogTransfert = defineModel<boolean>('dialogTransfert', { required: true })
 const agentCible = defineModel<string>('agentCible', { required: true })
 
-const props = defineProps<{
+defineProps<{
   envoiEnCours: boolean
   verificationEnCours: boolean
   erreurVerification: string
