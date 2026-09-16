@@ -15,6 +15,9 @@ dist-ssr
 # Secrets locaux
 .env
 
+# Documents de conception
+CAHIER_DES_CHARGES*.docx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
