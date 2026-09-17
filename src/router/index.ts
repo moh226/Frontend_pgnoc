@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { redirectionPourRole } from '@/config/navigation'
+import { FEATURES } from '@/config/features'
 import { useAuthStore } from '@/stores/auth'
 import type { RoleCode } from '@/types'
 import { jwtEstExpire } from '@/utils/jwt'
@@ -268,7 +269,20 @@ router.beforeEach(async (vers) => {
     return { name: 'login' }
   }
 
+  if (vers.meta.roles?.length && auth.estConnecte && !auth.roleActuel) {
+    // Connecté sans rôle identifiable (JWT sans claim de rôle) : on ne
+    // peut pas évaluer l'accès ni afficher un « accès refusé » trompeur.
+    // On renvoie vers une page neutre accessible à tout utilisateur.
+    return { name: 'parametres' }
+  }
+
   if (vers.meta.roles?.length && auth.roleActuel && !vers.meta.roles.includes(auth.roleActuel)) {
+    return { name: 'acces-refuse' }
+  }
+
+  // Fonctionnalité désactivée par la config (cf. config/features.ts) :
+  // le menu ne l'affiche pas, mais une URL directe doit être bloquée aussi.
+  if (vers.name === 'admin-general-journal' && !FEATURES.JOURNAL_AUDIT) {
     return { name: 'acces-refuse' }
   }
 

@@ -12,27 +12,22 @@ const fichierUrl = computed(
   () => props.url?.trim() || props.fiche?.convention?.fichier_url || null,
 )
 
-const iframeSrc = computed(() => {
+// Résout uniquement les chemins relatifs (/media/...) vers l'origine courante.
+// Les URLs absolues (signées MinIO : hôte + Signature + Expires) sont gardées
+// telles quelles — le découpage précédent cassait la preview sur l'hôte SPA.
+const urlVisible = computed(() => {
   const url = fichierUrl.value
   if (!url) return null
   try {
-    const parsed = new URL(url, window.location.origin)
-    return parsed.pathname + parsed.search
+    return new URL(url, window.location.origin).toString()
   } catch {
     return url
   }
 })
 
-const downloadHref = computed(() => {
-  const url = fichierUrl.value
-  if (!url) return '#'
-  try {
-    const parsed = new URL(url, window.location.origin)
-    return parsed.pathname + parsed.search
-  } catch {
-    return url
-  }
-})
+const iframeSrc = urlVisible
+
+const downloadHref = computed(() => urlVisible.value ?? '#')
 </script>
 
 <template>

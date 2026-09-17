@@ -9,8 +9,14 @@ import { ficheSgi } from '@/api/sgi'
 import { COULEURS_STATUT, LIBELLES_STATUT } from '@/config/statuts'
 import { useDossiersStore } from '@/stores/dossiers'
 import { useMobile } from '@/composables/useMobile'
+import TimelineDossier from '@/components/investisseur/TimelineDossier.vue'
 import type { ChampKyc, FicheSgi } from '@/types'
 import { formaterDate } from '@/utils/format'
+
+// Affichage du code OTP en clair réservé à l'environnement de
+// développement (Vite : `import.meta.env` s'utilise en script, pas
+// directement dans le template).
+const estDev = import.meta.env.DEV
 
 const route = useRoute()
 const router = useRouter()
@@ -233,6 +239,24 @@ onMounted(async () => {
         </v-card-text>
       </v-card>
 
+      <!-- Timeline de suivi de la demande -->
+      <v-card class="mb-6 timeline-card" data-aos="fade-up" data-aos-duration="500">
+        <v-card-title class="d-flex align-center pt-6 px-6 font-display font-weight-bold">
+          <Clock :size="20" class="mr-2 text-primary" />
+          Suivi de la demande
+        </v-card-title>
+        <v-card-text class="px-6 pb-6">
+          <TimelineDossier
+            :statut="dossiers.detail.statut"
+            :progression="dossiers.detail.progression_pct"
+            :date-creation="dossiers.detail.date_creation"
+            :date-soumission="dossiers.detail.date_soumission"
+            :date-instruction="dossiers.detail.date_instruction"
+            :date-decision="dossiers.detail.date_decision"
+          />
+        </v-card-text>
+      </v-card>
+
       <v-row>
         <v-col cols="12" lg="5" class="d-flex flex-column gap-6">
           <v-card class="flex-grow-1">
@@ -445,14 +469,14 @@ onMounted(async () => {
           <v-skeleton-loader v-if="otpEnCours && !codeOtpGenere" type="paragraph" />
           <template v-else-if="!signaturePosee">
             <p class="text-body-2 text-medium-emphasis mb-4">
-              <template v-if="codeOtpGenere">
+              <template v-if="codeOtpGenere && estDev">
                 Code confidentiel généré (développement) : saisissez-le ci-dessous.
               </template>
               <template v-else>
                 Un code confidentiel à 6 chiffres vous a été adressé par SMS/email : saisissez-le ci-dessous.
               </template>
             </p>
-            <div v-if="codeOtpGenere" class="pa-4 border-radius-8 text-center my-4 code-box">
+            <div v-if="codeOtpGenere && estDev" class="pa-4 border-radius-8 text-center my-4 code-box">
               <span class="font-weight-black text-warning text-h4 font-display tracking-widest">{{ codeOtpGenere }}</span>
             </div>
             <p v-if="expirationOtp" class="text-caption text-error text-center mb-6 font-weight-medium">
@@ -560,7 +584,7 @@ onMounted(async () => {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(64px + env(safe-area-inset-bottom));
+  bottom: calc(72px + env(safe-area-inset-bottom));
   z-index: 190;
   display: flex;
   gap: 12px;
@@ -578,7 +602,7 @@ onMounted(async () => {
 
 /* Dégagement du contenu sous la barre d'actions + la bottom navigation. */
 .avec-barre-actions {
-  padding-bottom: calc(44px + 64px + env(safe-area-inset-bottom) + 32px) !important;
+  padding-bottom: calc(44px + 72px + env(safe-area-inset-bottom) + 32px) !important;
 }
 
 :deep(.v-table) {

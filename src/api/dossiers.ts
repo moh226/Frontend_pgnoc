@@ -266,13 +266,19 @@ export async function deposerPreuve(
 
 export interface ParametresListeDepotsAgent {
   statut?: string[]
+  page?: number
+  page_size?: number
 }
 
 export async function listeDepotsAgent(
   parametres: ParametresListeDepotsAgent = {},
 ): Promise<ResultatPagines<DepotMinimumDetail>> {
+  const p = new URLSearchParams()
+  if (parametres.statut?.length) parametres.statut.forEach((s) => p.append('statut', s))
+  if (parametres.page) p.append('page', String(parametres.page))
+  if (parametres.page_size) p.append('page_size', String(parametres.page_size))
   const { data } = await api.get<ResultatPagines<DepotMinimumDetail>>('/kyc/depots/', {
-    params: parametres.statut?.length ? { statut: parametres.statut.join(',') } : {},
+    params: p,
   })
   return data
 }

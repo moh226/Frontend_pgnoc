@@ -47,7 +47,7 @@ function destinationApresConnexion(): string {
 }
 
 function continuerAvecGoogle() {
-  window.location.href = `${import.meta.env.VITE_API_URL ?? '/api'}/comptes/oauth/google/login/`
+  window.location.href = `${import.meta.env.VITE_API_URL ?? '/api/v1'}/comptes/oauth/google/login/`
 }
 </script>
 

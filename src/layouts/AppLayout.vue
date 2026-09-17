@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDisplay, useTheme } from 'vuetify'
 import { Bell, Menu, Moon, Sun } from '@lucide/vue'
@@ -55,8 +55,25 @@ function ouvrirNotifications() {
 
 watch(() => route.fullPath, fermerDrawerMobile)
 
+// Le badge de notification doit rester à jour même sans recharger la
+// page : on interroge le serveur périodiquement (léger GET du compte).
+// Le minuteur est créé au montage perpétuel du layout (toutes les pages
+// authentifiées passent par AppLayout) et tué au démontage/showdown.
+const INTERVALLE_COMPTE_NOTIFICATIONS_MS = 30_000
+let minuteurNotifications: number | null = null
+
 onMounted(() => {
   if (auth.estConnecte) void notifications.chargerCompte()
+  minuteurNotifications = window.setInterval(() => {
+    if (auth.estConnecte) void notifications.chargerCompte()
+  }, INTERVALLE_COMPTE_NOTIFICATIONS_MS)
+})
+
+onBeforeUnmount(() => {
+  if (minuteurNotifications !== null) {
+    window.clearInterval(minuteurNotifications)
+    minuteurNotifications = null
+  }
 })
 </script>
 
@@ -88,7 +105,7 @@ onMounted(() => {
     <v-btn v-if="mobile && !afficherBarreMobileInvestisseur" icon variant="text" aria-label="Ouvrir le menu" class="icone-barre" @click="drawerOuvert = !drawerOuvert">
       <Menu :size="22" />
     </v-btn>
-    <div v-if="mobile && !afficherBarreMobileInvestisseur" class="marque-mobile ml-1">PGNOC<span>-TI</span></div>
+    <div v-if="mobile" class="marque-mobile ml-1">PGNOC<span>-TI</span></div>
     <v-spacer />
     <v-btn icon aria-label="Notifications" variant="text" color="on-surface" class="icone-barre mr-1" @click="ouvrirNotifications">
       <Bell :size="19" />
@@ -128,7 +145,7 @@ onMounted(() => {
 
 /* On laisse respirer le contenu au-dessus de la bottom navigation (fixée). */
 .contenu-avec-barre-mobile {
-  padding-bottom: 96px;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom) + 32px);
 }
 
 .app-bar {

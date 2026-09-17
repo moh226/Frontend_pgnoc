@@ -197,5 +197,19 @@ const reponse = await dashboardInvestisseur()
         }
       }
     },
+
+    /** Purge complète de l'état (déconnexion) : la session suivante
+     *  ne doit pas hériter de données d'une autre session. */
+    reinitialiser() {
+      this.liste = []
+      this.total = 0
+      this.chargement = false
+      this.detail = null
+      this.detailChargement = false
+      this.erreur = ''
+      this.dashboard = null
+      this.dashboardChargement = false
+      this._sequenceDetail += 1
+    },
   },
 })

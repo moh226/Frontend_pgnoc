@@ -80,7 +80,12 @@ export function useDossierForm(dossierId: string) {
   // résoumission.
   const champsCommentes = computed<ChampKyc[]>(() => {
     if (detail.value?.statut !== 'REJETE') return []
-    return tousChamps.value.filter((champ) => Boolean(valeurs.value[champ.id]?.commentaire_agent))
+    return tousChamps.value.filter((champ) => {
+      const valeur = valeurs.value[champ.id]
+      // Un champ commenté mais DÉJÀ corrigé (re-saisie/upload, est_corrige)
+      // n'a plus à figurer dans les corrections guidées.
+      return Boolean(valeur?.commentaire_agent) && !valeur.est_corrige
+    })
   })
 
   // En REJETE, l'investisseur doit corriger les champs commentés MAIS AUSSI

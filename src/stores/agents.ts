@@ -56,5 +56,12 @@ export const useAgentsStore = defineStore('agents', {
         throw cause
       }
     },
+
+    /** Purge complète de l'état (déconnexion). */
+    reinitialiser() {
+      this.liste = []
+      this.chargement = false
+      this.erreur = ''
+    },
   },
 })

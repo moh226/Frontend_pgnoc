@@ -16,7 +16,9 @@
   "dependencies": {
     "@lucide/vue": "^1.31.0",
     "@mdi/font": "^7.4.47",
+    "@types/aos": "^3.0.8",
     "@vueuse/core": "^14.4.0",
+    "aos": "^2.3.4",
     "axios": "^1.19.0",
     "pinia": "^4.0.3",
     "vue": "^3.5.40",

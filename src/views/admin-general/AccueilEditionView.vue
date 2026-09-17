@@ -11,9 +11,18 @@ import {
   X,
 } from '@lucide/vue'
 
-import VitrineAccueil from '@/components/VitrineAccueil.vue'
 import AccueilBlocEditor from '@/components/accueil/AccueilBlocEditor.vue'
 import EntetePage from '@/components/commun/EntetePage.vue'
+import HomeNavbar from '@/components/home/HomeNavbar.vue'
+import HeroSection from '@/components/home/HeroSection.vue'
+import ProblemSection from '@/components/home/ProblemSection.vue'
+import SolutionSection from '@/components/home/SolutionSection.vue'
+import HowItWorksSection from '@/components/home/HowItWorksSection.vue'
+import InvestorSection from '@/components/home/InvestorSection.vue'
+import SgiSection from '@/components/home/SgiSection.vue'
+import SecuritySection from '@/components/home/SecuritySection.vue'
+import FinalCtaSection from '@/components/home/FinalCtaSection.vue'
+import HomeFooter from '@/components/home/HomeFooter.vue'
 import { useAccueilEditor, LIBELLES_TYPE } from '@/composables/useAccueilEditor'
 
 const {
@@ -38,8 +47,6 @@ const {
   blocCourant,
   nbPublies,
   imageActuelle,
-  apercuMasques,
-  apercuBlocs,
   charger,
   selectionner,
   ajouterMention,
@@ -179,20 +186,33 @@ onMounted(charger)
 
     <v-progress-circular v-if="chargement" indeterminate color="primary" class="d-block mx-auto my-12" />
 
-    <!-- Aperçu en direct de la configuration (dont les blocs non enregistrés) -->
+    <!-- Aperçu de la page d'accueil publique -->
     <v-dialog v-model="apercuOuvert" fullscreen transition="dialog-bottom-transition">
       <v-card class="apercu-conteneur" flat>
         <div class="barre-apercu">
           <span class="font-display font-weight-bold">Aperçu de la page d'accueil</span>
           <span class="texte-note-apercu">
-            Les blocs désactivés sont signalés ; votre brouillon du bloc en cours est inclus.
+            Aperçu de la page d'accueil publique telle qu'elle est rendue.
           </span>
           <v-btn size="small" variant="tonal" @click="apercuOuvert = false">
             <X :size="16" class="mr-1" /> Fermer l'aperçu
           </v-btn>
         </div>
         <div class="corps-apercu">
-          <VitrineAccueil :blocs="apercuBlocs()" :masques="apercuMasques" />
+          <div class="accueil-public">
+            <HomeNavbar />
+            <main>
+              <HeroSection />
+              <ProblemSection />
+              <SolutionSection />
+              <HowItWorksSection />
+              <InvestorSection />
+              <SgiSection />
+              <SecuritySection />
+              <FinalCtaSection />
+            </main>
+            <HomeFooter />
+          </div>
         </div>
       </v-card>
     </v-dialog>
@@ -256,6 +276,18 @@ onMounted(charger)
 .corps-apercu {
   flex: 1;
   overflow-y: auto;
+}
+
+.accueil-public {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-on-surface));
+}
+
+.accueil-public main {
+  flex: 1;
 }
 
 @media (max-width: 700px) {

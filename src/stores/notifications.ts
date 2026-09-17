@@ -73,5 +73,16 @@ export const useNotificationsStore = defineStore('notifications', {
         if (this.compteNonLues > 0) this.compteNonLues -= 1
       }
     },
+
+    /** Purge complète de l'état (déconnexion). */
+    reinitialiser() {
+      this.notifications = []
+      this.compteNonLues = 0
+      this.chargement = false
+      this.chargementPlus = false
+      this.pageCourante = 0
+      this.aPlus = false
+      this.erreur = ''
+    },
   },
 })

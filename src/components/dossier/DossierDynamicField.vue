@@ -32,9 +32,29 @@ const emit = defineEmits<{
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const dragOver = ref(false)
 const fichierEnCours = ref<File | null>(null)
+const erreurFichier = ref('')
 
 function getAccept(): string {
   return props.champ.formats_acceptes?.split(',').map((f) => '.' + f.trim()).join(',') ?? ''
+}
+
+function tailleMaxOctets(): number | null {
+  const mo = props.champ.taille_max_mo
+  if (!mo || mo <= 0) return null
+  return Math.round(mo * 1024 * 1024)
+}
+
+function accepterFichier(f: File | undefined | null): boolean {
+  erreurFichier.value = ''
+  if (!f) return true
+  const max = tailleMaxOctets()
+  if (max !== null && f.size > max) {
+    erreurFichier.value =
+      `Fichier trop volumineux (${(f.size / 1024 / 1024).toFixed(1)} Mo) : `
+      + `maximum ${props.champ.taille_max_mo} Mo.`
+    return false
+  }
+  return true
 }
 
 function onFileDrop(e: DragEvent) {
@@ -44,15 +64,15 @@ function onFileDrop(e: DragEvent) {
   // état « en cours » puis se ferait rejeter en 403 par le serveur.
   if (props.verrouille) return
   const f = e.dataTransfer?.files?.[0]
-  if (f) {
-    fichierEnCours.value = f
-    emit('upload-fichier', f)
+  if (accepterFichier(f)) {
+    fichierEnCours.value = f ?? null
+    emit('upload-fichier', f ?? null)
   }
 }
 
 function onFileSelect(e: Event) {
   const f = (e.target as HTMLInputElement).files?.[0] ?? null
-  if (f) {
+  if (accepterFichier(f)) {
     fichierEnCours.value = f
     emit('upload-fichier', f)
   }
@@ -64,6 +84,7 @@ function openFilePicker() {
 
 function clearFile() {
   fichierEnCours.value = null
+  erreurFichier.value = ''
   if (fileInputRef.value) fileInputRef.value.value = ''
   emit('upload-fichier', null)
 }
@@ -287,6 +308,9 @@ const optionsChoix = computed(() => {
             Cliquez ou glissez-déposez ici.<br>
             Formats : {{ champ.formats_acceptes }} (Max {{ champ.taille_max_mo }}MB)
           </div>
+          <p v-if="erreurFichier" class="text-caption text-error font-weight-bold mt-2">
+            {{ erreurFichier }}
+          </p>
         </template>
         <template v-else>
           <div class="bg-success-lighten-5 rounded-circle d-flex align-center justify-center mb-3" style="width: 56px; height: 56px;">

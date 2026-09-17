@@ -30,7 +30,7 @@ export const api: AxiosInstance = axios.create({
 
 // Instance dédiée aux appels publics (refresh) : même timeout que `api`
 // pour qu'un serveur qui ne répond pas ne bloque jamais la navigation.
-const clientPublic: AxiosInstance = axios.create({
+export const clientPublic: AxiosInstance = axios.create({
   baseURL: api.defaults.baseURL,
   timeout: 15000,
   headers: {

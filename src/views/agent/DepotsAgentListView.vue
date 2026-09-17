@@ -18,22 +18,44 @@ const props = withDefaults(
 )
 
 const filtresStatut = ref<StatutDepot[]>([])
+const page = ref(1)
+const parPage = 10
+
 const liste = ref<DepotMinimumDetail[]>([])
+const total = ref(0)
+const pages = ref(1)
 const chargement = ref(false)
 const erreur = ref('')
 
+function formaterMontant(valeur: string | null | undefined): string {
+  if (valeur === null || valeur === undefined || valeur === '') return '—'
+  const nombre = Number(valeur)
+  if (!Number.isFinite(nombre)) return '—'
+  return nombre.toLocaleString('fr-FR')
+}
+
+let idRequete = 0
+
 async function charger() {
+  const id = ++idRequete
   chargement.value = true
   erreur.value = ''
   try {
-    const reponse = await listeDepotsAgent(
-      filtresStatut.value.length ? { statut: filtresStatut.value } : {},
-    )
-    liste.value = reponse.results
+    const corps = await listeDepotsAgent({
+      statut: filtresStatut.value,
+      page: page.value,
+      page_size: parPage,
+    })
+    if (id !== idRequete) return
+
+    liste.value = corps.results
+    total.value = corps.count ?? 0
+    pages.value = Math.max(1, Math.ceil(total.value / parPage))
   } catch (cause) {
+    if (id !== idRequete) return
     erreur.value = extraireMessageErreur(cause)
   } finally {
-    chargement.value = false
+    if (id === idRequete) chargement.value = false
   }
 }
 
@@ -41,13 +63,14 @@ function basculerFiltre(statut: StatutDepot) {
   filtresStatut.value = filtresStatut.value.includes(statut)
     ? filtresStatut.value.filter((s) => s !== statut)
     : [...filtresStatut.value, statut]
+  page.value = 1
 }
 
 function ouvrir(id: string) {
   void router.push({ name: props.routeDetail, params: { id } })
 }
 
-watch(filtresStatut, () => void charger())
+watch([filtresStatut, page], () => void charger())
 
 onMounted(() => void charger())
 </script>
@@ -101,7 +124,7 @@ onMounted(() => void charger())
           >
             <template #prepend>
               <v-avatar :color="COULEURS_DEPOT[depot.statut]" class="mr-4 rounded-lg">
-                <Wallet :size="22" class="text-surface" />
+                <Wallet :size="22" class="text-white" />
               </v-avatar>
             </template>
 
@@ -120,7 +143,7 @@ onMounted(() => void charger())
             <v-list-item-subtitle class="d-flex flex-wrap align-center gap-x-4">
               <span>{{ depot.investisseur_email }}</span>
               <span class="font-weight-medium text-primary">
-                {{ Number(depot.montant_requis).toLocaleString('fr-FR') }} {{ depot.devise }}
+                {{ formaterMontant(depot.montant_requis) }} {{ depot.devise }}
               </span>
               <template v-if="depot.statut === 'PREUVE_DEPOSEE'">
                 <span class="font-weight-medium">
@@ -141,6 +164,23 @@ onMounted(() => void charger())
           </v-list-item>
         </template>
       </v-list>
+
+      <template v-if="!chargement && liste.length">
+        <v-divider />
+        <div class="pa-4 bg-surface-variant d-flex align-center justify-space-between flex-wrap gap-3">
+          <span class="text-caption text-medium-emphasis font-weight-medium">
+            {{ total }} dépôt(s) · page {{ page }} / {{ pages }}
+          </span>
+          <v-pagination
+            v-if="pages > 1"
+            v-model="page"
+            :length="pages"
+            :total-visible="5"
+            active-color="primary"
+            rounded="circle"
+          />
+        </div>
+      </template>
     </v-card>
   </v-container>
 </template>
@@ -161,11 +201,16 @@ onMounted(() => void charger())
 
 .list-item {
   cursor: pointer;
-  border-bottom: 1px solid rgb(var(--v-theme-outline));
   transition: background-color 0.15s ease;
 }
 
 .list-item:hover {
   background-color: rgba(var(--v-theme-primary), 0.04);
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 16px 12px !important;
+  }
 }
 </style>

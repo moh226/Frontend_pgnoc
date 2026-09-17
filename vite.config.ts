@@ -101,7 +101,6 @@ server: {
       'vuetify/components/VDialog',
       'vuetify/components/VDivider',
       'vuetify/components/VExpansionPanel',
-      'vuetify/components/VExpansionPanels',
       'vuetify/components/VForm',
       'vuetify/components/VGrid',
       'vuetify/components/VIcon',

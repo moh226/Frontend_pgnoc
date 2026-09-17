@@ -1,9 +1,8 @@
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { listerBlocsAccueilAdmin, modifierBlocAccueil, ordonnerBlocsAccueil } from '@/api/accueil'
 import { extraireMessageErreur } from '@/api/client'
 import type {
   BlocAccueilAdmin,
-  BlocAccueilPublic,
   ContenuBlocAccueil,
   TypeBlocAccueil,
 } from '@/types'
@@ -85,48 +84,6 @@ export function useAccueilEditor() {
 
   const imageActuelle = computed(() =>
     blocs.value.find((b) => b.type === blocSelectionne.value)?.image_url ?? undefined,
-  )
-
-  const urlObjetHero = ref<string | null>(null)
-
-  watch(nouveauFichier, (fichier) => {
-    if (urlObjetHero.value) URL.revokeObjectURL(urlObjetHero.value)
-    urlObjetHero.value = fichier ? URL.createObjectURL(fichier) : null
-  })
-
-  onBeforeUnmount(() => {
-    if (urlObjetHero.value) URL.revokeObjectURL(urlObjetHero.value)
-  })
-
-  function apercuBlocs(): BlocAccueilPublic[] {
-    const modifie = blocSelectionne.value
-    const imageUrlHero = modifie === 'HERO' ? (urlObjetHero.value ?? undefined) : undefined
-    let imageHero: string | null = null
-    let titreHero = ''
-    let contenuHero: ContenuBlocAccueil = {}
-    if (modifie) {
-      imageHero = imageUrlHero ?? blocs.value.find((b) => b.type === 'HERO')?.image_url ?? null
-      titreHero = brouillonTitre.value
-      contenuHero = contenuConstruit()
-    }
-    return blocsTries.value.map((bloc) => {
-      if (bloc.type === modifie) {
-        return {
-          type: bloc.type,
-          titre: titreHero,
-          contenu: contenuHero,
-          image_url:
-            bloc.type === 'HERO' ? imageHero : (bloc.image_url ?? null),
-        }
-      }
-      return { type: bloc.type, titre: bloc.titre, contenu: bloc.contenu, image_url: bloc.image_url }
-    })
-  }
-
-  const apercuMasques = computed<Partial<Record<TypeBlocAccueil, boolean>>>(() =>
-    Object.fromEntries(
-      blocs.value.filter((b) => !b.actif).map((b) => [b.type, true]),
-    ),
   )
 
   async function charger() {
@@ -283,8 +240,6 @@ export function useAccueilEditor() {
     blocCourant,
     nbPublies,
     imageActuelle,
-    apercuMasques,
-    apercuBlocs,
     charger,
     selectionner,
     ajouterMention,

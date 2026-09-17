@@ -6,6 +6,10 @@ import { genererOtp, signerDossier } from '@/api/dossiers'
 import { extraireMessageErreur } from '@/api/client'
 import type { FicheSgi } from '@/types'
 
+// Code OTP affiché en clair uniquement en environnement de
+// développement (Vite : `import.meta.env` s'utilise en script).
+const estDev = import.meta.env.DEV
+
 const props = withDefaults(defineProps<{
   dossierId: string
   fiche: FicheSgi | null
@@ -141,7 +145,7 @@ async function validerSignature() {
               {{ erreurOtp }}
             </v-alert>
             <template v-if="expirationOtp">
-              <template v-if="codeOtpGenere">
+              <template v-if="codeOtpGenere && estDev">
                 <p class="text-body-2 mb-2">
                   Un code de vérification vient d'être généré (environnement de développement) :
                 </p>

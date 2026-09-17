@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 
-import { connexion, inscription } from '@/api/auth'
+import { connexion, deconnecterCompte, inscription } from '@/api/auth'
 import { rafraichirJeton } from '@/api/client'
 import { recupererMonProfil } from '@/api/profil'
+import { useAgentsStore } from '@/stores/agents'
+import { useDossiersStore } from '@/stores/dossiers'
+import { useNotificationsStore } from '@/stores/notifications'
 import type { Identifiants, Jetons, PayloadInscription, RoleCode, UtilisateurPublic } from '@/types'
 import { jwtEstExpire, roleDepuisJwt } from '@/utils/jwt'
 
@@ -153,16 +156,36 @@ export const useAuthStore = defineStore('auth', {
     },
 
     deconnecter() {
+      const access = this.access
+      const refresh = this.refresh
       sessionFermee = true
       this.access = null
       this.refresh = null
       this.utilisateur = null
       this.role = null
+      this._purgerStoresMetier()
       try {
         localStorage.removeItem(CLE_STOCKAGE)
       } catch {
         // Stockage indisponible : rien à nettoyer.
       }
+      // Révocation du refresh token côté serveur (blacklist JWT), en
+      // arrière-plan et best-effort : on l'a capturé AVANT la purge,
+      // la session locale est déjà fermée quoi qu'il arrive.
+      if (access && refresh) {
+        void deconnecterCompte(access, refresh).catch(() => {
+          // Révocation impossible (réseau, serveur…) : rien de plus à
+          // faire, la session locale est déjà close.
+        })
+      }
+    },
+
+    /** Purge des stores métier : la session suivante ne doit pas
+     *  hériter des notifications, dossiers ou agents de la précédente. */
+    _purgerStoresMetier() {
+      useNotificationsStore().reinitialiser()
+      useDossiersStore().reinitialiser()
+      useAgentsStore().reinitialiser()
     },
   },
 })
