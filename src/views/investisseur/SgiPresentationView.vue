@@ -53,7 +53,7 @@ function revenir() {
 
     <div class="onboarding-zone">
       <header class="text-center mb-10">
-        <h1 class="titre-visuel font-display mb-4">À propos de la SGI</h1>
+        <h1 class="titre-visuel font-display mb-4">À propos <em class="accent-italique">de la SGI</em></h1>
         <p class="descriptif mx-auto">
           Découvrez la Société de Gestion d'Intermédiation avant d'ouvrir votre compte-titres.
         </p>
@@ -173,6 +173,12 @@ function revenir() {
 .titre-visuel {
   font-size: 36px;
   font-weight: 700;
+}
+
+.accent-italique {
+  font-style: italic;
+  font-weight: 600;
+  color: rgb(var(--v-theme-primary));
 }
 
 .descriptif {
